@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release-wsl/_deps/cpr-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release-wsl/_deps/grid_map-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release-wsl/_deps/matplotlib_cpp-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release-wsl/_deps/osmium-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release-wsl/_deps/osmium-src/test/data-tests/osm-testdata" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release-wsl/_deps/proj-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release-wsl/_deps/zlib-src" vcs="Git" />
+  </component>
+</project>

@@ -1,0 +1,187 @@
+/*
+ * OSMOverpassQuery.cpp
+ *
+ *  Created by A.Pilko on 24/03/2021.
+ */
+
+#include <cpr/cpr.h>
+#include <cstdio>
+#include <iostream>
+#include <stack>
+
+#include <osmium/handler/node_locations_for_ways.hpp>
+#include <osmium/io/xml_input.hpp>
+
+#ifdef UGR_IO_COMPRESSION_BZ2
+#include <osmium/io/any_compression.hpp>
+#endif
+
+#include "OSMOverpassQuery.h"
+#include "OverpassExceptions.h"
+#include "builder/OSMOverpassQueryBuilder.h"
+
+using namespace osmium::io;
+
+OSMOverpassQueryBuilder
+OSMOverpassQuery::create(const Coordinates &southWestCoord,
+                         const Coordinates &northEastCoord) {
+  return OSMOverpassQueryBuilder{southWestCoord, northEastCoord};
+}
+
+std::string OSMOverpassQuery::rawResponse(short int maxRetries) const {
+  cpr::Url url = getOverpassEndpoint();
+  cpr::Body params = cpr::Body{buildQueryString()};
+  cpr::Response response = cpr::Get(url, params);
+
+  if (response.status_code != 200) {
+    // Set an initial retry delay
+    int retryDelay = 0;
+    short int retries = 0;
+    do {
+      if (retries < maxRetries) {
+        response = cpr::Get(url, params);
+        std::this_thread::sleep_for(std::chrono::milliseconds(retryDelay));
+        retryDelay > 0 ? retryDelay *= 2 : retryDelay = 5000;
+        ++retries;
+        std::cerr << "Failed Response error " << response.error.message
+                  << std::endl;
+      } else {
+        throw overpass_network_exception();
+      }
+    } while (response.status_code != 200);
+  }
+
+  std::string response_txt = response.text;
+  std::ofstream out;
+  out.open(responseFilepath);
+  out << response_txt;
+  out.close();
+  return std::move(response_txt);
+}
+
+cpr::Url OSMOverpassQuery::getOverpassEndpoint() {
+  // TODO: Round robin all the overpass instance urls
+  return cpr::Url{"https://overpass.kumi.systems/api/interpreter"};
+  //	return cpr::Url{"https://lz4.overpass-api.de/api/interpreter"};
+}
+
+std::string OSMOverpassQuery::buildQueryString(bool xmlQuery) const {
+  if (xmlQuery)
+    return buildQueryStringXML();
+  else
+    return buildQueryStringQL();
+}
+
+osmium::memory::Buffer OSMOverpassQuery::rawBuffer() const {
+  rawResponse();
+  Reader reader{responseFilepath, osmium::osm_entity_bits::all};
+  osmium::memory::Buffer buffer = reader.read();
+  buffer.commit();
+  reader.close();
+  return buffer;
+}
+
+std::string OSMOverpassQuery::buildQueryStringQL() const {
+  std::string queryString;
+  // Start with output format params
+  queryString += "[out:" + outputFormat + "]";
+  // Timeout next
+  queryString += "[timeout:" + std::to_string(timeout) + "]";
+  // Set bounding box in s,w,n,e order
+  queryString += "[bbox: " + std::to_string(southWestCoord.y) + "," +
+                 std::to_string(southWestCoord.x) + "," +
+                 std::to_string(northEastCoord.y) + "," +
+                 std::to_string(northEastCoord.x) + "];";
+  // Wrap tag queries in bbox to limit
+  queryString += "(";
+  for (const auto &tag : nodeTags) {
+    queryString += "node[" + tag.key + "=" + tag.value + "];";
+  }
+  for (const auto &tag : wayTags) {
+    queryString += "way[" + tag.key + "=" + tag.value + "];";
+  }
+  for (const auto &tag : relationTags) {
+    queryString += "rel[" + tag.key + "=" + tag.value + "];";
+  }
+  queryString += "way(r); node(w);"; // Recurse relation-way and way-node
+  queryString += ");";
+
+  // Output and recurse through objects
+  // Output using quad tiles (qt) for faster response
+  queryString += "out body; >; out qt;";
+
+  return queryString;
+}
+
+std::string OSMOverpassQuery::buildQueryStringXML() const {
+  std::ostringstream qss;
+  // LIFO co
+  std::stack<std::string> closingTags;
+
+  std::string bboxQuery = "<bbox-query s=\"" +
+                          std::to_string(southWestCoord.y) + "\" n=\"" +
+                          std::to_string(northEastCoord.y) + "\" w=\"" +
+                          std::to_string(southWestCoord.x) + "\" e=\"" +
+                          std::to_string(northEastCoord.x) + "\"/>";
+
+  // Add preamble
+  // Output as XML for osmium to be able to read in
+  qss << "<osm-script output=\"xml\">";
+  closingTags.emplace("</osm-script>");
+
+  // Print output
+  closingTags.emplace("<print/>");
+
+  // TODO Allow better designed clauses
+  qss << "<union>";
+  closingTags.emplace("</union>");
+
+  if (!nodeTags.empty()) {
+    for (const auto &tag : nodeTags) {
+      qss << "<query type=\"node\">";
+
+      qss << "<has-kv k=\"" << tag.key << "\" ";
+      if (!tag.value.empty())
+        qss << "v=\"" + tag.value + "\"";
+      qss << "/>";
+
+      qss << bboxQuery;
+      qss << "</query>";
+    }
+  }
+  if (!wayTags.empty()) {
+    for (const auto &tag : wayTags) {
+      qss << "<query type=\"way\">";
+
+      qss << "<has-kv k=\"" << tag.key << "\" ";
+      if (!tag.value.empty())
+        qss << "v=\"" + tag.value + "\"";
+      qss << "/>";
+
+      qss << bboxQuery;
+      qss << "</query>";
+      qss << "<recurse type=\"down\" />";
+    }
+  }
+  if (!relationTags.empty()) {
+
+    for (const auto &tag : relationTags) {
+      qss << "<query type=\"relation\">";
+      qss << "<has-kv k=\"" << tag.key << "\" ";
+      if (!tag.value.empty())
+        qss << "v=\"" + tag.value + "\"";
+      qss << "/>";
+    }
+    qss << bboxQuery;
+    qss << "</query>";
+    qss << "<recurse type=\"down\" />";
+  }
+
+  // Close all dangling tags in LIFO order
+  while (!closingTags.empty()) {
+    std::string ct = closingTags.top();
+    closingTags.pop();
+    qss << ct;
+  }
+  return qss.str();
+}

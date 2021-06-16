@@ -1,0 +1,5 @@
+# Project exclude paths
+/build/
+/build/cmake-debug/CMakeFiles/
+/cmake-build-release-wsl/
+/cmake-build-release-wsl/CMakeFiles/

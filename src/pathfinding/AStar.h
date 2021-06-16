@@ -1,0 +1,12 @@
+/*
+ * AStar.h
+ *
+ *  Created by A.Pilko on 10/04/2021.
+ */
+
+#ifndef UASGROUNDRISK_SRC_PATHFINDING_ASTAR_H_
+#define UASGROUNDRISK_SRC_PATHFINDING_ASTAR_H_
+
+class AStar {};
+
+#endif // UASGROUNDRISK_SRC_PATHFINDING_ASTAR_H_

@@ -1,0 +1,6 @@
+#ifndef UASGROUNDRISK_LIBRARY_H
+#define UASGROUNDRISK_LIBRARY_H
+
+void hello();
+
+#endif // UASGROUNDRISK_LIBRARY_H

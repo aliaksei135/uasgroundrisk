@@ -1,0 +1,54 @@
+/*
+ * GridMapOSMHandler.h
+ *
+ *  Created by A.Pilko on 09/04/2021.
+ */
+
+#ifndef UASGROUNDRISK_SRC_MAP_GEN_GRIDMAPOSMHANDLER_H_
+#define UASGROUNDRISK_SRC_MAP_GEN_GRIDMAPOSMHANDLER_H_
+
+#include "osm/OSMOverpassQuery.h"
+#include <geos_c.h>
+#include <grid_map_core/GridMap.hpp>
+#include <map>
+#include <osmium/handler.hpp>
+#include <proj.h>
+
+class GridMapOSMHandler : public osmium::handler::Handler {
+public:
+  /**
+   * Construct an osmium handler that write geometries to a gridmap.
+   *
+   * @param gridMap the gridmap to write to
+   * @param tagLayerMap a map of OSM tags to gridmap layer names.
+   * 					  Tags can only map to a single layer name,
+   * but multiple tags can map to a single layer name.
+   * @param densityGeometryMap a map of GEOS polygons to population values.
+   * Geometries must be in EPSG:4326 projection. This class assumes
+   * responsibility for freeing the GEOS objects here.
+   * @param densityTagMap a map of OSM tags to uniform densities in
+   * correspondingly tagged areas. densityGeometryMap takes precedence over this
+   * in setting the grid map value.
+   */
+  GridMapOSMHandler(grid_map::GridMap *gridMap,
+                    std::map<OSMTag, std::string> tagLayerMap,
+                    const std::map<GEOSGeometry *, float> &densityGeometryMap,
+                    std::map<OSMTag, float> densityTagMap,
+                    std::string gridCRS = "EPSG:3395");
+  ~GridMapOSMHandler();
+
+  void way(const osmium::Way &way) const noexcept;
+
+protected:
+  PJ_CONTEXT *projCtx;
+  PJ *reproj;
+
+  grid_map::GridMap *gridMap;
+  std::map<OSMTag, std::string> tagLayerMap;
+  std::map<OSMTag, float> densityTagMap;
+  std::map<GEOSGeometry *, float> densityGeometryMap;
+
+  std::string gridCRS;
+};
+
+#endif // UASGROUNDRISK_SRC_MAP_GEN_GRIDMAPOSMHANDLER_H_
