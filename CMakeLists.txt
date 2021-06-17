@@ -103,13 +103,9 @@ find_package(GEOS REQUIRED)
 target_include_directories(${PROJECT_NAME} PUBLIC ${GEOS_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} PUBLIC ${GEOS_LIBRARY})
 
-#find_package(PROJ REQUIRED)
-#target_include_directories(${PROJECT_NAME} PRIVATE ${PROJ_INCLUDE_DIR})
-#target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJ_LIBRARY})
-
 # Googletest
-find_package(GTest REQUIRED)
-find_package(GMock REQUIRED)
+#find_package(GTest)
+#find_package(GMock)
 
 ##################################
 # PROJ
@@ -133,31 +129,6 @@ if (NOT proj_POPULATED)
 endif ()
 target_link_libraries(${PROJECT_NAME} PUBLIC proj)
 
-##################################
-# GEOS
-# Geometry ops
-# License: LGPL
-##################################
-
-#FetchContent_Declare(
-#        geos
-#        GIT_REPOSITORY https://git.osgeo.org/gitea/geos/geos.git
-#        GIT_TAG 3.5.2 # This should not be changed as GEOS C++ API is unstable, osmium also breaks >3.5
-#)
-#FetchContent_GetProperties(geos)
-#if (NOT geos_POPULATED)
-#    FetchContent_Populate(geos)
-#    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${geos_SOURCE_DIR}/cmake) # use osmium cmake scripts to find its deps
-#    add_subdirectory(${geos_SOURCE_DIR})
-#    include_directories(${geos_SOURCE_DIR}/include)
-#endif()
-#
-#execute_process(COMMAND 'geos-config --cflags'
-#                OUTPUT_VARIABLE GEOS_COMPILE_FLAGS)
-#execute_process(COMMAND 'geos-config --ldflags'
-#                OUTPUT_VARIABLE GEOS_LINK_FLAGS)
-#SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GEOS_COMPILE_FLAGS}")
-#SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GEOS_LINK_FLAGS} -lgeos_c")
 
 ##################################
 # Osmium
