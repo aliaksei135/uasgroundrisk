@@ -117,6 +117,7 @@ find_package(GMock REQUIRED)
 # License: MIT-Like
 ##################################
 set(ENV{PROJ_NETWORK} ON)
+set(BUILD_TESTING OFF)
 FetchContent_Declare(
         proj
         GIT_REPOSITORY https://github.com/OSGeo/PROJ.git
@@ -212,6 +213,7 @@ include_directories(${cpr_SOURCE_DIR}/include)
 # License: BSD-3
 ##################################
 set(GRID_MAP_VERSION 1.6.4)
+set(CATKIN_ENABLE_TESTING OFF)
 
 FetchContent_Declare(
         grid_map
