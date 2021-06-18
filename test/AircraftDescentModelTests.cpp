@@ -3,15 +3,14 @@
  *
  *  Created by A.Pilko on 17/06/2021.
  */
-
-#include "../src/risk_analysis/aircraft/AircraftModel.h"
+#include "../src/risk_analysis/aircraft/AircraftDescentModel.h"
 #include <gtest/gtest.h>
 
 using namespace ugr::risk;
 
 class AircraftModelTests : public ::testing::Test {
 protected:
-  AircraftModel model{90, 2.8, 3.2, 28, 0.6 * 0.6, 0.8, 21, 15};
+  AircraftDescentModel model{90, 2.8, 3.2, 28, 0.6 * 0.6, 0.8, 21, 15};
 };
 
 TEST_F(AircraftModelTests, GlideImpactSingleTest) {
@@ -41,10 +40,10 @@ TEST_F(AircraftModelTests, GlideImpactMultipleTest) {
 
 TEST_F(AircraftModelTests, BallisticImpactSingleTest) {
   auto res = model.ballisticImpact(120, 28, 1);
-  EXPECT_NEAR(res.impactDistance, 108.3, 0.1);
-  EXPECT_NEAR(res.impactVelocity, 47.4, 0.1);
+  EXPECT_NEAR(res.impactDistance, 112.2, 0.1);
+  EXPECT_NEAR(res.impactVelocity, 48.1, 0.1);
   EXPECT_NEAR(res.impactTime, 4.93, 0.1);
-  EXPECT_NEAR(res.impactAngle, 66.0, 0.1);
+  EXPECT_NEAR(res.impactAngle, 64.3, 0.1);
 }
 
 TEST_F(AircraftModelTests, BallisticImpactMultipleTest) {
@@ -53,9 +52,9 @@ TEST_F(AircraftModelTests, BallisticImpactMultipleTest) {
 
   ASSERT_EQ(resVect.size(), 4);
 
-  std::vector<double> expDistances{29.8, 51.3, 72.4, 92.3};
-  std::vector<double> expVelocities{23.8, 31.9, 37.9, 42.8};
-  std::vector<double> expAngles{54.6, 57.6, 58.5, 59.2};
+  std::vector<double> expDistances{30.1, 51.9, 73.7, 94.5};
+  std::vector<double> expVelocities{24.0, 32.3, 38.6, 43.8};
+  std::vector<double> expAngles{54.1, 56.5, 56.9, 56.8};
   std::vector<double> expTimes{2.1, 2.9, 3.5, 3.9};
   for (size_t i = 0; i < resVect.size(); ++i) {
     EXPECT_NEAR(resVect[i].impactDistance, expDistances[i], 0.1);
