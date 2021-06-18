@@ -4,8 +4,8 @@
  *  Created by A.Pilko on 17/06/2021.
  */
 
-#ifndef UASGROUNDRISK_SRC_RISK_ANALYSIS_AIRCRAFT_AIRCRAFTMODEL_H_
-#define UASGROUNDRISK_SRC_RISK_ANALYSIS_AIRCRAFT_AIRCRAFTMODEL_H_
+#ifndef UASGROUNDRISK_SRC_RISK_ANALYSIS_AIRCRAFT_AIRCRAFTDESCENTMODEL_H_
+#define UASGROUNDRISK_SRC_RISK_ANALYSIS_AIRCRAFT_AIRCRAFTDESCENTMODEL_H_
 
 #include <vector>
 namespace ugr {
@@ -15,11 +15,14 @@ namespace risk {
  * A POCO encapsulating impact variables.
  */
 struct ImpactDataStruct {
-  double impactDistance; /// The distance of the impact away from initial Loss
-                         /// of Control
-  double impactVelocity; /// The velocity at the point of impact
-  double impactAngle;    /// The impact angle in degrees
-  double impactTime;     /// The time between Loss of Control and impact
+  /// The distance of the impact away from initial Loss of Control
+  double impactDistance;
+  /// The velocity at the point of impact
+  double impactVelocity;
+  /// The impact angle in degrees
+  double impactAngle;
+  /// The time between Loss of Control and impact
+  double impactTime;
 };
 
 /**
@@ -29,7 +32,7 @@ struct ImpactDataStruct {
  *
  * All units are MKS.
  */
-class AircraftModel {
+class AircraftDescentModel {
 public:
   /* Basic params */
   double mass;
@@ -45,21 +48,22 @@ public:
   double glideAirspeed;
   double glideRatio;
 
-  AircraftModel(double mass, double width, double length, double cruiseSpeed,
-                double ballisticFrontalArea, double ballisticDragCoeff,
-                double glideAirspeed, double glideRatio);
+  AircraftDescentModel(double mass, double width, double length,
+                       double cruiseSpeed, double ballisticFrontalArea,
+                       double ballisticDragCoeff, double glideAirspeed,
+                       double glideRatio);
 
   /**
    * The glide impact data of the aircraft from a given altitude
    * @param altitude the altitude in metres
    * @return an ImpactDataStruct of the impact
    */
-  ImpactDataStruct glideImpact(double altitude);
+  ImpactDataStruct glideImpact(double altitude) const;
   /**
    * A vectorised version of glideImpact
    */
   std::vector<ImpactDataStruct>
-  glideImpact(const std::vector<double> &altitude);
+  glideImpact(const std::vector<double> &altitude) const;
 
   /**
    * The ballistic impact data of the aircraft from a given altitude and
@@ -77,7 +81,7 @@ public:
    */
   std::vector<ImpactDataStruct> ballisticImpact(std::vector<double> altitude,
                                                 std::vector<double> velX,
-                                                std::vector<double> velY);
+                                                std::vector<double> velY) const;
 
 protected:
   double c;
@@ -87,4 +91,4 @@ protected:
 } // namespace risk
 } // namespace ugr
 
-#endif // UASGROUNDRISK_SRC_RISK_ANALYSIS_AIRCRAFT_AIRCRAFTMODEL_H_
+#endif // UASGROUNDRISK_SRC_RISK_ANALYSIS_AIRCRAFT_AIRCRAFTDESCENTMODEL_H_
