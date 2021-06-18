@@ -7,6 +7,7 @@
 #ifndef UASGROUNDRISK_SRC_MAP_GEN_POPULATIONMAP_H_
 #define UASGROUNDRISK_SRC_MAP_GEN_POPULATIONMAP_H_
 
+#include "GeospatialGridMap.h"
 #include "osm/DefaultNodeLocationsForWaysHandler.h"
 #include "osm/builder/OSMOverpassQueryBuilder.h"
 #include <geos_c.h>
@@ -16,7 +17,7 @@
 using namespace grid_map;
 namespace ugr {
 namespace mapping {
-class PopulationMap {
+class PopulationMap : public GeospatialGridMap {
 public:
   /**
    * Construct a static Population Map
@@ -25,13 +26,12 @@ public:
    */
   PopulationMap(std::array<float, 4> bounds, int resolution);
 
-  void addLayer(const std::string &layerName, const std::vector<OSMTag> &tags,
-                float defaultValue = 0);
+  void addOSMLayer(const std::string &layerName,
+                   const std::vector<OSMTag> &tags, float defaultValue = 0);
 
-  GridMap &generateMap();
+  void eval() override;
 
 protected:
-  GridMap gridMap;
   std::map<OSMTag, std::string> tagLayerMap;
   std::map<GEOSGeometry *, float> popDensityGeomMap;
   std::map<OSMTag, float> densityTagMap;

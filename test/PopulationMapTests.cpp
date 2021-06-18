@@ -6,7 +6,7 @@
 
 #include "../src/utils/GeometryProjectionUtils.h"
 #include <../src/map_gen/PopulationMap.h>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <gtest/gtest.h>
 #include <matplotlibcpp.h>
 
@@ -21,8 +21,8 @@ protected:
 };
 
 TEST_F(PopulationMapTests, EmptyMapTest) {
-  PopulationMap populationMap(bounds, resolution);
-  auto popMap = populationMap.generateMap();
+  PopulationMap popMap(bounds, resolution);
+  popMap.eval();
 
   ASSERT_EQ(popMap.getLayers().size(), 1);
   ASSERT_EQ(popMap.hasBasicLayers(), false);
@@ -41,9 +41,9 @@ TEST_F(PopulationMapTests, EmptyMapTest) {
 }
 
 TEST_F(PopulationMapTests, SingleLayerTest) {
-  PopulationMap populationMap(bounds, resolution);
-  populationMap.addLayer("Schools", {{"amenity", "school"}}, 10);
-  auto popMap = populationMap.generateMap();
+  PopulationMap popMap(bounds, resolution);
+  popMap.addOSMLayer("Schools", {{"amenity", "school"}}, 10);
+  popMap.eval();
 
   // Inside Bitterne Park School, Southampton
   auto testCoord = ugr::util::reprojectCoordinate(50.929116, -1.369220);
@@ -59,10 +59,10 @@ TEST_F(PopulationMapTests, SingleLayerTest) {
 }
 
 TEST_F(PopulationMapTests, MultiLayerTest) {
-  PopulationMap populationMap(bounds, resolution);
-  populationMap.addLayer("Schools", {{"amenity", "school"}}, 10);
-  populationMap.addLayer("Retail", {{"landuse", "retail"}}, 20);
-  auto popMap = populationMap.generateMap();
+  PopulationMap popMap(bounds, resolution);
+  popMap.addOSMLayer("Schools", {{"amenity", "school"}}, 10);
+  popMap.addOSMLayer("Retail", {{"landuse", "retail"}}, 20);
+  popMap.eval();
 
   ASSERT_EQ(popMap.getLayers().size(), 3);
 
