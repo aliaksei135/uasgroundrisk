@@ -17,8 +17,8 @@ static Eigen::Vector2d rotate2D(const Eigen::Vector2d &vect, double theta) {
   if (theta < 0) {
     theta = (2 * M_PI) - theta;
   }
-  double c = cos(theta);
-  double s = sin(theta);
+  const double c = cos(theta);
+  const double s = sin(theta);
   Eigen::Matrix2d R;
   R << c, -s, s, c;
   return R * vect;
