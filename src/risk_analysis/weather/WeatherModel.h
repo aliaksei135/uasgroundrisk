@@ -26,7 +26,7 @@ public:
 
 protected:
   grid_map::GridMap windField; /// A GridMap describing wind containing exactly
-                               /// 2 layers: "Speed" and "Direction"
+                               /// 2 layers: "Wind Speed" and "Wind Direction"
 };
 } // namespace risk
 } // namespace ugr

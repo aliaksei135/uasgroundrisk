@@ -7,17 +7,20 @@
 #include "WeatherModel.h"
 #include <cassert>
 
-WeatherModel::WeatherModel() {
-  windField.add("Speed", 0);
-  windField["Speed"].setZero();
-  windField.add("Direction", 0);
-  windField["Direction"].setZero();
+ugr::risk::WeatherModel::WeatherModel() {
+  windField.add("Wind VelX", 0);
+  windField["Wind VelX"].setZero();
+  windField.add("Wind VelY", 0);
+  windField["Wind VelY"].setZero();
 }
 
-void WeatherModel::addConstantWind(const float speed, const float direction) {
+void ugr::risk::WeatherModel::addConstantWind(const float speed,
+                                              const float direction) {
   assert(speed >= 0);
   assert(direction >= 0);
   assert(direction <= 360);
-  windField["Speed"].setConstant(speed);
-  windField["Direction"].setConstant(direction);
+  auto velX = speed * cos(direction);
+  auto velY = speed * sin(direction);
+  windField["Wind VelX"].setConstant(static_cast<const float &>(velX));
+  windField["Wind VelY"].setConstant(static_cast<const float &>(velY));
 }
