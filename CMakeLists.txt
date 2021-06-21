@@ -91,10 +91,12 @@ add_library(${PROJECT_NAME} ${UGR_SOURCES})
 ##############################################################
 # Dependencies
 ##############################################################
+# Don't build tests for deps
+set(BUILD_TESTING OFF)
+
 # Eigen required for lin alg
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-# Prevent ...eigen3/... in all includes
-include_directories(/usr/include/eigen3)
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 # OpenSSL for cpr https requests
 find_package(OpenSSL REQUIRED)
@@ -103,9 +105,12 @@ find_package(GEOS REQUIRED)
 target_include_directories(${PROJECT_NAME} PUBLIC ${GEOS_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} PUBLIC ${GEOS_LIBRARY})
 
+find_package(OpenMP REQUIRED)
+target_link_directories(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
+
 # Googletest
-#find_package(GTest)
-#find_package(GMock)
+find_package(GTest)
+find_package(GMock)
 
 ##################################
 # PROJ
@@ -113,7 +118,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${GEOS_LIBRARY})
 # License: MIT-Like
 ##################################
 set(ENV{PROJ_NETWORK} ON)
-set(BUILD_TESTING OFF)
 FetchContent_Declare(
         proj
         GIT_REPOSITORY https://github.com/OSGeo/PROJ.git
@@ -135,6 +139,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC proj)
 # OSM data libraries
 # License: BSLv1
 ##################################
+set(BUILD_TESTING OFF)
 FetchContent_Declare(
         osmium
         GIT_REPOSITORY https://github.com/osmcode/libosmium.git
@@ -165,8 +170,9 @@ endif ()
 
 # https://github.com/whoshuu/cpr/issues/445
 set(CURL_CA_FALLBACK ON)
-set(USE_SYSTEM_CURL ON CACHE BOOL "" FORCE)
+set(CPR_FORCE_USE_SYSTEM_CURL ON CACHE BOOL "" FORCE)
 
+set(CPR_USE_SYSTEM_GTEST ON)
 set(CPR_BUILD_TESTS OFF)
 
 FetchContent_Declare(
@@ -216,7 +222,7 @@ if (${PROJECT_NAME}_BUILD_TESTS)
         FetchContent_Declare(
                 googletest
                 GIT_REPOSITORY https://github.com/google/googletest.git
-                GIT_TAG v1.10.x
+                GIT_TAG release-1.11.0
         )
         # For Windows: Prevent overriding the parent project's compiler/linker settings
         set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -229,6 +235,7 @@ if (${PROJECT_NAME}_BUILD_TESTS)
     # License: BSD-3
     ##################################
     # We do not really care about the performance of this as it is only for testing
+    find_package(Python REQUIRED)
     FetchContent_Declare(
             matplotlib_cpp
             GIT_REPOSITORY https://github.com/lava/matplotlib-cpp.git
