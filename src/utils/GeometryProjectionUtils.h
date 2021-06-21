@@ -98,10 +98,14 @@ static PJ_COORD reprojectCoordinate(double coordX, double coordY,
                                     double coordZ = 0, double coordT = 0,
                                     const char *sourceCRS = "EPSG:4326",
                                     const char *destCRS = "EPSG:3395") {
-  auto projCtx = proj_context_create();
+  auto *projCtx = proj_context_create();
   proj_context_set_enable_network(projCtx, true);
   auto *reproj = proj_create_crs_to_crs(projCtx, sourceCRS, destCRS, nullptr);
-  return proj_trans(reproj, PJ_FWD, proj_coord(coordX, coordY, coordZ, coordT));
+  PJ_COORD out =
+      proj_trans(reproj, PJ_FWD, proj_coord(coordX, coordY, coordZ, coordT));
+  proj_destroy(reproj);
+  proj_context_destroy(projCtx);
+  return out;
 }
 
 } // namespace util
