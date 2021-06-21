@@ -13,6 +13,15 @@
 namespace ugr {
 namespace util {
 
+#define DEG2RAD(ang) (ang * (M_PI / 180))
+#define RAD2DEG(ang) (ang * (180 / M_PI))
+
+/**
+ * Rotate a 2-vector by an angle theta
+ * @param vect the vector to rotate
+ * @param theta angle to rotate anticlockwise in radians.
+ * @return
+ */
 static Eigen::Vector2d rotate2D(const Eigen::Vector2d &vect, double theta) {
   if (theta < 0) {
     theta = (2 * M_PI) - theta;

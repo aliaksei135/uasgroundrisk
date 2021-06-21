@@ -5,6 +5,7 @@
  */
 
 #include "WeatherMap.h"
+#include "../../utils/VectorOperations.h"
 #include <cassert>
 #include <cmath>
 
@@ -21,8 +22,8 @@ void ugr::risk::WeatherMap::addConstantWind(const float speed,
   assert(speed >= 0);
   assert(direction >= 0);
   assert(direction <= 360);
-  auto velX = speed * cos(direction);
-  auto velY = speed * sin(direction);
+  auto velX = speed * cos(ugr::util::bearing2Angle(DEG2RAD(direction)));
+  auto velY = speed * sin(ugr::util::bearing2Angle(DEG2RAD(direction)));
   get("Wind VelX").setConstant(static_cast<const float &>(velX));
   get("Wind VelY").setConstant(static_cast<const float &>(velY));
 }
