@@ -12,7 +12,7 @@ using namespace ugr::util;
 
 class VectorOpsTests : public ::testing::Test {
 protected:
-  double theta = 45 * (M_PI / 180);
+  double theta = DEG2RAD(45);
   double resVal = sqrt(2) / 2;
 };
 
@@ -43,6 +43,14 @@ TEST_F(VectorOpsTests, FourthQuadRotationTest) {
   Eigen::Vector2d expected(resVal, -resVal);
   ASSERT_NEAR(out(0), expected(0), 0.001);
   ASSERT_NEAR(out(1), expected(1), 0.001);
+}
+
+TEST(AngleTests, Bearing2AngleTest) {
+  ASSERT_EQ(bearing2Angle(DEG2RAD(0)), DEG2RAD(90));
+  ASSERT_EQ(bearing2Angle(DEG2RAD(90)), DEG2RAD(0));
+  ASSERT_EQ(bearing2Angle(DEG2RAD(180)), DEG2RAD(270));
+  ASSERT_EQ(bearing2Angle(DEG2RAD(270)), DEG2RAD(180));
+  ASSERT_EQ(bearing2Angle(DEG2RAD(360)), DEG2RAD(90));
 }
 
 int main(int argc, char **argv) {
