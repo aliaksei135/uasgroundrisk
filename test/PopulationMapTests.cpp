@@ -54,8 +54,11 @@ TEST_F(PopulationMapTests, SingleLayerTest) {
   EXPECT_EQ(popMap.atPosition("Schools", testPos), 10);
 
   auto size = popMap.getSize();
-  plt::imshow(popMap.get("Schools").data(), size.y(), size.x(), 1);
+  PyObject *plot;
+  plt::imshow(popMap.get("Schools").data(), size.y(), size.x(), 1, {}, &plot);
+  plt::colorbar(plot);
   plt::save("single_layer_test.png");
+  plt::close();
 }
 
 TEST_F(PopulationMapTests, MultiLayerTest) {
@@ -81,15 +84,23 @@ TEST_F(PopulationMapTests, MultiLayerTest) {
   EXPECT_EQ(popMap.atPosition("Retail", testRetailPos), 20);
 
   auto size = popMap.getSize();
+  PyObject *plot;
   plt::title("Schools");
-  plt::imshow(popMap.get("Schools").data(), size.y(), size.x(), 1);
+  plt::imshow(popMap.get("Schools").data(), size.y(), size.x(), 1, {}, &plot);
+  plt::colorbar(plot);
   plt::save("multi_layer_school_test.png");
+  plt::close();
   plt::title("Retail");
-  plt::imshow(popMap.get("Retail").data(), size.y(), size.x(), 1);
+  plt::imshow(popMap.get("Retail").data(), size.y(), size.x(), 1, {}, &plot);
+  plt::colorbar(plot);
   plt::save("multi_layer_retail_test.png");
+  plt::close();
   plt::title("Combined");
-  plt::imshow(popMap.get("Population Density").data(), size.y(), size.x(), 1);
+  plt::imshow(popMap.get("Population Density").data(), size.y(), size.x(), 1,
+              {}, &plot);
+  plt::colorbar(plot);
   plt::save("multi_layer_combined_test.png");
+  plt::close();
 }
 
 int main(int argc, char **argv) {

@@ -30,4 +30,4 @@ ugr_add_test(populationMapTests PopulationMapTests.cpp)
 ugr_add_test(gridMapOSMConstructionTests GridMapOSMConstructionTests.cpp)
 ugr_add_test(aircraftModelTests AircraftDescentModelTests.cpp)
 ugr_add_test(riskMapTests RiskMapTests.cpp)
-
+ugr_add_test(vectorOpsTests VectorOpsTests.cpp)
