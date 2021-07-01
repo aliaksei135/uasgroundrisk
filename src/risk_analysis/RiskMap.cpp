@@ -16,9 +16,9 @@
 
 ugr::risk::RiskMap::RiskMap(
     ugr::mapping::PopulationMap &populationMap,
-    const ugr::risk::AircraftDescentModel aircraftDescent,
-    const ugr::risk::AircraftStateModel aircraftState,
-    const ugr::risk::WeatherMap weather)
+    const ugr::risk::AircraftDescentModel &aircraftDescent,
+    const ugr::risk::AircraftStateModel &aircraftState,
+    const ugr::risk::WeatherMap &weather)
     : descentModel(aircraftDescent), stateModel(aircraftState),
       weather(weather),
       GeospatialGridMap(populationMap.getBounds(),
@@ -91,7 +91,6 @@ void ugr::risk::RiskMap::generateImpactMap() {
     auto altitude = stateModel.getAltitude();
     auto velX = stateModel.velocity(0);
     auto velY = stateModel.velocity(1);
-    auto nSamples = 300;
     std::normal_distribution<double> altDist =
         std::normal_distribution<double>(altitude, 5);
     std::normal_distribution<double> velXDist =
@@ -108,49 +107,52 @@ void ugr::risk::RiskMap::generateImpactMap() {
     }
     assert(altitude > 0);
 
-    // Create common heading rotation
-    Eigen::Rotation2Dd headingRotation(
-        ugr::util::bearing2Angle(DEG2RAD(stateModel.getHeading())));
+    generatePointImpactMap(pos, velXVect, velYVect, altVect,
+                           stateModel.getHeading(), wind);
 
-    // Propagate samples through glide impact prediction
-    const auto glideImpactSamples = descentModel.glideImpact(altVect);
-    const auto ballisticImpactSamples =
-        descentModel.ballisticImpact(altVect, velXVect, velYVect);
-    ugr::util::Point2DVector glideImpactPoss(nSamples);
-    ugr::util::Point2DVector ballisticImpactPoss(nSamples);
-    for (size_t i = 0; i < nSamples; ++i) {
-      auto glideImpactSample = glideImpactSamples[i];
-      glideImpactPoss[i] =
-          (headingRotation *
-               Eigen::Vector2d(glideImpactSample.impactDistance, 0) +
-           (glideImpactSample.impactTime * wind)) +
-          pos;
-      auto ballisticImpactSample = ballisticImpactSamples[i];
-      ballisticImpactPoss[i] =
-          (headingRotation *
-               Eigen::Vector2d(ballisticImpactSample.impactDistance, 0) +
-           (ballisticImpactSample.impactTime * wind)) +
-          pos;
-    }
-
-    // Fit a distribution to the propagated samples
-    auto glideDistParams = ugr::util::Gaussian2DFit(glideImpactPoss);
-    auto ballisticDistParams = ugr::util::Gaussian2DFit(ballisticImpactPoss);
-
-    auto *pGlideImpactRisk = get("Glide Impact Risk").data();
-    auto *pBallisticImpactRisk = get("Ballistic Impact Risk").data();
-
-    int j = 0;
-    for (grid_map::GridMapIterator jter(*this); !jter.isPastEnd(); ++jter) {
-      grid_map::Position jPos;
-      getPosition(*jter, jPos);
-      // Write direct to pointer to skip bounds checking etc.
-      pGlideImpactRisk[j] +=
-          ugr::util::gaussian2D(pos.x(), pos.y(), glideDistParams);
-      pBallisticImpactRisk[j] +=
-          ugr::util::gaussian2D(pos.x(), pos.y(), ballisticDistParams);
-      ++j;
-    }
+//    // Create common heading rotation
+//    Eigen::Rotation2Dd headingRotation(
+//        ugr::util::bearing2Angle(DEG2RAD(stateModel.getHeading())));
+//
+//    // Propagate samples through glide impact prediction
+//    const auto glideImpactSamples = descentModel.glideImpact(altVect);
+//    const auto ballisticImpactSamples =
+//        descentModel.ballisticImpact(altVect, velXVect, velYVect);
+//    ugr::util::Point2DVector glideImpactPoss(nSamples);
+//    ugr::util::Point2DVector ballisticImpactPoss(nSamples);
+//    for (size_t i = 0; i < nSamples; ++i) {
+//      auto glideImpactSample = glideImpactSamples[i];
+//      glideImpactPoss[i] =
+//          (headingRotation *
+//               Eigen::Vector2d(glideImpactSample.impactDistance, 0) +
+//           (glideImpactSample.impactTime * wind)) +
+//          pos;
+//      auto ballisticImpactSample = ballisticImpactSamples[i];
+//      ballisticImpactPoss[i] =
+//          (headingRotation *
+//               Eigen::Vector2d(ballisticImpactSample.impactDistance, 0) +
+//           (ballisticImpactSample.impactTime * wind)) +
+//          pos;
+//    }
+//
+//    // Fit a distribution to the propagated samples
+//    auto glideDistParams = ugr::util::Gaussian2DFit(glideImpactPoss);
+//    auto ballisticDistParams = ugr::util::Gaussian2DFit(ballisticImpactPoss);
+//
+//    auto *pGlideImpactRisk = get("Glide Impact Risk").data();
+//    auto *pBallisticImpactRisk = get("Ballistic Impact Risk").data();
+//
+//    int j = 0;
+//    for (grid_map::GridMapIterator jter(*this); !jter.isPastEnd(); ++jter) {
+//      grid_map::Position jPos;
+//      getPosition(*jter, jPos);
+//      // Write direct to pointer to skip bounds checking etc.
+//      pGlideImpactRisk[j] +=
+//          ugr::util::gaussian2D(pos.x(), pos.y(), glideDistParams);
+//      pBallisticImpactRisk[j] +=
+//          ugr::util::gaussian2D(pos.x(), pos.y(), ballisticDistParams);
+//      ++j;
+//    }
 #ifndef NDEBUG
     std::cout << n << std::endl;
     ++n;
@@ -239,6 +241,55 @@ void ugr::risk::RiskMap::generateFatalityMap() {
   ballisticFatalityRisk = ballisticStrikeRiskMap * ballisticImpactProbs;
   initLayer("Ballistic Fatality Risk");
   get("Ballistic Fatality Risk") = ballisticFatalityRisk;
+}
+
+void ugr::risk::RiskMap::generatePointImpactMap(
+    const Eigen::Vector2d &pos, const std::vector<double> &velXVect,
+    const std::vector<double> &velYVect, const std::vector<double> &altVect,
+    double heading, const Eigen::Vector2d &wind) {
+  // Create common heading rotation
+  Eigen::Rotation2Dd headingRotation(
+      ugr::util::bearing2Angle(DEG2RAD(heading)));
+
+  // Propagate samples through glide impact prediction
+  const auto glideImpactSamples = descentModel.glideImpact(altVect);
+  const auto ballisticImpactSamples =
+      descentModel.ballisticImpact(altVect, velXVect, velYVect);
+  ugr::util::Point2DVector glideImpactPoss(nSamples);
+  ugr::util::Point2DVector ballisticImpactPoss(nSamples);
+  for (size_t i = 0; i < nSamples; ++i) {
+    auto glideImpactSample = glideImpactSamples[i];
+    glideImpactPoss[i] =
+        (headingRotation *
+             Eigen::Vector2d(glideImpactSample.impactDistance, 0) +
+         (glideImpactSample.impactTime * wind)) +
+        pos;
+    auto ballisticImpactSample = ballisticImpactSamples[i];
+    ballisticImpactPoss[i] =
+        (headingRotation *
+             Eigen::Vector2d(ballisticImpactSample.impactDistance, 0) +
+         (ballisticImpactSample.impactTime * wind)) +
+        pos;
+  }
+
+  // Fit a distribution to the propagated samples
+  auto glideDistParams = ugr::util::Gaussian2DFit(glideImpactPoss);
+  auto ballisticDistParams = ugr::util::Gaussian2DFit(ballisticImpactPoss);
+
+  auto *pGlideImpactRisk = get("Glide Impact Risk").data();
+  auto *pBallisticImpactRisk = get("Ballistic Impact Risk").data();
+
+  int j = 0;
+  for (grid_map::GridMapIterator jter(*this); !jter.isPastEnd(); ++jter) {
+    grid_map::Position jPos;
+    getPosition(*jter, jPos);
+    // Write direct to pointer to skip bounds checking etc.
+    pGlideImpactRisk[j] +=
+        ugr::util::gaussian2D(pos.x(), pos.y(), glideDistParams);
+    pBallisticImpactRisk[j] +=
+        ugr::util::gaussian2D(pos.x(), pos.y(), ballisticDistParams);
+    ++j;
+  }
 }
 
 double ugr::risk::RiskMap::lethalArea(double impactAngle, double uasWidth) {

@@ -24,8 +24,8 @@ public:
    * @param aircraft the aircraft model to use
    */
   RiskMap(ugr::mapping::PopulationMap &populationMap,
-          AircraftDescentModel aircraftDescent,
-          AircraftStateModel aircraftState, WeatherMap weather);
+          const AircraftDescentModel &aircraftDescent,
+          const AircraftStateModel &aircraftState, const WeatherMap &weather);
 
   /**
    * Generate the actual risk map(s). This takes a vector of RiskType enum
@@ -42,12 +42,19 @@ protected:
   AircraftDescentModel descentModel;
   AircraftStateModel stateModel;
   WeatherMap weather;
+  int nSamples = 300;
 
   void generateImpactMap();
 
   void generateStrikeMap();
 
   void generateFatalityMap();
+
+  void generatePointImpactMap(const Eigen::Vector2d &pos,
+                              const std::vector<double> &velX,
+                              const std::vector<double> &velY,
+                              const std::vector<double> &altitude,
+                              double heading, const Eigen::Vector2d &wind);
 
   void initLayer(const std::string &layerName);
 
