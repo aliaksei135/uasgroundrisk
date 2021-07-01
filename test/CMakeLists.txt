@@ -8,7 +8,7 @@ macro(ugr_add_test TESTNAME)
     add_executable(${TESTNAME} ${ARGN})
     # link the Google test infrastructure, mocking library, and a default main fuction to
     # the test executable.  Remove g_test_main if writing your own main function.
-    target_link_libraries(${TESTNAME} PUBLIC gtest gmock gtest_main Python3::NumPy Python3::Python ${PROJECT_NAME})
+    target_link_libraries(${TESTNAME} PUBLIC gmock_main gtest_main gtest gmock Python3::NumPy Python3::Python ${PROJECT_NAME})
     include_directories(osmium)
     include_directories(${CMAKE_CURRENT_LIST_DIR})
     # gtest_discover_tests replaces gtest_add_tests,

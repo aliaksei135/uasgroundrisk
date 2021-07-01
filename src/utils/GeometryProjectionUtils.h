@@ -69,7 +69,7 @@ static GEOSGeometry *reprojectPolygon(PJ *reprojector, const GEOSGeometry *in) {
 
   // Reproject each of the inner rings
   int nHoles = GEOSGetNumInteriorRings(in);
-  GEOSGeom innerGeometries[nHoles];
+  GEOSGeom *innerGeometries = new GEOSGeom[nHoles];
   for (int i = 0; i < nHoles; ++i) {
     auto innerGeom = GEOSGetInteriorRingN(in, i);
     auto innerGeomCoordSeq = GEOSGeom_getCoordSeq(innerGeom);
@@ -78,7 +78,9 @@ static GEOSGeometry *reprojectPolygon(PJ *reprojector, const GEOSGeometry *in) {
     innerGeometries[i] = GEOSGeom_createLinearRing(reprojGeom);
   }
 
-  return GEOSGeom_createPolygon(shell, innerGeometries, nHoles);
+  auto *poly = GEOSGeom_createPolygon(shell, innerGeometries, nHoles);
+  delete[] innerGeometries;
+  return poly;
 }
 
 /**

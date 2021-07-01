@@ -7,6 +7,7 @@
 #ifndef UASGROUNDRISK_SRC_MAP_GEN_GEOSPATIALGRIDMAP_H_
 #define UASGROUNDRISK_SRC_MAP_GEN_GEOSPATIALGRIDMAP_H_
 
+#include <array>
 #include <grid_map_core/GridMap.hpp>
 namespace ugr {
 namespace mapping {
