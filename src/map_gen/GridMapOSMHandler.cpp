@@ -21,7 +21,11 @@ GridMapOSMHandler::GridMapOSMHandler(
     : gridMap(gridMap), tagLayerMap(std::move(tagLayerMap)),
       densityTagMap(std::move(densityTagMap)), gridCRS(std::move(gridCRS)) {
   projCtx = proj_context_create();
-  proj_context_set_enable_network(projCtx, true);
+#ifdef PROJ_DATA_PATH
+  const char *projDataPaths[1];
+  projDataPaths[0] = PROJ_DATA_PATH;
+  proj_context_set_search_paths(projCtx, 1, projDataPaths);
+#endif
   reproj = proj_create_crs_to_crs(projCtx, "EPSG:4326", this->gridCRS.c_str(),
                                   nullptr);
   std::map<GEOSGeometry *, float> reprojectedPopulationGeomMap;

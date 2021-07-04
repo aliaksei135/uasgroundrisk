@@ -101,7 +101,11 @@ static PJ_COORD reprojectCoordinate(double coordX, double coordY,
                                     const char *sourceCRS = "EPSG:4326",
                                     const char *destCRS = "EPSG:3395") {
   auto *projCtx = proj_context_create();
-  proj_context_set_enable_network(projCtx, true);
+#ifdef PROJ_DATA_PATH
+  const char *projDataPaths[1];
+  projDataPaths[0] = PROJ_DATA_PATH;
+  proj_context_set_search_paths(projCtx, 1, projDataPaths);
+#endif
   auto *reproj = proj_create_crs_to_crs(projCtx, sourceCRS, destCRS, nullptr);
   PJ_COORD out =
       proj_trans(reproj, PJ_FWD, proj_coord(coordX, coordY, coordZ, coordT));

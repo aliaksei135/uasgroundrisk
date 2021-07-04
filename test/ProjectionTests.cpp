@@ -17,7 +17,11 @@ class ProjectionTests : public ::testing::Test {
 public:
   void SetUp() override {
     projCtx = proj_context_create();
-    proj_context_set_enable_network(projCtx, true);
+#ifdef PROJ_DATA_PATH
+    const char *projDataPaths[1];
+    projDataPaths[0] = PROJ_DATA_PATH;
+    proj_context_set_search_paths(projCtx, 1, projDataPaths);
+#endif
     reproj = proj_create_crs_to_crs(projCtx, "EPSG:4326", "EPSG:3395", nullptr);
   }
 
