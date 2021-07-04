@@ -26,7 +26,7 @@ endif ()
 ###########################################################
 # Static code analysis
 ###########################################################
-set(ENABLE_CPPCHECK OFF)
+set(ENABLE_CPPCHECK ON)
 set(ENABLE_CLANG_TIDY ON)
 
 if (ENABLE_CPPCHECK)
@@ -40,7 +40,7 @@ if (ENABLE_CPPCHECK)
                 --inconclusive
                 -i${CMAKE_CURRENT_BINARY_DIR}/_deps) #Do not check subprojects
     else ()
-        message(SEND_ERROR "cppcheck requested but executable not found")
+        message(WARNING "cppcheck requested but executable not found")
     endif ()
 endif ()
 
@@ -49,7 +49,7 @@ if (ENABLE_CLANG_TIDY)
     if (CLANGTIDY)
         set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY})
     else ()
-        message(SEND_ERROR "clang-tidy requested but executable not found")
+        message(WARNING "clang-tidy requested but executable not found")
     endif ()
 endif ()
 
