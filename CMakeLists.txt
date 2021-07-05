@@ -27,7 +27,11 @@ endif ()
 # Static code analysis
 ###########################################################
 set(ENABLE_CPPCHECK ON)
-set(ENABLE_CLANG_TIDY ON)
+if (MSVC)
+    set(ENABLE_CLANG_TIDY OFF)
+else ()
+    set(ENABLE_CLANG_TIDY ON)
+endif ()
 
 if (ENABLE_CPPCHECK)
     find_program(CPPCHECK cppcheck)
@@ -53,29 +57,6 @@ if (ENABLE_CLANG_TIDY)
     endif ()
 endif ()
 
-#############################################################
-# Docs
-#############################################################
-
-if (BUILD_DOC)
-    find_package(Doxygen)
-    if (DOXYGEN_FOUND)
-        SET(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in)
-        SET(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-
-        configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
-
-        add_custom_target(doc ALL
-                COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                COMMENT "Buidling Doxygen documentation"
-                VERBATIM)
-    else (DOXYGEN_FOUND)
-        message("No doxygen binary found on the system.")
-        SET(${BUILD_DOC} OFF)
-    endif ()
-endif ()
-
 ##############################################################
 # Packaging + Linking
 ##############################################################
@@ -86,7 +67,23 @@ set(UGR_SOURCES
 add_subdirectory(src)
 include_directories(include)
 
-add_library(${PROJECT_NAME} ${UGR_SOURCES})
+if (MSVC)
+    set(${PROJECT_NAME}_BUILD_SHARED OFF)
+else ()
+    set(${PROJECT_NAME}_BUILD_SHARED ON)
+endif ()
+
+if (${${PROJECT_NAME}_BUILD_SHARED})
+    add_library(${PROJECT_NAME} SHARED ${UGR_SOURCES})
+else ()
+    add_library(${PROJECT_NAME} STATIC ${UGR_SOURCES})
+endif ()
+
+if (MSVC)
+    # Prevent Windows.h overwriting min and max with macros
+    # Keep Math defines such as M_PI
+    target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX _USE_MATH_DEFINES)
+endif ()
 
 ##############################################################
 # Dependencies
