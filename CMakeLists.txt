@@ -91,55 +91,66 @@ add_library(${PROJECT_NAME} ${UGR_SOURCES})
 ##############################################################
 # Dependencies
 ##############################################################
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+
+if (NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+    file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.16.1/conan.cmake"
+            "${CMAKE_BINARY_DIR}/conan.cmake"
+            EXPECTED_HASH SHA256=396e16d0f5eabdc6a14afddbcfff62a54a7ee75c6da23f32f7a31bc85db23484
+            TLS_VERIFY ON)
+endif ()
+include(${CMAKE_BINARY_DIR}/conan.cmake)
+conan_cmake_run(CONANFILE conanfile.txt
+        BASIC_SETUP
+        BUILD missing)
+
 # Don't build tests for deps
-set(BUILD_TESTING OFF)
+set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 
 # Eigen required for lin alg
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-include_directories(${EIGEN3_INCLUDE_DIR})
+find_package(Eigen3 CONFIG REQUIRED)
+set(EIGEN3_FOUND TRUE) # This doesn't get set by the conan generated find macro
 
 # OpenSSL for cpr https requests
-find_package(OpenSSL REQUIRED)
+find_package(OpenSSL CONFIG REQUIRED)
 
-find_package(GEOS REQUIRED)
-target_include_directories(${PROJECT_NAME} PUBLIC ${GEOS_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} PUBLIC ${GEOS_LIBRARY})
+find_package(cpr CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PUBLIC cpr::cpr)
+
+find_package(proj CONFIG REQUIRED)
+# Get Data dir in conan package
+string(TOUPPER ${CMAKE_BUILD_TYPE} ${PROJECT_NAME}_UPPER_BUILD_TYPE)
+set(PROJ_DATA ${PROJ_proj_RES_DIRS_${${PROJECT_NAME}_UPPER_BUILD_TYPE}})
+# Set this to a compile def that is used when PROJ contexts are created
+target_compile_definitions(${PROJECT_NAME} PUBLIC PROJ_DATA_PATH="${PROJ_DATA}")
+target_link_libraries(${PROJECT_NAME} PUBLIC PROJ::PROJ)
+
+find_package(geos CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PUBLIC GEOS::GEOS)
 
 find_package(OpenMP REQUIRED)
 target_link_directories(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
 
-# Googletest
-find_package(GTest)
-find_package(GMock)
+find_package(Threads REQUIRED)
 
-##################################
-# PROJ
-# Geographical CRS transformations
-# License: MIT-Like
-##################################
-set(ENV{PROJ_NETWORK} ON)
+# GTest should be compiled with same flags as code under test
+# so using conan binaries causes strange errors
 FetchContent_Declare(
-        proj
-        GIT_REPOSITORY https://github.com/OSGeo/PROJ.git
-        GIT_TAG 8.0.0
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG release-1.11.0
 )
-FetchContent_GetProperties(proj)
-if (NOT proj_POPULATED)
-    FetchContent_Populate(proj)
-    set(ENABLE_CURL ON)
-    add_subdirectory(${proj_SOURCE_DIR})
-    include_directories(${proj_SOURCE_DIR}/include)
-    add_dependencies(proj generate_proj_db) # Download and configure PROJ transformation grid data
-endif ()
-target_link_libraries(${PROJECT_NAME} PUBLIC proj)
-
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
 
 ##################################
 # Osmium
 # OSM data libraries
 # License: BSLv1
 ##################################
-set(BUILD_TESTING OFF)
 FetchContent_Declare(
         osmium
         GIT_REPOSITORY https://github.com/osmcode/libosmium.git
@@ -149,40 +160,16 @@ if (NOT osmium_POPULATED)
     FetchContent_Populate(osmium)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${osmium_SOURCE_DIR}/cmake) # use osmium cmake scripts to find its deps
     include_directories(${osmium_SOURCE_DIR}/include)
-    target_link_libraries(${PROJECT_NAME} PRIVATE expat) # Link expat (built by osmium) for xml io
 endif ()
-find_package(BZip2 REQUIRED)
+
+find_package(EXPAT CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE expat::expat)
+
+find_package(BZip2 CONFIG)
 if (BZIP2_FOUND)
     target_link_libraries(${PROJECT_NAME} PRIVATE BZip2::BZip2)
     target_compile_definitions(${PROJECT_NAME} PRIVATE UGR_IO_COMPRESSION_BZ2)
 endif ()
-
-##################################
-# cpr
-# Like python requests
-# License: MIT
-##################################
-if (WIN32)
-    set(CPR_FORCE_WINSSL_BACKEND ON)
-else ()
-    set(CPR_FORCE_OPENSSL_BACKEND ON)
-endif ()
-
-# https://github.com/whoshuu/cpr/issues/445
-set(CURL_CA_FALLBACK ON)
-set(CPR_FORCE_USE_SYSTEM_CURL ON CACHE BOOL "" FORCE)
-
-set(CPR_USE_SYSTEM_GTEST ON)
-set(CPR_BUILD_TESTS OFF)
-
-FetchContent_Declare(
-        cpr
-        GIT_REPOSITORY https://github.com/whoshuu/cpr.git
-        GIT_TAG 1.6.0
-)
-FetchContent_MakeAvailable(cpr)
-target_link_libraries(${PROJECT_NAME} PRIVATE cpr::cpr)
-include_directories(${cpr_SOURCE_DIR}/include)
 
 ##################################
 # grid_map
@@ -190,7 +177,7 @@ include_directories(${cpr_SOURCE_DIR}/include)
 # License: BSD-3
 ##################################
 set(GRID_MAP_VERSION 1.6.4)
-set(CATKIN_ENABLE_TESTING OFF)
+set(CATKIN_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
         grid_map
@@ -204,7 +191,6 @@ if (NOT grid_map_POPULATED)
     include_directories(${grid_map_SOURCE_DIR}/grid_map_core/include)
 endif ()
 target_link_libraries(${PROJECT_NAME} PUBLIC grid_map_core)
-
 
 ##############################################################
 # Testing
@@ -235,7 +221,6 @@ if (${PROJECT_NAME}_BUILD_TESTS)
     # License: BSD-3
     ##################################
     # We do not really care about the performance of this as it is only for testing
-    find_package(Python REQUIRED)
     FetchContent_Declare(
             matplotlib_cpp
             GIT_REPOSITORY https://github.com/lava/matplotlib-cpp.git
