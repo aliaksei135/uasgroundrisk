@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeSharedSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug-WSL" CONFIG_NAME="Debug" TOOLCHAIN_NAME="WSL" ENABLED="true" />
+      <configuration PROFILE_NAME="Release-WSL" CONFIG_NAME="Release" TOOLCHAIN_NAME="WSL" ENABLED="true" />
+      <configuration PROFILE_NAME="Debug-VS2019" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Visual Studio 2019" GENERATION_OPTIONS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=C:\opt\ros\noetic\x64\share\catkin\cmake -G &quot;Ninja&quot;" ENABLED="true" />
+      <configuration PROFILE_NAME="Release-VS2019" CONFIG_NAME="Release" TOOLCHAIN_NAME="Visual Studio 2019" GENERATION_OPTIONS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=C:\opt\ros\noetic\x64\share\catkin\cmake -G &quot;Ninja&quot;" ENABLED="true" />
+    </configurations>
+  </component>
+</project>
