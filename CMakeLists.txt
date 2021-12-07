@@ -173,21 +173,21 @@ endif ()
 # Grid Map and Octomap interface
 # License: BSD-3
 ##################################
-set(GRID_MAP_VERSION 1.6.4)
-set(CATKIN_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
-
-FetchContent_Declare(
-        grid_map
-        GIT_REPOSITORY https://github.com/anybotics/grid_map.git
-        GIT_TAG ${GRID_MAP_VERSION}
-)
-FetchContent_GetProperties(grid_map)
-if (NOT grid_map_POPULATED)
-    FetchContent_Populate(grid_map)
-    add_subdirectory(${grid_map_SOURCE_DIR}/grid_map_core)
-    include_directories(${grid_map_SOURCE_DIR}/grid_map_core/include)
-endif ()
-target_link_libraries(${PROJECT_NAME} PUBLIC grid_map_core)
+#set(GRID_MAP_VERSION 1.6.4)
+#set(CATKIN_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+#
+#FetchContent_Declare(
+#        grid_map
+#        GIT_REPOSITORY https://github.com/anybotics/grid_map.git
+#        GIT_TAG ${GRID_MAP_VERSION}
+#)
+#FetchContent_GetProperties(grid_map)
+#if (NOT grid_map_POPULATED)
+#    FetchContent_Populate(grid_map)
+#    add_subdirectory(${grid_map_SOURCE_DIR}/grid_map_core)
+#    include_directories(${grid_map_SOURCE_DIR}/grid_map_core/include)
+#endif ()
+#target_link_libraries(${PROJECT_NAME} PUBLIC grid_map_core)
 
 ##############################################################
 # Testing
@@ -228,6 +228,25 @@ if (${PROJECT_NAME}_BUILD_TESTS)
         FetchContent_Populate(matplotlib_cpp)
         include_directories(${matplotlib_cpp_SOURCE_DIR})
     endif ()
+
+    ##################################
+    # matplot++
+    # C++ data viz
+    # License: MIT
+    ##################################
+    # We do not really care about the performance of this as it is only for testing
+    #set(USE_SYSTEM_CIMG ON)
+    #FetchContent_Declare(
+    #    matplotplusplus
+    #    GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus
+    #    GIT_TAG origin/master
+    #)
+    #FetchContent_GetProperties(matplotplusplus)
+    #if(NOT matplotplusplus_POPULATED)
+    #    FetchContent_Populate(matplotplusplus)
+    #    add_subdirectory(${matplotplusplus_SOURCE_DIR} ${matplotplusplus_BINARY_DIR} EXCLUDE_FROM_ALL)
+    #endif()
+    #target_link_libraries(${PROJECT_NAME} PUBLIC Matplot++::matplot)
 
     enable_testing()
     add_subdirectory(test)

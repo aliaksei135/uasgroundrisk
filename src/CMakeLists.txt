@@ -1,3 +1,4 @@
+add_subdirectory(gridmap)
 add_subdirectory(map_gen)
 add_subdirectory(pathfinding)
 add_subdirectory(risk_analysis)

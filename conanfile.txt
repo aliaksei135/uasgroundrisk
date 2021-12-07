@@ -1,10 +1,11 @@
 [requires]
-eigen/3.3.9
-openssl/1.1.1k
+eigen/[>3.3.9]
+openssl/3.0.0
 geos/3.9.1
-libcurl/7.75.0
+libcurl/[>7.75.0]
 proj/8.0.1
 cpr/1.6.2
+openblas/0.3.17
 
 expat/2.4.1
 bzip2/1.0.8
