@@ -36,6 +36,8 @@ ugr::risk::RiskMap::RiskMap(
 	const auto seed = static_cast<unsigned int>(
 		std::chrono::system_clock::now().time_since_epoch().count());
 	generator = std::default_random_engine(seed);
+
+	initRiskMapLayers();
 }
 
 ugr::gridmap::GridMap& ugr::risk::RiskMap::generateMap(
@@ -69,32 +71,38 @@ void ugr::risk::RiskMap::eval()
 	generateFatalityMap();
 }
 
-void ugr::risk::RiskMap::generateImpactMap()
+void ugr::risk::RiskMap::initRiskMapLayers()
 {
-	// Init all layers
 	initLayer("Glide Impact Risk");
+	initLayer("Glide Strike Risk");
+	initLayer("Glide Fatality Risk");
 	initLayer("Glide Impact Angle");
 	initLayer("Glide Impact Velocity");
 
 	initLayer("Ballistic Impact Risk");
+	initLayer("Ballistic Strike Risk");
+	initLayer("Ballistic Fatality Risk");
 	initLayer("Ballistic Impact Angle");
 	initLayer("Ballistic Impact Velocity");
+}
 
-#if NDEBUG
+void ugr::risk::RiskMap::generateImpactMap()
+{
+#ifndef NDEBUG
 	// Debug iteration counter
 	int n = 0;
 #endif
 
 	// Iterate through all cells in the grid map
 
-	// #pragma omp parallel for collapse(2)
+#pragma omp parallel for collapse(2)
 	for (int x = 0; x < sizeX; ++x)
 	{
 		for (int y = 0; y < sizeY; ++y)
 		{
 			// TODO: pacakge this as a CUDA function
 
-			addPointImpactMap({x, y});
+			addPointStrikeMap({x, y});
 
 #ifndef NDEBUG
 			std::cout << n << std::endl;
@@ -112,42 +120,64 @@ void ugr::risk::RiskMap::initLayer(const std::string& layerName)
 
 void ugr::risk::RiskMap::generateStrikeMap()
 {
-	const auto pixelArea = pow(getResolution(), 2);
-	const auto uasWidth = descentModel.width;
-	const Matrix& populationDensityMap = get("Population Density");
+#ifndef NDEBUG
+	// Debug iteration counter
+	int n = 0;
+#endif
 
-	const Size size = getSize();
-	const auto len1d = size.x() * size.y();
-
-	const Matrix& glideImpactRiskMap = get("Glide Impact Risk");
-	initLayer("Glide Lethal Area");
-	const Matrix& glideImpactAngles = get("Glide Impact Angle");
-	Matrix glideLethalAreas(getSize().x(), getSize().y());
-	auto* pGlideLethalAreas = glideLethalAreas.data();
-	for (size_t i = 0; i < len1d; ++i)
+	// Iterate through all cells in the grid map
+#pragma omp parallel for collapse(2)
+	for (int x = 0; x < sizeX; ++x)
 	{
-		pGlideLethalAreas[i] = lethalArea(glideImpactAngles(i), uasWidth);
+		for (int y = 0; y < sizeY; ++y)
+		{
+			// TODO: package this as a CUDA function
+
+			addPointStrikeMap({x, y});
+
+#ifndef NDEBUG
+			std::cout << n << std::endl;
+			++n;
+#endif
+		}
 	}
 
-	const Matrix unScaledGlideStrikeRisk = (glideImpactRiskMap * populationDensityMap * glideLethalAreas);
-	const Matrix glideStrikeRisk = unScaledGlideStrikeRisk / pixelArea;
-	initLayer("Glide Strike Risk");
-	get("Glide Strike Risk") = glideStrikeRisk;
-
-	const Matrix& ballisticImpactRiskMap = get("Ballistic Impact Risk");
-	initLayer("Ballistic Lethal Area");
-	const Matrix& ballisticImpactAngles = get("Ballistic Impact Angle");
-	Matrix ballisticLethalAreas(getSize().x(), getSize().y());
-	auto* pBallisticLethalAreas = ballisticLethalAreas.data();
-	for (size_t i = 0; i < len1d; ++i)
-	{
-		pBallisticLethalAreas[i] = lethalArea(ballisticImpactAngles(i), uasWidth);
-	}
-
-	const Matrix unscaledBallisticStrikeRisk = (ballisticImpactRiskMap * populationDensityMap * ballisticLethalAreas);
-	const Matrix ballisticStrikeRisk = unscaledBallisticStrikeRisk / pixelArea;
-	initLayer("Ballistic Strike Risk");
-	get("Ballistic Strike Risk") = ballisticStrikeRisk;
+	// const auto pixelArea = pow(getResolution(), 2);
+	// const auto uasWidth = descentModel.width;
+	// const Matrix& populationDensityMap = get("Population Density");
+	//
+	// const Size size = getSize();
+	// const auto len1d = size.x() * size.y();
+	//
+	// const Matrix& glideImpactRiskMap = get("Glide Impact Risk");
+	// initLayer("Glide Lethal Area");
+	// const Matrix& glideImpactAngles = get("Glide Impact Angle");
+	// Matrix glideLethalAreas(getSize().x(), getSize().y());
+	// auto* pGlideLethalAreas = glideLethalAreas.data();
+	// for (size_t i = 0; i < len1d; ++i)
+	// {
+	// 	pGlideLethalAreas[i] = lethalArea(glideImpactAngles(i), uasWidth);
+	// }
+	//
+	// const Matrix unScaledGlideStrikeRisk = (glideImpactRiskMap * populationDensityMap * glideLethalAreas);
+	// const Matrix glideStrikeRisk = unScaledGlideStrikeRisk / pixelArea;
+	// initLayer("Glide Strike Risk");
+	// get("Glide Strike Risk") = glideStrikeRisk;
+	//
+	// const Matrix& ballisticImpactRiskMap = get("Ballistic Impact Risk");
+	// initLayer("Ballistic Lethal Area");
+	// const Matrix& ballisticImpactAngles = get("Ballistic Impact Angle");
+	// Matrix ballisticLethalAreas(getSize().x(), getSize().y());
+	// auto* pBallisticLethalAreas = ballisticLethalAreas.data();
+	// for (size_t i = 0; i < len1d; ++i)
+	// {
+	// 	pBallisticLethalAreas[i] = lethalArea(ballisticImpactAngles(i), uasWidth);
+	// }
+	//
+	// const Matrix unscaledBallisticStrikeRisk = (ballisticImpactRiskMap * populationDensityMap * ballisticLethalAreas);
+	// const Matrix ballisticStrikeRisk = unscaledBallisticStrikeRisk / pixelArea;
+	// initLayer("Ballistic Strike Risk");
+	// get("Ballistic Strike Risk") = ballisticStrikeRisk;
 }
 
 void ugr::risk::RiskMap::generateFatalityMap()
@@ -188,7 +218,7 @@ void ugr::risk::RiskMap::generateFatalityMap()
 	get("Ballistic Fatality Risk") = ballisticFatalityRisk;
 }
 
-void ugr::risk::RiskMap::addPointImpactMap(const gridmap::Index& index)
+void ugr::risk::RiskMap::addPointStrikeMap(const gridmap::Index& index)
 {
 	const auto& windVelX = weather.at("Wind VelX", index);
 	const auto& windVelY = weather.at("Wind VelY", index);
@@ -216,7 +246,7 @@ void ugr::risk::RiskMap::addPointImpactMap(const gridmap::Index& index)
 		util::bearing2Angle(DEG2RAD(stateModel.getHeading())));
 
 	// Convert Index into vector for easy arithmetic later
-	Vector2d indexVec{index[0], index[1]};
+	const Vector2d indexVec{index[0], index[1]};
 
 	// Propagate samples through impact prediction
 	const auto& glideImpactSamples = descentModel.glideImpact(altVect);
@@ -224,45 +254,53 @@ void ugr::risk::RiskMap::addPointImpactMap(const gridmap::Index& index)
 		descentModel.ballisticImpact(altVect, velXVect, velYVect);
 	ugr::util::Point2DVector glideImpactPoss(nSamples);
 	ugr::util::Point2DVector ballisticImpactPoss(nSamples);
+
 	GridMapDataType glideAngle = 0;
 	GridMapDataType ballisticAngle = 0;
 	GridMapDataType glideVelocity = 0;
 	GridMapDataType ballisticVelocity = 0;
-#pragma omp parallel for
+
+#pragma omp parallel for reduction(+:ballisticAngle, ballisticVelocity, glideAngle, glideVelocity)
 	for (size_t i = 0; i < nSamples; ++i)
 	{
 		const auto& glideImpactSample = glideImpactSamples[i];
-		glideAngle += glideImpactSample.impactAngle;
-		glideVelocity += glideImpactSample.impactVelocity;
 		glideImpactPoss[i] =
 		((headingRotation *
 			Vector2d(glideImpactSample.impactDistance, 0) +
 			(glideImpactSample.impactTime * wind)) / xyRes) + indexVec;
 		const auto& ballisticImpactSample = ballisticImpactSamples[i];
-		ballisticAngle += ballisticImpactSample.impactAngle;
-		ballisticVelocity += ballisticImpactSample.impactVelocity;
+
 		ballisticImpactPoss[i] =
 		((headingRotation *
 			Vector2d(ballisticImpactSample.impactDistance, 0) +
 			(ballisticImpactSample.impactTime * wind)) / xyRes) + indexVec;
+
+		ballisticAngle += ballisticImpactSample.impactAngle;
+		ballisticVelocity += ballisticImpactSample.impactVelocity;
+		glideAngle += glideImpactSample.impactAngle;
+		glideVelocity += glideImpactSample.impactVelocity;
 	}
+
+	// Fit a distribution to the propagated samples
+	const auto glideDistParams = util::Gaussian2DFit(glideImpactPoss);
+	const auto ballisticDistParams = util::Gaussian2DFit(ballisticImpactPoss);
+
 	glideAngle /= nSamples;
 	ballisticAngle /= nSamples;
 	glideVelocity /= nSamples;
 	ballisticVelocity /= nSamples;
 
 
-	at("Glide Impact Angle", index) = glideAngle;
-	at("Glide Impact Velocity", index) = glideVelocity;
-	at("Ballistic Impact Angle", index) = ballisticAngle;
-	at("Ballistic Impact Velocity", index) = ballisticVelocity;
+#pragma omp critical
+	{
+		at("Glide Impact Angle", index) = glideAngle;
+		at("Glide Impact Velocity", index) = glideVelocity;
+		at("Ballistic Impact Angle", index) = ballisticAngle;
+		at("Ballistic Impact Velocity", index) = ballisticVelocity;
+	}
 
-	// Fit a distribution to the propagated samples
-	const auto glideDistParams = util::Gaussian2DFit(glideImpactPoss);
-	const auto ballisticDistParams = util::Gaussian2DFit(ballisticImpactPoss);
-
-	Matrix& glideImpactRisk = get("Glide Impact Risk");
-	Matrix& ballisticImpactRisk = get("Ballistic Impact Risk");
+	Matrix glideImpactRisk(sizeX, sizeY);
+	Matrix ballisticImpactRisk(sizeX, sizeY);
 
 	// auto& cellGlideImpactRisk = at("Glide Impact Risk", index);
 	// auto& cellBallisticImpactRisk = at("Ballistic Impact Risk", index);
@@ -271,7 +309,7 @@ void ugr::risk::RiskMap::addPointImpactMap(const gridmap::Index& index)
 
 
 	// Iterate through all cells in the grid map
-	// #pragma omp parallel for collapse(2)
+#pragma omp parallel for default(shared), collapse(2)
 	for (int x = 0; x < sizeX; ++x)
 	{
 		for (int y = 0; y < sizeY; ++y)
@@ -280,9 +318,60 @@ void ugr::risk::RiskMap::addPointImpactMap(const gridmap::Index& index)
 			ballisticImpactRisk(x, y) = util::gaussian2D(x, y, ballisticDistParams);
 		}
 	}
-	//
-	// at("Glide Impact Risk", index) = glideImpactRisk;
-	// at("Ballistic Impact Risk", index) = ballisticImpactRisk;
+
+	/* We have now evaluated the impact risk of the aircraft across the entire map*/
+	/* Now we move onto the strike risk analysis */
+
+	// These are used later
+	const GridMapDataType pixelArea = pow(getResolution(), 2);
+	const auto uasWidth = descentModel.width;
+	const Matrix& populationDensityMap = get("Population Density");
+
+
+	// Work out the lethal area of the aircraft when it crashes
+	const auto& glideLethalArea = lethalArea(glideAngle, uasWidth);
+	const auto& ballisticLethalArea = lethalArea(ballisticAngle, uasWidth);
+
+	// This is a matrix version of the lethal area calculation
+	// We only have a point to analyse, so this is reduced to a scalar
+	// initLayer("Glide Lethal Area");
+	// const Matrix& glideImpactAngles = get("Glide Impact Angle");
+	// Matrix glideLethalAreas(getSize().x(), getSize().y());
+	// auto* pGlideLethalAreas = glideLethalAreas.data();
+	// for (size_t i = 0; i < len1d; ++i)
+	// {
+	// 	pGlideLethalAreas[i] = lethalArea(glideImpactAngles(i), uasWidth);
+	// }
+
+	const Matrix glideStrikeRisk = (glideImpactRisk * populationDensityMap * glideLethalArea) / pixelArea;
+	// const Matrix glideStrikeRisk = unScaledGlideStrikeRisk / pixelArea;
+
+
+	// Work out the lethal area of the aircraft when it crashes
+
+
+	//Same as above
+	// initLayer("Ballistic Lethal Area");
+	// const Matrix& ballisticImpactAngles = get("Ballistic Impact Angle");
+	// Matrix ballisticLethalAreas(getSize().x(), getSize().y());
+	// auto* pBallisticLethalAreas = ballisticLethalAreas.data();
+	// for (size_t i = 0; i < len1d; ++i)
+	// {
+	// 	pBallisticLethalAreas[i] = lethalArea(ballisticImpactAngles(i), uasWidth);
+	// }
+
+	const Matrix ballisticStrikeRisk = (ballisticImpactRisk * populationDensityMap * ballisticLethalArea) / pixelArea;
+	// const Matrix ballisticStrikeRisk = unscaledBallisticStrikeRisk / pixelArea;
+
+
+	// As we are only generating the strike risk from a single point,
+	// this is summed across the entire strike risk map for that point
+	// and set as the scalar value for the point it was generated for
+#pragma omp critical
+	{
+		at("Glide Strike Risk", index) = glideStrikeRisk.sum();
+		at("Ballistic Strike Risk", index) = ballisticStrikeRisk.sum();
+	}
 }
 
 double ugr::risk::RiskMap::lethalArea(const double impactAngle, const double uasWidth)

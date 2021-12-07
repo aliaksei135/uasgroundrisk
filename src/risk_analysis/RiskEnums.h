@@ -9,7 +9,7 @@
 
 namespace ugr {
 namespace risk {
-enum RiskType {
+enum class RiskType {
   IMPACT,  /// The risk of UAS impact with the ground
   STRIKE,  /// The risk of UAS striking a person
   FATALITY /// The risk of UAS causing a fatality

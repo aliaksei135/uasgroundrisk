@@ -55,13 +55,15 @@ namespace ugr
 			int nSamples = 300;
 			std::default_random_engine generator;
 
+			void initRiskMapLayers();
+
 			void generateImpactMap();
 
 			void generateStrikeMap();
 
 			void generateFatalityMap();
 
-			void addPointImpactMap(const gridmap::Index& index);
+			void addPointStrikeMap(const gridmap::Index& index);
 
 			void initLayer(const std::string& layerName);
 

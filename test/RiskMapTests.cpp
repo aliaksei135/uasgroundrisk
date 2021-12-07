@@ -89,6 +89,43 @@ TEST_F(RiskMapTests, UniformImpactRiskMapTest)
 	}
 }
 
+TEST_F(RiskMapTests, Gaussian2DVectorisedFuncTest)
+{
+	ugr::util::Gaussian2DParamVector param;
+	param << 1, 20, 20, 4, 4, 0, 0;
+	const auto pdf = ugr::util::gaussian2D(20, 20, param);
+
+	constexpr int xSize=40, ySize=40;
+	
+	VectorXd xs(xSize*ySize), ys(xSize*ySize);
+	
+	// VectorXd yRep(ySize);
+	// yRep = Eigen::VectorXd::LinSpaced(ySize, 0,ySize-1);
+
+	int i=0;
+	for (int x = 0; x < xSize; ++x)
+	{
+		for (int y = 0; y < ySize; ++y)
+		{
+			xs[i] = x;
+			ys[i] = y;
+			++i;
+			// out(x, y) = ugr::util::gaussian2D(x, y, param);
+		}
+	}
+
+	Eigen::Matrix<double, 40, 40> out = ugr::util::gaussian2D(xs, ys, param).reshaped(xSize, ySize);
+
+	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+
+	std::ofstream file("gaussian_vect_test.csv");
+	if (file.is_open())
+	{
+		file << out.format(CSVFormat);
+		file.close();
+	}
+}
+
 TEST_F(RiskMapTests, Gaussian2DFuncTest)
 {
 	ugr::util::Gaussian2DParamVector param;

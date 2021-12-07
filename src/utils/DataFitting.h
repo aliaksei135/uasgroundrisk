@@ -19,7 +19,7 @@ namespace ugr
 {
 	namespace util
 	{
-		typedef Eigen::Matrix<double, 7, 1> Gaussian2DParamVector;
+		typedef Eigen::Vector<double, 7> Gaussian2DParamVector;
 		typedef std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d>>
 		Point2DVector;
 
@@ -39,7 +39,7 @@ namespace ugr
 		 * @param p parameter array of size 7
 		 * @return value of distribution at x,y
 		 */
-		static double gaussian2D(const double x, const double y, Gaussian2DParamVector p)
+		static double gaussian2D(const double x, const double y, const Gaussian2DParamVector& p)
 		{
 			return p[0] *
 				exp(-0.5 *
@@ -48,6 +48,17 @@ namespace ugr
 						pow((x - p[1]) * sin(p[6]) - (y - p[2]) * cos(p[6]), 2) /
 						pow(p[4], 2))) +
 				p[5];
+		}
+
+		/**
+		 * A vectorised version of above
+		*/
+		static Eigen::VectorXd gaussian2D(const Eigen::VectorXd& x, Eigen::VectorXd& y, const Gaussian2DParamVector& p)
+		{
+			return p[0] * Eigen::exp(-0.5 *
+				(Eigen::pow((x.array() - p[1]) * cos(p[6]) - (y.array() - p[2]) * sin(p[6]), 2) / (p[3] * p[3]) +
+					Eigen::pow((x.array() - p[1]) * sin(p[6]) - (y.array() - p[2]) * cos(p[6]), 2) / (p[4] * p[4]))
+			) + p[5];
 		}
 	} // namespace util
 	namespace internal
