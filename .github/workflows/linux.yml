@@ -31,6 +31,9 @@ jobs:
 
       - uses: actions/checkout@v2
       
+      - name: Install Python plotting dependencies
+        run: python3 -m pip install -U numpy matplotlib
+      
       - name: Get Conan
         uses: turtlebrowser/get-conan@main
       
