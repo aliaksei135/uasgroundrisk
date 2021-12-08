@@ -19,7 +19,7 @@ public:
 
   explicit operator OSMOverpassQuery() const { return query; }
 
-  OSMOverpassQuery build() { return query; }
+  OSMOverpassQuery build() const { return query; }
 
   OSMOverpassQueryBuilder &withNodeTag(const OSMTag &tag);
   OSMOverpassQueryBuilder &withNodeTag(const std::string &key,

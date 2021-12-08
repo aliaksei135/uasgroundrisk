@@ -29,7 +29,7 @@ OSMOverpassQuery::create(const Coordinates& southWestCoord,
 	return OSMOverpassQueryBuilder{southWestCoord, northEastCoord};
 }
 
-std::string OSMOverpassQuery::rawResponse(short int maxRetries) const
+std::string OSMOverpassQuery::rawResponse(const short int maxRetries) const
 {
 	cpr::Url url = getOverpassEndpoint();
 	cpr::Body params = cpr::Body{buildQueryString()};
@@ -74,12 +74,11 @@ cpr::Url OSMOverpassQuery::getOverpassEndpoint()
 	//	return cpr::Url{"https://lz4.overpass-api.de/api/interpreter"};
 }
 
-std::string OSMOverpassQuery::buildQueryString(bool xmlQuery) const
+std::string OSMOverpassQuery::buildQueryString(const bool xmlQuery) const
 {
 	if (xmlQuery)
 		return buildQueryStringXML();
-	else
-		return buildQueryStringQL();
+	return buildQueryStringQL();
 }
 
 osmium::memory::Buffer OSMOverpassQuery::rawBuffer() const
@@ -134,7 +133,7 @@ std::string OSMOverpassQuery::buildQueryStringXML() const
 	// LIFO co
 	std::stack<std::string> closingTags;
 
-	std::string bboxQuery = "<bbox-query s=\"" +
+	const std::string bboxQuery = "<bbox-query s=\"" +
 		std::to_string(southWestCoord.y) + "\" n=\"" +
 		std::to_string(northEastCoord.y) + "\" w=\"" +
 		std::to_string(southWestCoord.x) + "\" e=\"" +
