@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(uasgroundrisk
         DESCRIPTION "Ground Risk calculation for Unmanned Aerial Systems"
         VERSION 0.1
-        LANGUAGES C CXX)
+        LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(PYTHON_VERSION 3)
@@ -40,9 +40,10 @@ if (ENABLE_CPPCHECK)
                 ${CPPCHECK}
                 --suppressions-list=${CMAKE_CURRENT_SOURCE_DIR}/.cppcheck-suppressions
                 --suppress=missingIncludeSystem
+                --suppress=unmatchedSuppression
+                --cppcheck-build-dir=${CMAKE_BINARY_DIR}/cppcheck
                 --enable=all
-                --inconclusive
-                -i${CMAKE_CURRENT_BINARY_DIR}/_deps) #Do not check subprojects
+                --inconclusive)
     else ()
         message(WARNING "cppcheck requested but executable not found")
     endif ()
