@@ -7,8 +7,9 @@
 #include "../src/utils/GeometryProjectionUtils.h"
 #include <../src/map_gen/PopulationMap.h>
 #include <Eigen/Dense>
-#include <gtest/gtest.h>
 // #include <matplotlibcpp.h>
+#include <gtest/gtest.h>
+
 
 using namespace ugr::mapping;
 // namespace plt = matplotlibcpp;
@@ -31,13 +32,13 @@ TEST_F(PopulationMapTests, EmptyMapTest)
 	ASSERT_EQ(popMap.getLayers().size(), 1);
 
 	auto size = popMap.getSize();
-	ASSERT_EQ(size.x(), 601);
-	ASSERT_EQ(size.y(), 398);
+	ASSERT_EQ(size.y(), 601);
+	ASSERT_EQ(size.x(), 398);
 
-	Position outPos(-1.338997, 50.933289);
+	const Position outPos(-1.338997, 50.933289);
 	ASSERT_FALSE(popMap.isInBounds(popMap.world2Local(outPos)));
 
-	Position inPos(-1.404258, 50.922982);
+	const Position inPos(-1.404258, 50.922982);
 	ASSERT_TRUE(popMap.isInBounds(popMap.world2Local(inPos)));
 }
 
@@ -66,7 +67,8 @@ TEST_F(PopulationMapTests, SingleLayerTest)
 	}
 
 	// PyObject* plot;
-	// plt::imshow(popMap.get("Schools").data(), size.y(), size.x(), 1, {}, &plot);
+	// plt::imshow(popMap.get("Schools").data(), size.y(), size.x(), 1, {},
+	//             &plot);
 	// plt::colorbar(plot);
 	// plt::save("single_layer_test.png");
 	// plt::close();
@@ -96,9 +98,8 @@ TEST_F(PopulationMapTests, MultiLayerTest)
 	auto size = popMap.getSize();
 	// PyObject* plot;
 	// plt::title("Schools");
-	// plt::imshow(popMap.get("Schools").data(), size.y(), size.x(), 1, {}, &plot);
-	// plt::colorbar(plot);
-	// plt::save("multi_layer_school_test.png");
+	// plt::imshow(popMap.get("Schools").data(), size.y(), size.x(), 1, {},
+	// &plot); plt::colorbar(plot); plt::save("multi_layer_school_test.png");
 	// plt::close();
 	// plt::title("Retail");
 	// plt::imshow(popMap.get("Retail").data(), size.y(), size.x(), 1, {}, &plot);

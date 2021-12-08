@@ -114,7 +114,7 @@ TEST_F(RiskMapTests, Gaussian2DVectorisedFuncTest)
 		}
 	}
 
-	Eigen::Matrix<double, 40, 40> out = ugr::util::gaussian2D(xs, ys, param).reshaped(xSize, ySize);
+	const MatrixXd out = ugr::util::gaussian2D(xs, ys, param).reshaped(xSize, ySize);
 
 	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
 
