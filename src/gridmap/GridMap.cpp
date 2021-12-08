@@ -95,7 +95,7 @@ bool GridMap::isInBounds(const Index& localCoord) const
 {
 	if (geometrySet)
 	{
-		return localCoord(0) >= 0 && localCoord(1) >= 0 && localCoord(0) < sizeY && localCoord(1) < sizeX;
+		return localCoord(0) >= 0 && localCoord(1) >= 0 && localCoord(0) < sizeX && localCoord(1) < sizeY;
 	}
 	throw std::out_of_range("GridMap Geometry not set");
 }

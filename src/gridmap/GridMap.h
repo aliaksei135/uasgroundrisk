@@ -127,7 +127,7 @@ namespace ugr
 
 		protected:
 			bool geometrySet = false;
-			unsigned int sizeX, sizeY;
+			int sizeX, sizeY;
 
 			std::unordered_map<std::string, Matrix> layers;
 		};
