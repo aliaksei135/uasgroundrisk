@@ -41,14 +41,14 @@ ugr::mapping::GeospatialGridMap::~GeospatialGridMap()
 }
 
 GridMapDataType ugr::mapping::GeospatialGridMap::atPosition(const std::string& layerName, const double lon,
-                                                            const double lat) const
+															const double lat) const
 {
 	const auto localIdx = world2Local(lon, lat);
 	return layers.at(layerName)(localIdx[0], localIdx[1]);
 }
 
 GridMapDataType& ugr::mapping::GeospatialGridMap::atPosition(const std::string& layerName, const double lon,
-                                                             const double lat)
+															 const double lat)
 {
 	const auto localIdx = world2Local(lon, lat);
 	return layers.at(layerName)(localIdx[0], localIdx[1]);
@@ -72,16 +72,18 @@ ugr::gridmap::Index ugr::mapping::GeospatialGridMap::world2Local(const Position&
 ugr::gridmap::Index ugr::mapping::GeospatialGridMap::world2Local(const double lon, const double lat) const
 {
 	const auto reprojCoord = proj_trans(reproj, PJ_FWD, {lat, lon});
-	return {(reprojCoord.enu.e - projectionOrigin[0]) / xyRes, (reprojCoord.enu.n - projectionOrigin[1]) / xyRes};
+	return {
+		sizeX - ((reprojCoord.enu.n - projectionOrigin[1]) / xyRes), (reprojCoord.enu.e - projectionOrigin[0]) / xyRes
+	};
 }
 
 Position ugr::mapping::GeospatialGridMap::local2World(const int x, const int y) const
 {
 	const auto reprojCoord = proj_trans(reproj, PJ_INV, {
-		                                    static_cast<double>(x) * xyRes + projectionOrigin[0],
-		                                    static_cast<double>(y) * xyRes + projectionOrigin[1]
-	                                    });
-	return {reprojCoord.enu.e, reprojCoord.enu.n};
+											static_cast<double>(x) * xyRes + projectionOrigin[0],
+											static_cast<double>(y) * xyRes + projectionOrigin[1]
+										});
+	return {sizeX - reprojCoord.enu.n, reprojCoord.enu.e};
 }
 
 Position ugr::mapping::GeospatialGridMap::local2World(const gridmap::Index& localCoord) const
@@ -102,5 +104,7 @@ void ugr::mapping::GeospatialGridMap::setBounds(
 	const int xLength = static_cast<int>(dx / static_cast<float>(resolution));
 	const int yLength = static_cast<int>(dy / static_cast<float>(resolution));
 
-	setGeometry(xLength, yLength);
+	// x,y are swapped here to match the expected orientation of the matrix if plotted.
+	// Eigen uses row,column indexing, which would map to lat, lon not the other way around
+	setGeometry(yLength, xLength);
 }
