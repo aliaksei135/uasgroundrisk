@@ -4,13 +4,6 @@
 #include "../map_gen/GeospatialGridMap.h"
 #include "../utils/GeometryOperations.h"
 
-namespace ugr
-{
-	namespace mapping
-	{
-		class GeospatialGridMap;
-	}
-}
 
 namespace ugr
 {
@@ -32,12 +25,10 @@ namespace ugr
 
 			SubmapIterator& operator ++()
 			{
-				bool pastX = (currIndex[0] + 1) < gridmapSize[0];
-				bool pastY = (currIndex[1] + 1) < gridmapSize[1];
-				const auto outsideSubmap = (currIndex - start) > submapSize;
-				pastX = pastX & outsideSubmap[0];
-				pastY = pastY & outsideSubmap[1];
-				if (pastX)
+				const auto outsideGlobalMap = currIndex + 1 >= gridmapSize;
+				const auto outsideSubmap = currIndex - start > submapSize;
+				const auto outside = outsideGlobalMap || outsideSubmap;
+				if (outside[0])
 				{
 					currIndex[0] = 0;
 					++currIndex[1];
@@ -46,7 +37,7 @@ namespace ugr
 				{
 					++currIndex[0];
 				}
-				if (pastY)
+				if (outside[1])
 				{
 					_isPastEnd = true;
 				}
