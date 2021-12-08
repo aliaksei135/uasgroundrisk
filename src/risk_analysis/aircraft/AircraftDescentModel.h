@@ -79,9 +79,9 @@ public:
    * A vectorised version of ballisticImpact. All inputs must be of a common
    * length
    */
-  std::vector<ImpactDataStruct> ballisticImpact(std::vector<double> altitude,
-                                                std::vector<double> velX,
-                                                std::vector<double> velY) const;
+  std::vector<ImpactDataStruct> ballisticImpact(const std::vector<double>& altitude,
+                                                const std::vector<double>& velX,
+                                                const std::vector<double>& velY) const;
 
 protected:
   double c;
