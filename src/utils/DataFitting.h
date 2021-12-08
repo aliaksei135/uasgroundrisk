@@ -53,7 +53,8 @@ namespace ugr
 		/**
 		 * A vectorised version of above
 		*/
-		static Eigen::VectorXd gaussian2D(const Eigen::VectorXd& x, Eigen::VectorXd& y, const Gaussian2DParamVector& p)
+		template<typename Derived>
+		static Eigen::Vector<Derived, Dynamic> gaussian2D(const Eigen::Vector<Derived, Dynamic>& x, Eigen::Vector<Derived, Dynamic>& y, const Gaussian2DParamVector& p)
 		{
 			return p[0] * Eigen::exp(-0.5 *
 				(Eigen::pow((x.array() - p[1]) * cos(p[6]) - (y.array() - p[2]) * sin(p[6]), 2) / (p[3] * p[3]) +
