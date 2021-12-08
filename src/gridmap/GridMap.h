@@ -2,6 +2,7 @@
 #define GRIDMAP_H
 #include <unordered_map>
 #include <Eigen/Dense>
+#include <vector>
 #include "TypeDefs.h"
 
 
