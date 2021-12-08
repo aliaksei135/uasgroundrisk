@@ -39,8 +39,8 @@ public:
 	 */
 	GridMapOSMHandler(GeospatialGridMap* gridMap,
 	                  std::map<OSMTag, std::string> tagLayerMap,
-	                  const std::map<GEOSGeometry*, float>& densityGeometryMap,
-	                  std::map<OSMTag, float> densityTagMap,
+	                  const std::map<GEOSGeometry*, GridMapDataType>& densityGeometryMap,
+	                  std::map<OSMTag, GridMapDataType> densityTagMap,
 	                  std::string gridCRS = "EPSG:3395");
 	~GridMapOSMHandler();
 
@@ -52,8 +52,8 @@ protected:
 
 	GeospatialGridMap* gridMap;
 	std::map<OSMTag, std::string> tagLayerMap;
-	std::map<OSMTag, float> densityTagMap;
-	std::map<GEOSGeometry*, float> densityGeometryMap;
+	std::map<OSMTag, GridMapDataType> densityTagMap;
+	std::map<GEOSGeometry*, GridMapDataType> densityGeometryMap;
 
 	std::string gridCRS;
 };

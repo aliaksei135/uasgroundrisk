@@ -18,8 +18,8 @@ using namespace ugr::gridmap;
 
 GridMapOSMHandler::GridMapOSMHandler(
 	GeospatialGridMap* const gridMap, std::map<OSMTag, std::string> tagLayerMap,
-	const std::map<GEOSGeometry*, float>& densityGeometryMap,
-	std::map<OSMTag, float> densityTagMap, std::string gridCRS)
+	const std::map<GEOSGeometry*, GridMapDataType>& densityGeometryMap,
+	std::map<OSMTag, GridMapDataType> densityTagMap, std::string gridCRS)
 	: gridMap(gridMap), tagLayerMap(std::move(tagLayerMap)),
 	  densityTagMap(std::move(densityTagMap)), gridCRS(std::move(gridCRS))
 {
@@ -64,6 +64,10 @@ void GridMapOSMHandler::way(const osmium::Way& way) const noexcept
 		poly.emplace_back(Position(n.lon(), n.lat()));
 	}
 
+	// Check if there is any geometry defining density
+	// We do this outside the loop as it does not change within the scope of the loop
+	const bool emptyDensityGeom = densityGeometryMap.empty();
+
 	// Iterate through the tags associated with the way.
 	// This is usually a single relevant tag that is mapped to a grid map layer,
 	// however a single geometry can appear on multiple layer
@@ -74,6 +78,15 @@ void GridMapOSMHandler::way(const osmium::Way& way) const noexcept
 		auto tagLayerIter = tagLayerMap.find(fullTag);
 		if (tagLayerIter != tagLayerMap.end())
 		{
+			// In case the population hasn't been found within predefined geometries
+			// Test if it is a uniform density by tag
+			GridMapDataType fallbackDensity = 0;
+			auto densityIter = densityTagMap.find(fullTag);
+			if (densityIter != densityTagMap.end())
+			{
+				fallbackDensity = densityIter->second;
+			}
+
 			// If we find a relevant tag, we can iterate the geometry using grid map'
 			// polygon iterator
 			std::string layerName = tagLayerIter->second;
@@ -82,7 +95,7 @@ void GridMapOSMHandler::way(const osmium::Way& way) const noexcept
 			{
 				const auto gridMapPoint = (*iter);
 
-				if (!densityGeometryMap.empty())
+				if (!emptyDensityGeom)
 				{
 					// Each point must be converted to a GEOS geometry for the geometric
 					// predicates to work
@@ -91,14 +104,13 @@ void GridMapOSMHandler::way(const osmium::Way& way) const noexcept
 
 					// Iterate through population geometries to find the which one this
 					// point is within
-					for (auto& populationGeomPair : densityGeometryMap)
+					for (const auto& populationGeomPair : densityGeometryMap)
 					{
 						if (GEOSWithin(p, populationGeomPair.first) == 1)
 						{
 							// Set the grid map at this point to the population density
 							// estimate in this geometry
-							gridMap->at(layerName, gridMapPoint) = static_cast<GridMapDataType>(populationGeomPair.
-								second);
+							gridMap->at(layerName, gridMapPoint) = populationGeomPair.second;
 							break;
 						}
 					}
@@ -106,15 +118,10 @@ void GridMapOSMHandler::way(const osmium::Way& way) const noexcept
 					GEOSGeom_destroy(p); // GEOS free
 				}
 
-				// Population hasn't been found within predefined geometries
-				// Test if it is a uniform density by tag
-				auto densityIter = densityTagMap.find(fullTag);
-				if (densityIter != densityTagMap.end())
-				{
-					// Set the grid map at this point to the population density estimate
-					// in this geometry
-					gridMap->at(layerName, gridMapPoint) = static_cast<GridMapDataType>(densityIter->second);
-				}
+				//If we haven't broken out the loop by here then use the fallback density
+				// Set the grid map at this point to the population density estimate
+				// in this geometry
+				gridMap->at(layerName, gridMapPoint) = fallbackDensity;
 			}
 		}
 	}
