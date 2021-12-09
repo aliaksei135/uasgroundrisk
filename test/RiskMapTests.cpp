@@ -165,7 +165,7 @@ TEST_F(RiskMapTests, Gaussian2DFitTest)
 	std::vector<double> matrixEntries;
 
 	char path[256];
-	_getcwd(path, 256);
+	getcwd(path, 256);
 	std::cout << path << "\n";
 
 	// in this object we store the data from the matrix
