@@ -93,16 +93,12 @@ TEST_F(RiskMapTests, Gaussian2DVectorisedFuncTest)
 {
 	ugr::util::Gaussian2DParamVector param;
 	param << 1, 20, 20, 4, 4, 0, 0;
-	const auto pdf = ugr::util::gaussian2D(20, 20, param);
 
-	constexpr int xSize=40, ySize=40;
-	
-	VectorXd xs(xSize*ySize), ys(xSize*ySize);
-	
-	// VectorXd yRep(ySize);
-	// yRep = Eigen::VectorXd::LinSpaced(ySize, 0,ySize-1);
+	constexpr int xSize = 40, ySize = 40;
 
-	int i=0;
+	VectorXd xs(xSize * ySize), ys(xSize * ySize);
+
+	int i = 0;
 	for (int x = 0; x < xSize; ++x)
 	{
 		for (int y = 0; y < ySize; ++y)
@@ -110,15 +106,21 @@ TEST_F(RiskMapTests, Gaussian2DVectorisedFuncTest)
 			xs[i] = x;
 			ys[i] = y;
 			++i;
-			// out(x, y) = ugr::util::gaussian2D(x, y, param);
 		}
 	}
 
 	const MatrixXd out = ugr::util::gaussian2D(xs, ys, param).reshaped(xSize, ySize);
 
+	// Assert that the max is where we expect
+	double mx, my;
+	const double mval = out.maxCoeff(&mx, &my);
+	ASSERT_EQ(mx, 20);
+	ASSERT_EQ(my, 20);
+	ASSERT_NEAR(mval, 1, 1e-2);
+
 	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
 
-	std::ofstream file("gaussian_vect_test.csv");
+	std::ofstream file("gaussian_vectorised_test.csv");
 	if (file.is_open())
 	{
 		file << out.format(CSVFormat);
@@ -130,7 +132,6 @@ TEST_F(RiskMapTests, Gaussian2DFuncTest)
 {
 	ugr::util::Gaussian2DParamVector param;
 	param << 1, 20, 20, 4, 4, 0, 0;
-	const auto pdf = ugr::util::gaussian2D(20, 20, param);
 
 	Eigen::Matrix<double, 40, 40> out;
 	for (int x = 0; x < 40; ++x)
@@ -141,9 +142,16 @@ TEST_F(RiskMapTests, Gaussian2DFuncTest)
 		}
 	}
 
-	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+	// Assert that the max is where we expect
+	double mx, my;
+	const double mval = out.maxCoeff(&mx, &my);
+	ASSERT_EQ(mx, 20);
+	ASSERT_EQ(my, 20);
+	ASSERT_NEAR(mval, 1, 1e-2);
 
-	std::ofstream file("gaussian_test.csv");
+	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+	
+	std::ofstream file("gaussian_scalar_test.csv");
 	if (file.is_open())
 	{
 		file << out.format(CSVFormat);
@@ -156,8 +164,12 @@ TEST_F(RiskMapTests, Gaussian2DFitTest)
 {
 	std::vector<double> matrixEntries;
 
+	char path[256];
+	_getcwd(path, 256);
+	std::cout << path << "\n";
+
 	// in this object we store the data from the matrix
-	std::ifstream matrixDataFile("E:/rvs_test.csv");
+	std::ifstream matrixDataFile("test/data/rvs_test.csv");
 	// this variable is used to store the row of the matrix that contains commas 
 	std::string matrixRowString;
 	// this variable is used to store the matrix entry;
@@ -165,13 +177,13 @@ TEST_F(RiskMapTests, Gaussian2DFitTest)
 	// this variable is used to track the number of rows
 	int matrixRowNumber = 0;
 	while (getline(matrixDataFile, matrixRowString))
-		// here we read a row by row of matrixDataFile and store every line into the string variable matrixRowString
+	// here we read a row by row of matrixDataFile and store every line into the string variable matrixRowString
 	{
 		std::stringstream matrixRowStringStream(matrixRowString);
 		//convert matrixRowString that is a string to a stream variable.
 
 		while (getline(matrixRowStringStream, matrixEntry, ','))
-			// here we read pieces of the stream matrixRowStringStream until every comma, and store the resulting character into the matrixEntry
+		// here we read pieces of the stream matrixRowStringStream until every comma, and store the resulting character into the matrixEntry
 		{
 			matrixEntries.push_back(stod(matrixEntry));
 			//here we convert the string to double and fill in the row vector storing all the matrix entries
@@ -192,6 +204,19 @@ TEST_F(RiskMapTests, Gaussian2DFitTest)
 	}
 
 	const auto param = ugr::util::Gaussian2DFit(data);
+
+	ASSERT_NEAR(param[0], 0, 1e-16);
+	//Assert means
+	ASSERT_NEAR(param[1], 50, 1);
+	ASSERT_NEAR(param[2], 50, 1);
+	//Assert std dev
+	ASSERT_NEAR(param[3], 1, 0.1);
+	ASSERT_NEAR(param[4], 1, 0.1);
+	//Assert no offset
+	ASSERT_NEAR(param[5], 0, 1e-16);
+	//Assert rotation angle
+	ASSERT_NEAR(param[6], 1, 1e-2);
+
 	Eigen::Matrix<double, 100, 100> out;
 	out.setZero();
 	for (int x = 0; x < out.cols(); ++x)
@@ -202,9 +227,15 @@ TEST_F(RiskMapTests, Gaussian2DFitTest)
 		}
 	}
 
+	// Assert that the max is where we expect
+	double mx, my;
+	out.maxCoeff(&mx, &my);
+	ASSERT_EQ(mx, 50);
+	ASSERT_EQ(my, 50);
+
 	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
 
-	std::ofstream file("gaussian_test.csv");
+	std::ofstream file("gaussian_fit_test.csv");
 	if (file.is_open())
 	{
 		file << out.format(CSVFormat);
