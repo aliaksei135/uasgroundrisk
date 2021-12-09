@@ -1,0 +1,89 @@
+src/gridmap/GridMap.h:127:9: performance:inconclusive: Technically the member function 'ugr::gridmap::GridMap::writeToNetCDF' can be static (but you may consider moving to unnamed namespace). [functionStatic]
+   void writeToNetCDF(const std::string& path) const;
+        ^
+src/gridmap/GridMap.cpp:103:15: note: Technically the member function 'ugr::gridmap::GridMap::writeToNetCDF' can be static (but you may consider moving to unnamed namespace).
+void GridMap::writeToNetCDF(const std::string& path) const
+              ^
+src/gridmap/GridMap.h:127:9: note: Technically the member function 'ugr::gridmap::GridMap::writeToNetCDF' can be static (but you may consider moving to unnamed namespace).
+   void writeToNetCDF(const std::string& path) const;
+        ^
+src/gridmap/GridMap.cpp:24:8: style: Consider using std::transform algorithm instead of a raw loop. [useStlAlgorithm]
+  keys.emplace_back(pair.first);
+       ^
+src/map_gen/GeospatialGridMap.h:83:9: performance:inconclusive: Technically the member function 'ugr::mapping::GeospatialGridMap::eval' can be static (but you may consider moving to unnamed namespace). [functionStatic]
+   void eval()
+        ^
+src/utils/GeometryProjectionUtils.h:112:0: information: Skipping configuration 'PROJ_DATA_PATH' since the value of 'PROJ_DATA_PATH' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly. [ConfigurationNotChecked]
+   projDataPaths[0] = PROJ_DATA_PATH;
+^
+src/map_gen/GeospatialGridMap.cpp:22:0: information: Skipping configuration 'PROJ_DATA_PATH' since the value of 'PROJ_DATA_PATH' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly. [ConfigurationNotChecked]
+ projDataPaths[0] = PROJ_DATA_PATH;
+^
+src/gridmap/Iterators.h:88:19: style: Consider using std::transform algorithm instead of a raw loop. [useStlAlgorithm]
+     localPolygon.emplace_back(gridmap.world2Local(point));
+                  ^
+src/map_gen/GridMapOSMHandler.cpp:29:0: information: Skipping configuration 'PROJ_DATA_PATH' since the value of 'PROJ_DATA_PATH' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly. [ConfigurationNotChecked]
+ projDataPaths[0] = PROJ_DATA_PATH;
+^
+src/map_gen/osm/OSMOverpassQuery.cpp:110:15: style: Consider using std::accumulate algorithm instead of a raw loop. [useStlAlgorithm]
+  queryString += "node[" + tag.key + "=" + tag.value + "];";
+              ^
+src/map_gen/osm/OSMOverpassQuery.cpp:114:15: style: Consider using std::accumulate algorithm instead of a raw loop. [useStlAlgorithm]
+  queryString += "way[" + tag.key + "=" + tag.value + "];";
+              ^
+src/map_gen/osm/OSMOverpassQuery.cpp:118:15: style: Consider using std::accumulate algorithm instead of a raw loop. [useStlAlgorithm]
+  queryString += "rel[" + tag.key + "=" + tag.value + "];";
+              ^
+src/utils/DataFitting.h:116:8: performance:inconclusive: Technically the member function 'ugr::internal::Gaussian2DFunctor::inputs' can be static (but you may consider moving to unnamed namespace). [functionStatic]
+   int inputs() const { return 7; }
+       ^
+src/utils/DataFitting.h:103:68: style: Parameter 'fvec' can be declared with const [constParameter]
+   int operator()(const Gaussian2DParamVector& x, Eigen::VectorXd& fvec) const
+                                                                   ^
+test/DataFittingTests.cpp:12:29: warning: Found suspicious operator ',' [constStatement]
+ param << 1, 20, 20, 4, 4, 0, 0;
+                            ^
+test/DataFittingTests.cpp:51:29: warning: Found suspicious operator ',' [constStatement]
+ param << 1, 20, 20, 4, 4, 0, 0;
+                            ^
+test/GridMapOSMConstructionTests.cpp:83:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
+ auto size = gridMap.getSize();
+           ^
+test/OSMResponseTests.cpp:125:38: style: Consider using std::any_of algorithm instead of a raw loop. [useStlAlgorithm]
+          if (!n.location().valid()) {
+                                     ^
+test/PopulationMapTests.cpp:58:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
+ auto size = popMap.getSize();
+           ^
+test/PopulationMapTests.cpp:98:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
+ auto size = popMap.getSize();
+           ^
+test/ProjectionTests.cpp:22:0: information: Skipping configuration 'PROJ_DATA_PATH' since the value of 'PROJ_DATA_PATH' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly. [ConfigurationNotChecked]
+    projDataPaths[0] = PROJ_DATA_PATH;
+^
+test/RiskMapTests.cpp:19:25: warning: Found suspicious operator ',' [constStatement]
+  state.position << 0, 0, 120;
+                        ^
+test/RiskMapTests.cpp:20:26: warning: Found suspicious operator ',' [constStatement]
+  state.velocity << 20, 1, 0;
+                         ^
+test/RiskMapTests.cpp:36:15: style: Variable 'popSize' is assigned a value that is never used. [unreadVariable]
+ auto popSize = population.getSize();
+              ^
+test/RiskMapTests.cpp:68:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
+ auto size = impactMap.getSize();
+           ^
+test/GridMapOSMConstructionTests.cpp:31:0: style: The function 'SetUp' is never used. [unusedFunction]
+
+^
+src/library.cpp:5:0: style: The function 'hello' is never used. [unusedFunction]
+
+^
+src/map_gen/osm/builder/OSMOverpassQueryBuilder.cpp:31:0: style: The function 'withTimeout' is never used. [unusedFunction]
+
+^
+src/gridmap/GridMap.cpp:103:0: style: The function 'writeToNetCDF' is never used. [unusedFunction]
+
+^
+nofile:0:0: information: Cppcheck cannot find all the include files (use --check-config for details) [missingIncludeSystem]
+
