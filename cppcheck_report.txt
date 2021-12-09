@@ -67,11 +67,8 @@ test/RiskMapTests.cpp:19:25: warning: Found suspicious operator ',' [constStatem
 test/RiskMapTests.cpp:20:26: warning: Found suspicious operator ',' [constStatement]
   state.velocity << 20, 1, 0;
                          ^
-test/RiskMapTests.cpp:36:15: style: Variable 'popSize' is assigned a value that is never used. [unreadVariable]
- auto popSize = population.getSize();
-              ^
-test/RiskMapTests.cpp:68:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
- auto size = impactMap.getSize();
+test/RiskMapTests.cpp:60:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
+ auto size = strikeMap.getSize();
            ^
 test/GridMapOSMConstructionTests.cpp:31:0: style: The function 'SetUp' is never used. [unusedFunction]
 
