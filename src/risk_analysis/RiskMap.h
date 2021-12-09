@@ -52,18 +52,21 @@ namespace ugr
 			AircraftDescentModel descentModel;
 			AircraftStateModel stateModel;
 			WeatherMap weather;
-			int nSamples = 50; //CLT says 30-50 samples is good enough
+			int nSamples = 40; //CLT says 30-50 samples is good enough
 			std::default_random_engine generator;
-
-			void initRiskMapLayers();
-
-			void generateImpactMap();
 
 			void generateStrikeMap();
 
 			void generateFatalityMap();
 
 			void addPointStrikeMap(const gridmap::Index& index);
+
+			void makePointImpactMap(const gridmap::Index& index,
+			                        gridmap::Matrix& outGlide, gridmap::Matrix& outBallistic,
+			                        GridMapDataType& outGlideAngle, GridMapDataType& outGlideVelocity,
+			                        GridMapDataType& outBallisticAngle, GridMapDataType& outBallisticVelocity);
+
+			void initRiskMapLayers();
 
 			void initLayer(const std::string& layerName);
 
