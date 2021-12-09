@@ -29,35 +29,27 @@ protected:
 	AircraftDescentModel descent{90, 2.8, 3.2, 28, 0.6 * 0.6, 0.8, 21, 15};
 };
 
-TEST_F(RiskMapTests, UniformImpactRiskMapTest)
+TEST_F(RiskMapTests, ZeroStrikeRiskMapTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
 	population.eval();
-	auto popSize = population.getSize();
-	// PyObject *plot;
-	// plt::title("Population Density");
-	// plt::imshow(population.get("Population Density").data(), popSize.y(),
-	//             popSize.x(), 1, {}, &plot);
-	// plt::colorbar(plot);
-	// plt::save("risk_map_population.png");
-	// plt::close();
 
 	WeatherMap weather(bounds, resolution);
 	weather.addConstantWind(5, 90);
 	weather.eval();
 
 	RiskMap riskMap(population, descent, state, weather);
-	auto impactMap = riskMap.generateMap({RiskType::IMPACT});
+	auto strikeMap = riskMap.generateMap({RiskType::STRIKE});
 
-	auto layers = impactMap.getLayers();
-	ASSERT_TRUE(std::find(layers.begin(), layers.end(), "Glide Impact Risk") !=
+	auto layers = strikeMap.getLayers();
+	ASSERT_TRUE(std::find(layers.begin(), layers.end(), "Glide Strike Risk") !=
 		layers.end());
 	ASSERT_TRUE(std::find(layers.begin(), layers.end(), "Glide Impact Angle") !=
 		layers.end());
 	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
 		"Glide Impact Velocity") != layers.end());
 	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
-		"Ballistic Impact Risk") != layers.end());
+		"Ballistic Strike Risk") != layers.end());
 	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
 		"Ballistic Impact Angle") != layers.end());
 	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
@@ -65,17 +57,17 @@ TEST_F(RiskMapTests, UniformImpactRiskMapTest)
 
 	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
 
-	auto size = impactMap.getSize();
+	auto size = strikeMap.getSize();
 	for (const auto& layer : layers)
 	{
-		std::cout << layer << " max " << std::scientific << impactMap.get(layer).maxCoeff()
+		std::cout << layer << " max " << std::scientific << strikeMap.get(layer).maxCoeff()
 			<< std::endl;
 
 
 		std::ofstream file("impact_map_" + layer + ".csv");
 		if (file.is_open())
 		{
-			file << impactMap.get(layer).format(CSVFormat);
+			file << strikeMap.get(layer).format(CSVFormat);
 			file.close();
 		}
 		//    PyObject *layerPlot;
