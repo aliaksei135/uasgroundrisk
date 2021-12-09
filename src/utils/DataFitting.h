@@ -14,6 +14,7 @@
 
 #include <unsupported/Eigen/NonLinearOptimization>
 #include <vector>
+#include <numeric>
 
 namespace ugr
 {
@@ -53,8 +54,10 @@ namespace ugr
 		/**
 		 * A vectorised version of above
 		*/
-		template<typename Derived>
-		static Eigen::Vector<Derived, Dynamic> gaussian2D(const Eigen::Vector<Derived, Dynamic>& x, Eigen::Vector<Derived, Dynamic>& y, const Gaussian2DParamVector& p)
+		template <typename Derived>
+		static Eigen::Vector<Derived, Eigen::Dynamic> gaussian2D(const Eigen::Vector<Derived, Eigen::Dynamic>& x,
+		                                                         Eigen::Vector<Derived, Eigen::Dynamic>& y,
+		                                                         const Gaussian2DParamVector& p)
 		{
 			return p[0] * Eigen::exp(-0.5 *
 				(Eigen::pow((x.array() - p[1]) * cos(p[6]) - (y.array() - p[2]) * sin(p[6]), 2) / (p[3] * p[3]) +
@@ -125,6 +128,12 @@ namespace ugr
 
 	namespace util
 	{
+		/**
+		 * @brief Fit a 2D Gaussian kernel to a data using the Levenberg-Marquadt method.
+		 * @warning This only fits a gaussian kernel and does NOT provide the parameters to a Probability Density Function (PDF). A PDF can be approximated by normalising by the sum of the evaluation grid.
+		 * @param data vector of 2D points to fit to
+		 * @return 
+		 */
 		static Gaussian2DParamVector Gaussian2DFit(Point2DVector data)
 		{
 			ugr::internal::Gaussian2DNumericalDiff functor;
