@@ -23,7 +23,7 @@ ugr::risk::RiskMap::RiskMap(
 	AircraftStateModel aircraftState,
 	const WeatherMap& weather)
 	: GeospatialGridMap(populationMap.getBounds(),
-						static_cast<int>(populationMap.getResolution())), descentModel(aircraftDescent),
+	                    static_cast<int>(populationMap.getResolution())), descentModel(aircraftDescent),
 	  stateModel(std::move(aircraftState)),
 	  weather(weather),
 	  generator(std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()))
@@ -45,13 +45,13 @@ ugr::gridmap::GridMap& ugr::risk::RiskMap::generateMap(
 	const std::vector<RiskType>& risksToGenerate)
 {
 	if (std::find(risksToGenerate.begin(), risksToGenerate.end(),
-				  RiskType::FATALITY) != risksToGenerate.end())
+	              RiskType::FATALITY) != risksToGenerate.end())
 	{
 		generateStrikeMap();
 		generateFatalityMap();
 	}
 	else if (std::find(risksToGenerate.begin(), risksToGenerate.end(),
-					   RiskType::STRIKE) != risksToGenerate.end())
+	                   RiskType::STRIKE) != risksToGenerate.end())
 	{
 		generateStrikeMap();
 	}
@@ -71,13 +71,11 @@ void ugr::risk::RiskMap::eval()
 
 void ugr::risk::RiskMap::initRiskMapLayers()
 {
-	initLayer("Glide Impact Risk");
 	initLayer("Glide Strike Risk");
 	initLayer("Glide Fatality Risk");
 	initLayer("Glide Impact Angle");
 	initLayer("Glide Impact Velocity");
 
-	initLayer("Ballistic Impact Risk");
 	initLayer("Ballistic Strike Risk");
 	initLayer("Ballistic Fatality Risk");
 	initLayer("Ballistic Impact Angle");
@@ -154,7 +152,7 @@ void ugr::risk::RiskMap::addPointStrikeMap(const gridmap::Index& index)
 	Matrix ballisticImpactRisk(sizeX, sizeY);
 
 	makePointImpactMap(index, glideImpactRisk, ballisticImpactRisk, glideAngle, glideVelocity, ballisticAngle,
-					   ballisticVelocity);
+	                   ballisticVelocity);
 
 	// Synchronise writing to the common gridmap
 #pragma omp critical
@@ -204,11 +202,14 @@ void ugr::risk::RiskMap::addPointStrikeMap(const gridmap::Index& index)
 }
 
 void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index, gridmap::Matrix& outGlide,
-											gridmap::Matrix& outBallistic,
-											GridMapDataType& outGlideAngle, GridMapDataType& outGlideVelocity,
-											GridMapDataType& outBallisticAngle,
-											GridMapDataType& outBallisticVelocity)
+                                            gridmap::Matrix& outBallistic,
+                                            GridMapDataType& outGlideAngle, GridMapDataType& outGlideVelocity,
+                                            GridMapDataType& outBallisticAngle,
+                                            GridMapDataType& outBallisticVelocity)
 {
+	assert(outGlide.size() == outBallistic.size());
+	const Size size{outGlide.rows(), outGlide.cols()};
+
 	const auto& windVelX = weather.at("Wind VelX", index);
 	const auto& windVelY = weather.at("Wind VelY", index);
 	const Vector2d wind{windVelX, windVelY};
@@ -286,14 +287,13 @@ void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index, gridmap
 
 
 	// Iterate through all cells in the grid map
-	Eigen::Vector<GridMapDataType, Dynamic> xs(sizeX * sizeY), ys(sizeX * sizeY);
+	Eigen::Vector<GridMapDataType, Dynamic> xs(size[0] * size[1]), ys(size[0] * size[1]);
 
 
-	//TODO: this "meshgrid" evaluation grid is constant for a risk map, so need only be generated once.
 	int i = 0;
-	for (int x = 0; x < sizeX; ++x)
+	for (int x = 0; x < size[0]; ++x)
 	{
-		for (int y = 0; y < sizeY; ++y)
+		for (int y = 0; y < size[1]; ++y)
 		{
 			xs[i] = x;
 			ys[i] = y;
@@ -306,8 +306,8 @@ void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index, gridmap
 
 	// Fit 2D gaussian kernels to the descent model samples instead of propagating the samples all the way to strike risk.
 	// This should account for a more accurate probabilstic picture of the risk.
-	outGlide = util::gaussian2D(xs, ys, glideDistParams).reshaped(sizeX, sizeY);
-	outBallistic = util::gaussian2D(xs, ys, ballisticDistParams).reshaped(sizeX, sizeY);
+	outGlide = util::gaussian2D(xs, ys, glideDistParams).reshaped<RowMajor>(size[0], size[1]);
+	outBallistic = util::gaussian2D(xs, ys, ballisticDistParams).reshaped<RowMajor>(size[0], size[1]);
 
 	// Turn fitted impact risk gaussians into PDFs that we can use.
 	// Work these out first to avoid aliasing Eigen expressions
@@ -333,8 +333,8 @@ double ugr::risk::RiskMap::vel2ke(const double velocity, const double mass)
 }
 
 double ugr::risk::RiskMap::fatalityProbability(const double alpha, const double beta,
-											   const double impactEnergy,
-											   const double shelterFactor)
+                                               const double impactEnergy,
+                                               const double shelterFactor)
 {
 	return 1 / (sqrt(alpha / beta)) *
 		pow(beta / impactEnergy, 1 / (4 * shelterFactor));

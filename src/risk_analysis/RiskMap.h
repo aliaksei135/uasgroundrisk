@@ -46,6 +46,11 @@ namespace ugr
 			 */
 			GridMap& generateMap(const std::vector<ugr::risk::RiskType>& risksToGenerate);
 
+			void makePointImpactMap(const gridmap::Index& index,
+			                        gridmap::Matrix& outGlide, gridmap::Matrix& outBallistic,
+			                        GridMapDataType& outGlideAngle, GridMapDataType& outGlideVelocity,
+			                        GridMapDataType& outBallisticAngle, GridMapDataType& outBallisticVelocity);
+
 			void eval();
 
 		protected:
@@ -60,11 +65,6 @@ namespace ugr
 			void generateFatalityMap();
 
 			void addPointStrikeMap(const gridmap::Index& index);
-
-			void makePointImpactMap(const gridmap::Index& index,
-			                        gridmap::Matrix& outGlide, gridmap::Matrix& outBallistic,
-			                        GridMapDataType& outGlideAngle, GridMapDataType& outGlideVelocity,
-			                        GridMapDataType& outBallisticAngle, GridMapDataType& outBallisticVelocity);
 
 			void initRiskMapLayers();
 
