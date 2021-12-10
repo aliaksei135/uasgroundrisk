@@ -12,17 +12,17 @@
 using namespace ugr::util;
 
 ugr::mapping::PopulationMap::PopulationMap(std::array<float, 4> bounds,
-										   const int resolution)
+                                           const int resolution)
 	: GeospatialGridMap(bounds, resolution),
 	  builder(osmium::geom::Coordinates(bounds[1], bounds[0]),
-			  osmium::geom::Coordinates(bounds[3], bounds[2]))
+	          osmium::geom::Coordinates(bounds[3], bounds[2]))
 {
 	n2wHandler.ignore_errors();
 }
 
 void ugr::mapping::PopulationMap::addOSMLayer(const std::string& layerName,
-											  const std::vector<OSMTag>& tags,
-											  float defaultValue)
+                                              const std::vector<OSMTag>& tags,
+                                              float defaultValue)
 {
 	add(layerName, defaultValue);
 	get(layerName).setZero();
@@ -36,16 +36,24 @@ void ugr::mapping::PopulationMap::addOSMLayer(const std::string& layerName,
 
 void ugr::mapping::PopulationMap::eval()
 {
-	GridMapOSMHandler handler(this, tagLayerMap, popDensityGeomMap,
-							  densityTagMap);
-	OSMOverpassQuery query = builder.build();
-	query.makeQuery(n2wHandler, handler);
-
 	// Sum all layers together into a single layer using the max value for each
 	// cell
 	constexpr auto densitySumLayerName = "Population Density";
 	add(densitySumLayerName, 0);
 	get(densitySumLayerName).setZero();
+
+	if (tagLayerMap.empty() && popDensityGeomMap.empty() && densityTagMap.empty())
+	{
+		// No point evaluating an empty population map
+		// Ensure the empty population density layer is created anyway
+		// in case it is evaluated
+		return;
+	}
+	GridMapOSMHandler handler(this, tagLayerMap, popDensityGeomMap,
+	                          densityTagMap);
+	OSMOverpassQuery query = builder.build();
+	query.makeQuery(n2wHandler, handler);
+
 	for (const auto& layerName : getLayers())
 	{
 		// GridMap coordinate frame convention has the y axis increasing to the
