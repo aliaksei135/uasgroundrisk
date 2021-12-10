@@ -18,14 +18,15 @@ ugr::risk::WeatherMap::WeatherMap(const std::array<float, 4> bounds, const float
 	get("Wind VelY").setZero();
 }
 
-void ugr::risk::WeatherMap::addConstantWind(const float speed,
-											const float direction) const
+void ugr::risk::WeatherMap::addConstantWind(const gridmap::GridMapDataType speed,
+                                            const gridmap::GridMapDataType direction)
 {
-	assert(speed >= 0);
-	assert(direction >= 0);
-	assert(direction <= 360);
-	const auto velX = speed * cos(ugr::util::bearing2Angle(DEG2RAD(direction)));
-	const auto velY = speed * sin(ugr::util::bearing2Angle(DEG2RAD(direction)));
-	get("Wind VelX").setConstant(static_cast<const float&>(velX));
-	get("Wind VelY").setConstant(static_cast<const float&>(velY));
+	if (speed < 0) throw std::out_of_range("Wind speed must be positive");
+	if (direction < 0 || direction > 360)
+		throw std::out_of_range(
+			"Wind direction must be between 0 and 360 degrees inclusive");
+	const gridmap::GridMapDataType velX = -speed * sin(ugr::util::bearing2Angle(DEG2RAD(direction)));
+	const gridmap::GridMapDataType velY = -speed * cos(ugr::util::bearing2Angle(DEG2RAD(direction)));
+	get("Wind VelX").setConstant(velX);
+	get("Wind VelY").setConstant(velY);
 }

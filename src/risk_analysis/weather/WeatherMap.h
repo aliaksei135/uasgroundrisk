@@ -24,7 +24,7 @@ namespace ugr
 			 * @param direction the bearing of the wind. By convention, this is the
 			 * bearing the wind is coming from.
 			 */
-			void addConstantWind(float speed, float direction) const;
+			void addConstantWind(float speed, float direction);
 		};
 	} // namespace risk
 } // namespace ugr
