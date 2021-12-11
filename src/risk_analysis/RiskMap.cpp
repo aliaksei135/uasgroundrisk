@@ -212,28 +212,33 @@ void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index, gridmap
 
 	const auto& windVelX = weather.at("Wind VelX", index);
 	const auto& windVelY = weather.at("Wind VelY", index);
-	const Vector2d wind{windVelX, windVelY};
+	auto windXVelDist = std::normal_distribution<double>(windVelX, 5);
+	auto windYVelDist = std::normal_distribution<double>(windVelY, 0.5);
+	std::vector<Eigen::Vector2d, Eigen::aligned_allocator<double>> windVect(nSamples);
+	// const Vector2d windMeans{windVelX, windVelY};
 
 	// Create samples of state distributions
 	const auto& altitude = stateModel.getAltitude();
-	const auto& velX = stateModel.velocity(0);
-	const auto& velY = stateModel.velocity(1);
+	const auto& lateralVel = sqrt(pow(stateModel.velocity(0), 2) + pow(stateModel.velocity(1), 2));
+	const auto& verticalVel = stateModel.velocity(2);
 	auto altDist = std::normal_distribution<double>(altitude, 5);
-	auto velXDist = std::normal_distribution<double>(velX, 5);
-	auto velYDist = std::normal_distribution<double>(velY, 1);
+	auto lateralVelDist = std::normal_distribution<double>(lateralVel, 1.5);
+	auto verticalVelDist = std::normal_distribution<double>(verticalVel, 0.5);
 	std::vector<double> altVect(nSamples);
-	std::vector<double> velXVect(nSamples);
-	std::vector<double> velYVect(nSamples);
+	std::vector<double> lateralVelVect(nSamples);
+	std::vector<double> verticalVelVect(nSamples);
 	for (size_t i = 0; i < nSamples; ++i)
 	{
 		altVect[i] = altDist(generator);
-		velXVect[i] = velXDist(generator);
-		velYVect[i] = velYDist(generator);
+		lateralVelVect[i] = lateralVelDist(generator);
+		verticalVelVect[i] = verticalVelDist(generator);
+		windVect[i] = {windXVelDist(generator), windYVelDist(generator)};
 	}
 
 	// Create common heading rotation
 	const Rotation2Dd headingRotation(
 		util::bearing2Angle(DEG2RAD(stateModel.getHeading())));
+
 
 	// Convert Index into vector for easy arithmetic later
 	const Vector2d indexVec{index[0], index[1]};
@@ -241,7 +246,7 @@ void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index, gridmap
 	// Propagate samples through impact prediction
 	const auto& glideImpactSamples = descentModel.glideImpact(altVect);
 	const auto& ballisticImpactSamples =
-		descentModel.ballisticImpact(altVect, velXVect, velYVect);
+		descentModel.ballisticImpact(altVect, lateralVelVect, verticalVelVect);
 	util::Point2DVector glideImpactPoss(nSamples);
 	util::Point2DVector ballisticImpactPoss(nSamples);
 
@@ -250,23 +255,24 @@ void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index, gridmap
 	double glideVelocity = 0;
 	double ballisticVelocity = 0;
 
-
 	// Model the descents of each of the random samples for LoC state vector to find an equal
 	// number of ground impact samples we can fit distributions to.
 #pragma omp parallel for reduction(+:ballisticAngle, ballisticVelocity, glideAngle, glideVelocity)
 	for (size_t i = 0; i < nSamples; ++i)
 	{
 		const auto& glideImpactSample = glideImpactSamples[i];
-		glideImpactPoss[i] =
-		((headingRotation *
-			Vector2d(glideImpactSample.impactDistance, 0) +
-			(glideImpactSample.impactTime * wind)) / xyRes) + indexVec;
 		const auto& ballisticImpactSample = ballisticImpactSamples[i];
 
+		// As the heading rotation is an angle not a bearing, it is measured counter clockwise from
+		// the x axis corresponding to the geospatial gridmap axes.
+		// Therefore a zero rotation should correspond to motion in the x axis only, hence the y=0 here
+		const Vector2d glideDist1D(glideImpactSample.impactDistance, 0);
+		const Vector2d ballisticDist1D(ballisticImpactSample.impactDistance, 0);
+
+		glideImpactPoss[i] =
+			((headingRotation * glideDist1D + (glideImpactSample.impactTime * windVect[i])) / xyRes) + indexVec;
 		ballisticImpactPoss[i] =
-		((headingRotation *
-			Vector2d(ballisticImpactSample.impactDistance, 0) +
-			(ballisticImpactSample.impactTime * wind)) / xyRes) + indexVec;
+			((headingRotation * ballisticDist1D + (ballisticImpactSample.impactTime * windVect[i])) / xyRes) + indexVec;
 
 		ballisticAngle += ballisticImpactSample.impactAngle;
 		ballisticVelocity += ballisticImpactSample.impactVelocity;
@@ -295,7 +301,8 @@ void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index, gridmap
 	{
 		for (int y = 0; y < size[1]; ++y)
 		{
-			xs[i] = x;
+			// Invert x in line with the axes convention chosen here
+			xs[i] = size[0] - x;
 			ys[i] = y;
 			++i;
 		}

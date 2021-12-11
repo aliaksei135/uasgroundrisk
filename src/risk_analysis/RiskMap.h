@@ -57,7 +57,7 @@ namespace ugr
 			AircraftDescentModel descentModel;
 			AircraftStateModel stateModel;
 			WeatherMap weather;
-			int nSamples = 40; //CLT says 30-50 samples is good enough
+			int nSamples = 50; //CLT says 30-50 samples is good enough
 			std::default_random_engine generator;
 
 			void generateStrikeMap();
