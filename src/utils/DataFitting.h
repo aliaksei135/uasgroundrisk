@@ -132,7 +132,7 @@ namespace ugr
 		 * @brief Fit a 2D Gaussian kernel to a data using the Levenberg-Marquadt method.
 		 * @warning This only fits a gaussian kernel and does NOT provide the parameters to a Probability Density Function (PDF). A PDF can be approximated by normalising by the sum of the evaluation grid.
 		 * @param data vector of 2D points to fit to
-		 * @return 
+		 * @return parameters of fit gaussian
 		 */
 		static Gaussian2DParamVector Gaussian2DFit(Point2DVector data)
 		{
@@ -140,18 +140,31 @@ namespace ugr
 			functor.points = data;
 			Eigen::LevenbergMarquardt<ugr::internal::Gaussian2DNumericalDiff> lm(functor);
 
-			//  Gaussian2DParamVector params;
+			// Gaussian2DParamVector params;
 			Eigen::VectorXd params(7);
-			params.fill(1.0);
-			// Set centre coord estimates
+			params.setConstant(1e-20);
+			params(0) = 1;
+
+			// Set centre coord estimates from means of components
 			Eigen::Vector2d centres =
-				std::accumulate(data.begin(), data.end(), Eigen::Vector2d(0, 0)) /
-				data.size();
+				std::accumulate(data.begin(), data.end(), Eigen::Vector2d(1e-30, 1e-30)) / data.size();
 			params(1) = centres(0);
 			params(2) = centres(1);
 
-			lm.parameters.xtol = 1e-18;
-			lm.parameters.ftol = 1e-18;
+			// Set std dev estimates to sample std dev of each component distribution
+			Eigen::Vector2d sqMeanDiffs =
+				std::accumulate(data.begin(), data.end(), Eigen::Vector2d(1e-30, 1e-30),
+				                [centres](const Eigen::Vector2d& acc, const Eigen::Vector2d& p) -> Eigen::Vector2d
+				                {
+					                const Eigen::Vector2d diff = p - centres;
+					                return acc + diff.cwiseProduct(diff);
+				                });
+			Eigen::Vector2d stdDevs = sqrt(sqMeanDiffs.array() / (data.size() - 1));
+			params(3) = stdDevs[0];
+			params(4) = stdDevs[1];
+
+			lm.parameters.xtol = 1e-28;
+			lm.parameters.ftol = 1e-28;
 			lm.minimize(params);
 
 			return params;
