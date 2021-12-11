@@ -34,10 +34,10 @@ src/map_gen/osm/OSMOverpassQuery.cpp:114:15: style: Consider using std::accumula
 src/map_gen/osm/OSMOverpassQuery.cpp:118:15: style: Consider using std::accumulate algorithm instead of a raw loop. [useStlAlgorithm]
   queryString += "rel[" + tag.key + "=" + tag.value + "];";
               ^
-src/utils/DataFitting.h:116:8: performance:inconclusive: Technically the member function 'ugr::internal::Gaussian2DFunctor::inputs' can be static (but you may consider moving to unnamed namespace). [functionStatic]
+src/utils/DataFitting.h:117:8: performance:inconclusive: Technically the member function 'ugr::internal::Gaussian2DFunctor::inputs' can be static (but you may consider moving to unnamed namespace). [functionStatic]
    int inputs() const { return 7; }
        ^
-src/utils/DataFitting.h:103:68: style: Parameter 'fvec' can be declared with const [constParameter]
+src/utils/DataFitting.h:104:68: style: Parameter 'fvec' can be declared with const [constParameter]
    int operator()(const Gaussian2DParamVector& x, Eigen::VectorXd& fvec) const
                                                                    ^
 test/DataFittingTests.cpp:12:29: warning: Found suspicious operator ',' [constStatement]
@@ -67,18 +67,6 @@ test/RiskMapTests.cpp:19:25: warning: Found suspicious operator ',' [constStatem
 test/RiskMapTests.cpp:20:26: warning: Found suspicious operator ',' [constStatement]
   state.velocity << 20, 0, 0;
                          ^
-test/RiskMapTests.cpp:176:28: style: Variable 'gmv' is assigned a value that is never used. [unreadVariable]
- const GridMapDataType gmv = glideImpact.maxCoeff(&gmx, &gmy);
-                           ^
-test/RiskMapTests.cpp:177:28: style: Variable 'bmv' is assigned a value that is never used. [unreadVariable]
- const GridMapDataType bmv = ballisticImpact.maxCoeff(&bmx, &bmy);
-                           ^
-test/RiskMapTests.cpp:240:19: style: Variable 'gmv' is assigned a value that is never used. [unreadVariable]
- const double gmv = glideImpact.maxCoeff(&gmx, &gmy);
-                  ^
-test/RiskMapTests.cpp:241:19: style: Variable 'bmv' is assigned a value that is never used. [unreadVariable]
- const double bmv = ballisticImpact.maxCoeff(&bmx, &bmy);
-                  ^
 test/GridMapOSMConstructionTests.cpp:31:0: style: The function 'SetUp' is never used. [unusedFunction]
 
 ^
