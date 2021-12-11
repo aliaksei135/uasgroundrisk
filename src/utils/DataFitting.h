@@ -10,7 +10,8 @@
 #include <Eigen/Core>
 #include <Eigen/QR>
 #include <Eigen/StdVector>
-#include <cmath>
+// #include <cmath>
+#include <math.h>
 
 #include <unsupported/Eigen/NonLinearOptimization>
 #include <vector>

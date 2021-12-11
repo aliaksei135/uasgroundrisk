@@ -258,7 +258,7 @@ void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index, gridmap
 	// Model the descents of each of the random samples for LoC state vector to find an equal
 	// number of ground impact samples we can fit distributions to.
 #pragma omp parallel for reduction(+:ballisticAngle, ballisticVelocity, glideAngle, glideVelocity)
-	for (size_t i = 0; i < nSamples; ++i)
+	for (int i = 0; i < nSamples; ++i)
 	{
 		const auto& glideImpactSample = glideImpactSamples[i];
 		const auto& ballisticImpactSample = ballisticImpactSamples[i];

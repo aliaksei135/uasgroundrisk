@@ -46,16 +46,13 @@ namespace ugr
 		static bool isInsidePolygon(const gridmap::Polygon& polygon, const T& position)
 		{
 			unsigned cross = 0;
-#pragma omp parallel for
 			for (size_t i = 0, j = polygon.size() - 1; i < polygon.size(); j = i++)
 			{
 				if (polygon[i].y() > position.y() != polygon[j].y() > position.y()
 					&& position.x() < (polygon[j].x() - polygon[i].x()) * (position.y() - polygon[i].y()) /
 					(polygon[j].y() - polygon[i].y()) + polygon[i].x())
-				{
-#pragma omp critical
+
 					cross++;
-				}
 			}
 			return cross % 2;
 		}
