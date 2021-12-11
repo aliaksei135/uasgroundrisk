@@ -17,17 +17,48 @@ protected:
 	void SetUp() override
 	{
 		state.position << 0, 0, 120;
-		state.velocity << 20, 1, 0;
+		state.velocity << 20, 0, 0;
 	}
 
 	std::array<float, 4> bounds{
 		50.9065510f, -1.4500237f, 50.9517765f,
 		-1.3419628f
 	};
-	int resolution = 100;
+	int resolution = 40;
 	AircraftStateModel state;
 	AircraftDescentModel descent{90, 2.8, 3.2, 28, 0.6 * 0.6, 0.8, 21, 15};
 };
+
+TEST_F(RiskMapTests, EmptyMapLayerConstructionTest)
+{
+	ugr::mapping::PopulationMap population(bounds, resolution);
+	population.eval();
+
+	WeatherMap weather(bounds, resolution);
+	weather.addConstantWind(5, 90);
+	weather.eval();
+
+	const RiskMap riskMap(population, descent, state, weather);
+
+	auto layers = riskMap.getLayers();
+	// Check all the layers are there
+	ASSERT_TRUE(std::find(layers.begin(), layers.end(), "Glide Strike Risk") !=
+		layers.end());
+	ASSERT_TRUE(std::find(layers.begin(), layers.end(), "Glide Fatality Risk") !=
+		layers.end());
+	ASSERT_TRUE(std::find(layers.begin(), layers.end(), "Glide Impact Angle") !=
+		layers.end());
+	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
+		"Glide Impact Velocity") != layers.end());
+	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
+		"Ballistic Strike Risk") != layers.end());
+	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
+		"Ballistic Fatality Risk") != layers.end());
+	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
+		"Ballistic Impact Angle") != layers.end());
+	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
+		"Ballistic Impact Velocity") != layers.end());
+}
 
 TEST_F(RiskMapTests, ZeroStrikeRiskMapTest)
 {
@@ -41,30 +72,23 @@ TEST_F(RiskMapTests, ZeroStrikeRiskMapTest)
 	RiskMap riskMap(population, descent, state, weather);
 	auto strikeMap = riskMap.generateMap({RiskType::STRIKE});
 
-	auto layers = strikeMap.getLayers();
-	ASSERT_TRUE(std::find(layers.begin(), layers.end(), "Glide Strike Risk") !=
-		layers.end());
-	ASSERT_TRUE(std::find(layers.begin(), layers.end(), "Glide Impact Angle") !=
-		layers.end());
-	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
-		"Glide Impact Velocity") != layers.end());
-	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
-		"Ballistic Strike Risk") != layers.end());
-	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
-		"Ballistic Impact Angle") != layers.end());
-	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
-		"Ballistic Impact Velocity") != layers.end());
+	ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
+	ugr::gridmap::Matrix& ballisticRisk = strikeMap.get("Ballistic Strike Risk");
+
+	// As the population map is zero, this must all be zero as well
+	ASSERT_TRUE(glideRisk.all() == 0);
+	ASSERT_TRUE(ballisticRisk.all() == 0);
+
 
 	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
 
-	auto size = strikeMap.getSize();
+	const auto layers = strikeMap.getLayers();
 	for (const auto& layer : layers)
 	{
 		std::cout << layer << " max " << std::scientific << strikeMap.get(layer).maxCoeff()
 			<< std::endl;
 
-
-		std::ofstream file("impact_map_" + layer + ".csv");
+		std::ofstream file("strike_map_" + layer + ".csv");
 		if (file.is_open())
 		{
 			file << strikeMap.get(layer).format(CSVFormat);
@@ -78,6 +102,179 @@ TEST_F(RiskMapTests, ZeroStrikeRiskMapTest)
 		//    plt::close();
 		//    delete layerPlot;
 	}
+}
+
+TEST_F(RiskMapTests, ZeroFatalityRiskMapTest)
+{
+	ugr::mapping::PopulationMap population(bounds, resolution);
+	population.eval();
+
+	WeatherMap weather(bounds, resolution);
+	weather.addConstantWind(5, 90);
+	weather.eval();
+
+	RiskMap riskMap(population, descent, state, weather);
+	auto fatalityMap = riskMap.generateMap({RiskType::FATALITY});
+
+	ugr::gridmap::Matrix& glideRisk = fatalityMap.get("Glide Fatality Risk");
+	ugr::gridmap::Matrix& ballisticRisk = fatalityMap.get("Ballistic Fatality Risk");
+
+	// As the population map is zero, this must all be zero as well
+	ASSERT_TRUE(glideRisk.all() == 0);
+	ASSERT_TRUE(ballisticRisk.all() == 0);
+
+
+	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+
+	const auto layers = fatalityMap.getLayers();
+	for (const auto& layer : layers)
+	{
+		std::cout << layer << " max " << std::scientific << fatalityMap.get(layer).maxCoeff()
+			<< std::endl;
+
+		std::ofstream file("fatality_map_" + layer + ".csv");
+		if (file.is_open())
+		{
+			file << fatalityMap.get(layer).format(CSVFormat);
+			file.close();
+		}
+		//    PyObject *layerPlot;
+		//    plt::title(layer);
+		//    plt::imshow(impactMap.get(layer).data(), size.y(), size.x(), 1);
+		//    plt::colorbar(layerPlot);
+		//    plt::save("risk_map_" + layer + "_test.png");
+		//    plt::close();
+		//    delete layerPlot;
+	}
+}
+
+TEST_F(RiskMapTests, NilWindPointImpactMapTest)
+{
+	ugr::mapping::PopulationMap population(bounds, resolution);
+	population.eval();
+
+	WeatherMap weather(bounds, resolution);
+	// weather.addConstantWind(5, 90);
+	weather.eval();
+
+	RiskMap riskMap(population, descent, state, weather);
+
+	const auto size = riskMap.getSize();
+
+	ugr::gridmap::Matrix glideImpact(size[0], size[1]);
+	ugr::gridmap::Matrix ballisticImpact(size[0], size[1]);
+	GridMapDataType dummy = 0; // We are not testing the descent models here
+	ugr::gridmap::Index idx{20, 20};
+	riskMap.makePointImpactMap(idx, glideImpact, ballisticImpact,
+	                           dummy, dummy, dummy, dummy);
+
+	// Make sure they are actually PDFs
+	ASSERT_NEAR(glideImpact.sum(), 1, 1e-6);
+	ASSERT_NEAR(ballisticImpact.sum(), 1, 1e-6);
+
+	int gmx, gmy, bmx, bmy;
+	const GridMapDataType gmv = glideImpact.maxCoeff(&gmx, &gmy);
+	const GridMapDataType bmv = ballisticImpact.maxCoeff(&bmx, &bmy);
+
+	// Invert x axis to stay with the axes convention here
+	gmx = size[0] - gmx;
+	bmx = size[0] - bmx;
+
+	// Velocity is (20,0) xy and there is no wind
+	// therefore we expect to impact PDF max to be
+	// in the direction of the velocity vector,
+	// so the x position should be greater than the LoC x
+	// and the y remain roughly the same
+	EXPECT_GE(gmx, idx[0]);
+	EXPECT_NEAR(gmy, idx[1], 3);
+	EXPECT_GE(bmx, idx[0]);
+	EXPECT_NEAR(bmy, idx[1], 3);
+
+	// Additionally we would expect the uncontrolled glide
+	// descent to go further than the ballistic descent
+	EXPECT_GT(gmx, bmx);
+
+	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+
+	std::ofstream file(
+		"combined_impact_map_x" + std::to_string(idx[0]) + "_y" + std::to_string(idx[1]) + "_nil_wind.csv");
+	if (file.is_open())
+	{
+		file << (glideImpact + ballisticImpact).format(CSVFormat);
+		file.close();
+	}
+	//    PyObject *layerPlot;
+	//    plt::title(layer);
+	//    plt::imshow(impactMap.get(layer).data(), size.y(), size.x(), 1);
+	//    plt::colorbar(layerPlot);
+	//    plt::save("risk_map_" + layer + "_test.png");
+	//    plt::close();
+	//    delete layerPlot;
+}
+
+TEST_F(RiskMapTests, WindPointImpactMapTest)
+{
+	ugr::mapping::PopulationMap population(bounds, resolution);
+	population.eval();
+
+	WeatherMap weather(bounds, resolution);
+	weather.addConstantWind(5, 90);
+	weather.eval();
+
+	RiskMap riskMap(population, descent, state, weather);
+
+	const auto size = riskMap.getSize();
+
+	ugr::gridmap::Matrix glideImpact(size[0], size[1]);
+	ugr::gridmap::Matrix ballisticImpact(size[0], size[1]);
+	GridMapDataType dummy = 0; // We are not testing the descent models here
+	ugr::gridmap::Index idx{20, 20};
+	riskMap.makePointImpactMap(idx, glideImpact, ballisticImpact,
+	                           dummy, dummy, dummy, dummy);
+
+	// Make sure they are actually PDFs
+	ASSERT_NEAR(glideImpact.sum(), 1, 1e-6);
+	ASSERT_NEAR(ballisticImpact.sum(), 1, 1e-6);
+
+	int gmx, gmy, bmx, bmy;
+	const double gmv = glideImpact.maxCoeff(&gmx, &gmy);
+	const double bmv = ballisticImpact.maxCoeff(&bmx, &bmy);
+
+	// Invert x axis to stay with the axes convention here
+	gmx = size[0] - gmx;
+	bmx = size[0] - bmx;
+
+	// Velocity is (20,0) xy therefore we expect to impact
+	// PDF max to be mostly in the direction of the velocity vector
+	// as the aircraft momentum/PE should still carry more than the wind
+	// so the x position should be greater than the LoC x.
+	// The wind is right to left in the aircraft body frame, therefore
+	// the impact position in both descents should be to the left
+	// ie y should decrease relative to LoC y.
+	EXPECT_GE(gmx, idx[0]);
+	EXPECT_LT(gmy, idx[1]);
+	EXPECT_GE(bmx, idx[0]);
+	EXPECT_LT(bmy, idx[1]);
+
+	// Additionally we would expect the uncontrolled glide
+	// descent to go further than the ballistic descent
+	EXPECT_GT(gmx, bmx);
+
+	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+
+	std::ofstream file("combined_impact_map_x" + std::to_string(idx[0]) + "_y" + std::to_string(idx[1]) + "_wind.csv");
+	if (file.is_open())
+	{
+		file << (glideImpact + ballisticImpact).format(CSVFormat);
+		file.close();
+	}
+	//    PyObject *layerPlot;
+	//    plt::title(layer);
+	//    plt::imshow(impactMap.get(layer).data(), size.y(), size.x(), 1);
+	//    plt::colorbar(layerPlot);
+	//    plt::save("risk_map_" + layer + "_test.png");
+	//    plt::close();
+	//    delete layerPlot;
 }
 
 int main(int argc, char** argv)
