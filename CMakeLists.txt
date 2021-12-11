@@ -11,6 +11,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 Include(FetchContent)
 include_guard(GLOBAL)
 
+# Verbose Builds
+# set(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON" FORCE)
+
 ### Require out-of-source builds
 file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" LOC_PATH)
 if (EXISTS "${LOC_PATH}")
@@ -134,6 +137,12 @@ target_link_libraries(${PROJECT_NAME} PUBLIC GEOS::GEOS)
 
 find_package(OpenMP REQUIRED)
 target_link_directories(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
+if(OPENMP_FOUND)
+message("OPENMP FOUND")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
 
 find_package(Threads REQUIRED)
 
