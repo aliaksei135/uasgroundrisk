@@ -65,11 +65,20 @@ test/RiskMapTests.cpp:19:25: warning: Found suspicious operator ',' [constStatem
   state.position << 0, 0, 120;
                         ^
 test/RiskMapTests.cpp:20:26: warning: Found suspicious operator ',' [constStatement]
-  state.velocity << 20, 1, 0;
+  state.velocity << 20, 0, 0;
                          ^
-test/RiskMapTests.cpp:60:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
- auto size = strikeMap.getSize();
-           ^
+test/RiskMapTests.cpp:176:28: style: Variable 'gmv' is assigned a value that is never used. [unreadVariable]
+ const GridMapDataType gmv = glideImpact.maxCoeff(&gmx, &gmy);
+                           ^
+test/RiskMapTests.cpp:177:28: style: Variable 'bmv' is assigned a value that is never used. [unreadVariable]
+ const GridMapDataType bmv = ballisticImpact.maxCoeff(&bmx, &bmy);
+                           ^
+test/RiskMapTests.cpp:240:19: style: Variable 'gmv' is assigned a value that is never used. [unreadVariable]
+ const double gmv = glideImpact.maxCoeff(&gmx, &gmy);
+                  ^
+test/RiskMapTests.cpp:241:19: style: Variable 'bmv' is assigned a value that is never used. [unreadVariable]
+ const double bmv = ballisticImpact.maxCoeff(&bmx, &bmy);
+                  ^
 test/GridMapOSMConstructionTests.cpp:31:0: style: The function 'SetUp' is never used. [unusedFunction]
 
 ^
