@@ -26,7 +26,11 @@ endif ()
 ###########################################################
 # Static code analysis
 ###########################################################
-set(ENABLE_CPPCHECK ON)
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set(ENABLE_CPPCHECK OFF)
+else()
+    set(ENABLE_CPPCHECK ON)
+endif()
 if (MSVC)
     set(ENABLE_CLANG_TIDY OFF)
 else ()
