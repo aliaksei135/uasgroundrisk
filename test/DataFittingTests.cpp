@@ -88,12 +88,12 @@ TEST(DataFittingTests, Gaussian2DFitTest)
 	ASSERT_NEAR(param[1], 50, 1);
 	ASSERT_NEAR(param[2], 50, 1);
 	//Assert std dev
-	ASSERT_NEAR(param[3], 1, 0.1);
-	ASSERT_NEAR(param[4], 1, 0.1);
+	ASSERT_NEAR(param[3], 5, 0.1);
+	ASSERT_NEAR(param[4], 4.7, 0.1);
 	//Assert no offset
 	ASSERT_NEAR(param[5], 0, 1e-16);
 	//Assert rotation angle
-	ASSERT_NEAR(param[6], 1, 1e-2);
+	ASSERT_NEAR(param[6], 0, 1e-2);
 
 
 	Eigen::Matrix<double, 100, 100> out;

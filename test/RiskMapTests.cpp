@@ -24,7 +24,7 @@ protected:
 		50.9065510f, -1.4500237f, 50.9517765f,
 		-1.3419628f
 	};
-	int resolution = 40;
+	int resolution = 80;
 	AircraftStateModel state;
 	AircraftDescentModel descent{90, 2.8, 3.2, 28, 0.6 * 0.6, 0.8, 21, 15};
 };
@@ -154,7 +154,6 @@ TEST_F(RiskMapTests, NilWindPointImpactMapTest)
 	population.eval();
 
 	WeatherMap weather(bounds, resolution);
-	// weather.addConstantWind(5, 90);
 	weather.eval();
 
 	RiskMap riskMap(population, descent, state, weather);
@@ -169,12 +168,12 @@ TEST_F(RiskMapTests, NilWindPointImpactMapTest)
 	                           dummy, dummy, dummy, dummy);
 
 	// Make sure they are actually PDFs
-	ASSERT_NEAR(glideImpact.sum(), 1, 1e-6);
-	ASSERT_NEAR(ballisticImpact.sum(), 1, 1e-6);
+	ASSERT_NEAR(glideImpact.sum(), 1, 1e-5);
+	ASSERT_NEAR(ballisticImpact.sum(), 1, 1e-5);
 
 	int gmx, gmy, bmx, bmy;
-	const GridMapDataType gmv = glideImpact.maxCoeff(&gmx, &gmy);
-	const GridMapDataType bmv = ballisticImpact.maxCoeff(&bmx, &bmy);
+	glideImpact.maxCoeff(&gmx, &gmy);
+	ballisticImpact.maxCoeff(&bmx, &bmy);
 
 	// Invert x axis to stay with the axes convention here
 	gmx = size[0] - gmx;
@@ -186,9 +185,9 @@ TEST_F(RiskMapTests, NilWindPointImpactMapTest)
 	// so the x position should be greater than the LoC x
 	// and the y remain roughly the same
 	EXPECT_GE(gmx, idx[0]);
-	EXPECT_NEAR(gmy, idx[1], 3);
+	EXPECT_NEAR(gmy, idx[1], ceil(20/resolution));
 	EXPECT_GE(bmx, idx[0]);
-	EXPECT_NEAR(bmy, idx[1], 3);
+	EXPECT_NEAR(bmy, idx[1], ceil(20/resolution));
 
 	// Additionally we would expect the uncontrolled glide
 	// descent to go further than the ballistic descent
@@ -233,12 +232,12 @@ TEST_F(RiskMapTests, WindPointImpactMapTest)
 	                           dummy, dummy, dummy, dummy);
 
 	// Make sure they are actually PDFs
-	ASSERT_NEAR(glideImpact.sum(), 1, 1e-6);
-	ASSERT_NEAR(ballisticImpact.sum(), 1, 1e-6);
+	ASSERT_NEAR(glideImpact.sum(), 1, 1e-5);
+	ASSERT_NEAR(ballisticImpact.sum(), 1, 1e-5);
 
 	int gmx, gmy, bmx, bmy;
-	const double gmv = glideImpact.maxCoeff(&gmx, &gmy);
-	const double bmv = ballisticImpact.maxCoeff(&bmx, &bmy);
+	glideImpact.maxCoeff(&gmx, &gmy);
+	ballisticImpact.maxCoeff(&bmx, &bmy);
 
 	// Invert x axis to stay with the axes convention here
 	gmx = size[0] - gmx;
@@ -252,9 +251,9 @@ TEST_F(RiskMapTests, WindPointImpactMapTest)
 	// the impact position in both descents should be to the left
 	// ie y should decrease relative to LoC y.
 	EXPECT_GE(gmx, idx[0]);
-	EXPECT_LT(gmy, idx[1]);
+	EXPECT_LE(gmy, idx[1]);
 	EXPECT_GE(bmx, idx[0]);
-	EXPECT_LT(bmy, idx[1]);
+	EXPECT_LE(bmy, idx[1]);
 
 	// Additionally we would expect the uncontrolled glide
 	// descent to go further than the ballistic descent
