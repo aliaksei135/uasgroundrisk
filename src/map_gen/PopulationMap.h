@@ -34,8 +34,8 @@ namespace ugr
 
 		protected:
 			std::map<OSMTag, std::string> tagLayerMap;
-			std::map<GEOSGeometry*, float> popDensityGeomMap;
-			std::map<OSMTag, float> densityTagMap;
+			std::map<GEOSGeometry*, GridMapDataType> popDensityGeomMap;
+			std::map<OSMTag, GridMapDataType> densityTagMap;
 
 			OSMOverpassQueryBuilder builder;
 			DefaultNodeLocationsForWaysHandler n2wHandler;
