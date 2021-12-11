@@ -11,7 +11,7 @@
 using namespace ugr::risk;
 // namespace plt = matplotlibcpp;
 
-class RiskMapTests : public ::testing::Test
+class RiskMapTests : public testing::Test
 {
 protected:
 	void SetUp() override
@@ -279,6 +279,6 @@ TEST_F(RiskMapTests, WindPointImpactMapTest)
 
 int main(int argc, char** argv)
 {
-	::testing::InitGoogleTest(&argc, argv);
+	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }
