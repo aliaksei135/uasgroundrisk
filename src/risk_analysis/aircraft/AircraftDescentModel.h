@@ -70,18 +70,18 @@ public:
    * velocity components
    * @param altitude the altitude in metres
    * @param velX the horizontal velocity in m/s
-   * @param velY the vertical velocity in m/s
+   * @param velZ the vertical velocity in m/s
    * @return an ImpactDataStruct of the impact
    */
   ImpactDataStruct ballisticImpact(double altitude, double velX,
-                                   double velY) const;
+                                   double velZ) const;
   /**
    * A vectorised version of ballisticImpact. All inputs must be of a common
    * length
    */
   std::vector<ImpactDataStruct> ballisticImpact(const std::vector<double>& altitude,
                                                 const std::vector<double>& velX,
-                                                const std::vector<double>& velY) const;
+                                                const std::vector<double>& velZ) const;
 
 protected:
   double c;

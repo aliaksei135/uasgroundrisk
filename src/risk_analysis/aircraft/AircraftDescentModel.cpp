@@ -15,11 +15,11 @@ using namespace ugr::risk;
 #define AIR_DENSITY 1.225
 
 AircraftDescentModel::AircraftDescentModel(const double mass, const double width,
-										   const double length, const double cruiseSpeed,
-										   const double ballisticFrontalArea,
-										   const double ballisticDragCoeff,
-										   const double glideAirspeed,
-										   const double glideRatio)
+                                           const double length, const double cruiseSpeed,
+                                           const double ballisticFrontalArea,
+                                           const double ballisticDragCoeff,
+                                           const double glideAirspeed,
+                                           const double glideRatio)
 	: mass(mass), width(width), length(length), cruiseSpeed(cruiseSpeed),
 	  ballisticFrontalArea(ballisticFrontalArea),
 	  ballisticDragCoeff(ballisticDragCoeff), glideAirspeed(glideAirspeed),
@@ -49,24 +49,24 @@ std::vector<ImpactDataStruct> ugr::risk::AircraftDescentModel::glideImpact(
 }
 
 ugr::risk::ImpactDataStruct ugr::risk::AircraftDescentModel::ballisticImpact(const double altitude, const double velX,
-																			 double velY) const
+                                                                             double velZ) const
 {
 	// This is essentially a port of
 	// https://github.com/JARUS-QM/casex/blob/master/casex/ballistic_descent_models.py
 
-	if (gamma < velY)
+	if (gamma < velZ)
 	{
-		velY = fmin(gamma * 0.999, velY);
+		velZ = fmin(gamma * 0.999, velZ);
 	}
-	const auto Hd = atanh(velY / gamma);
-	const auto Gd = -1. / 2 * log1p(pow(velY, 2) / pow(gamma, 2));
-	const auto tTop = -gamma / GRAVITY_ACCEL * atan(velY / gamma);
+	const auto Hd = atanh(velZ / gamma);
+	const auto Gd = -1. / 2 * log1p(pow(velZ, 2) / pow(gamma, 2));
+	const auto tTop = -gamma / GRAVITY_ACCEL * atan(velZ / gamma);
 	const auto x1 = mass / c * log1p(velX * c * tTop / mass);
 	const auto tC =
 		(mass * (GRAVITY_ACCEL * tTop - gamma * Hd +
 			velX * (1 + pow(Hd - GRAVITY_ACCEL / gamma * tTop, 2)))) /
 		(mass * GRAVITY_ACCEL + velX * c * (GRAVITY_ACCEL * tTop - gamma * Hd));
-	const auto yT = (-1. / 2 * log1p(pow(velY, 2) / pow(gamma, 2))) * mass / c;
+	const auto yT = (-1. / 2 * log1p(pow(velZ, 2) / pow(gamma, 2))) * mass / c;
 	const auto tD = gamma / GRAVITY_ACCEL *
 		(acosh(exp(c * (altitude - yT) / mass + Gd)) - Hd);
 	const auto impactTime = tTop + tD;
@@ -75,7 +75,7 @@ ugr::risk::ImpactDataStruct ugr::risk::AircraftDescentModel::ballisticImpact(con
 		mass / c * log1p(vxTop * c * (fmin(impactTime, tC) - tTop) / mass);
 	const auto vixC = velX / (1 + (tC * velX) / (mass / c));
 	const auto viyC = fmin(gamma * 0.999,
-						   gamma * tanh(GRAVITY_ACCEL * (tC - tTop) / gamma + Hd));
+	                       gamma * tanh(GRAVITY_ACCEL * (tC - tTop) / gamma + Hd));
 	const auto mx = fmax(0, impactTime - tC);
 	const auto x3 = vixC * exp(-1. / 2 * log(1 - pow(viyC, 2) / pow(gamma, 2))) *
 		gamma / GRAVITY_ACCEL *
@@ -103,15 +103,15 @@ ugr::risk::ImpactDataStruct ugr::risk::AircraftDescentModel::ballisticImpact(con
 
 std::vector<ImpactDataStruct> ugr::risk::AircraftDescentModel::ballisticImpact(
 	const std::vector<double>& altitude, const std::vector<double>& velX,
-	const std::vector<double>& velY) const
+	const std::vector<double>& velZ) const
 {
 	assert(altitude.size() == velX.size());
-	assert(altitude.size() == velY.size());
+	assert(altitude.size() == velZ.size());
 
 	std::vector<ImpactDataStruct> out(altitude.size());
 	for (size_t i = 0; i < altitude.size(); ++i)
 	{
-		out[i] = ballisticImpact(altitude[i], velX[i], velY[i]);
+		out[i] = ballisticImpact(altitude[i], velX[i], velZ[i]);
 	}
 	return out;
 }
