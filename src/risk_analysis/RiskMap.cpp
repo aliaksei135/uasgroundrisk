@@ -169,7 +169,8 @@ void ugr::risk::RiskMap::addPointStrikeMap(const gridmap::Index& index)
 	// These are used later
 	const GridMapDataType pixelArea = getResolution() * getResolution();
 	const auto uasWidth = descentModel.width;
-	const Matrix& populationDensityMap = get("Population Density");
+	// Get population map and convert from people/km^2 to people/m^2
+	const Matrix& populationDensityMap = get("Population Density") * 1e-6;
 
 
 	// Work out the lethal area of the aircraft when it crashes
