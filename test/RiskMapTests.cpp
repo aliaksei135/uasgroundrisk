@@ -24,7 +24,7 @@ protected:
 		50.9065510f, -1.4500237f, 50.9517765f,
 		-1.3419628f
 	};
-	int resolution = 80;
+	int resolution = 60;
 	AircraftStateModel state;
 	AircraftDescentModel descent{90, 2.8, 3.2, 28, 0.6 * 0.6, 0.8, 21, 15};
 };
@@ -136,6 +136,104 @@ TEST_F(RiskMapTests, ZeroFatalityRiskMapTest)
 		if (file.is_open())
 		{
 			file << fatalityMap.get(layer).format(CSVFormat);
+			file.close();
+		}
+		//    PyObject *layerPlot;
+		//    plt::title(layer);
+		//    plt::imshow(impactMap.get(layer).data(), size.y(), size.x(), 1);
+		//    plt::colorbar(layerPlot);
+		//    plt::save("risk_map_" + layer + "_test.png");
+		//    plt::close();
+		//    delete layerPlot;
+	}
+}
+
+TEST_F(RiskMapTests, SchoolsStrikeRiskMapTest)
+{
+	ugr::mapping::PopulationMap population(bounds, resolution);
+	population.addOSMLayer("Schools", {{"amenity", "school"}}, 100);
+	population.eval();
+
+	// Assert the population map actually generated something otherwise
+	// this test is pointless and equivalent to the zero* tests
+	ASSERT_NE(population.get("Population Density").maxCoeff(), 0);
+
+	WeatherMap weather(bounds, resolution);
+	weather.addConstantWind(5, 90);
+	weather.eval();
+
+	RiskMap riskMap(population, descent, state, weather);
+	auto strikeMap = riskMap.generateMap({RiskType::STRIKE});
+
+	ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
+	ugr::gridmap::Matrix& ballisticRisk = strikeMap.get("Ballistic Strike Risk");
+
+	// As the population map is zero, this must all be zero as well
+	ASSERT_NE(glideRisk.maxCoeff(), 0);
+	ASSERT_NE(ballisticRisk.maxCoeff(), 0);
+
+
+	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+
+	const auto layers = strikeMap.getLayers();
+	for (const auto& layer : layers)
+	{
+		std::cout << layer << " max " << std::scientific << strikeMap.get(layer).maxCoeff()
+			<< std::endl;
+
+		std::ofstream file("strike_map_" + layer + ".csv");
+		if (file.is_open())
+		{
+			file << strikeMap.get(layer).format(CSVFormat);
+			file.close();
+		}
+		//    PyObject *layerPlot;
+		//    plt::title(layer);
+		//    plt::imshow(impactMap.get(layer).data(), size.y(), size.x(), 1);
+		//    plt::colorbar(layerPlot);
+		//    plt::save("risk_map_" + layer + "_test.png");
+		//    plt::close();
+		//    delete layerPlot;
+	}
+}
+
+TEST_F(RiskMapTests, ResidentialStrikeRiskMapTest)
+{
+	ugr::mapping::PopulationMap population(bounds, resolution);
+	population.addOSMLayer("Residential", {{"landuse", "residential"}}, 100);
+	population.eval();
+
+	// Assert the population map actually generated something otherwise
+	// this test is pointless and equivalent to the zero* tests
+	ASSERT_NE(population.get("Population Density").maxCoeff(), 0);
+
+	WeatherMap weather(bounds, resolution);
+	weather.addConstantWind(5, 90);
+	weather.eval();
+
+	RiskMap riskMap(population, descent, state, weather);
+	auto strikeMap = riskMap.generateMap({RiskType::STRIKE});
+
+	ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
+	ugr::gridmap::Matrix& ballisticRisk = strikeMap.get("Ballistic Strike Risk");
+
+	// As the population map is zero, this must all be zero as well
+	ASSERT_NE(glideRisk.maxCoeff(), 0);
+	ASSERT_NE(ballisticRisk.maxCoeff(), 0);
+
+
+	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+
+	const auto layers = strikeMap.getLayers();
+	for (const auto& layer : layers)
+	{
+		std::cout << layer << " max " << std::scientific << strikeMap.get(layer).maxCoeff()
+			<< std::endl;
+
+		std::ofstream file("strike_map_" + layer + ".csv");
+		if (file.is_open())
+		{
+			file << strikeMap.get(layer).format(CSVFormat);
 			file.close();
 		}
 		//    PyObject *layerPlot;
@@ -275,6 +373,7 @@ TEST_F(RiskMapTests, WindPointImpactMapTest)
 	//    plt::close();
 	//    delete layerPlot;
 }
+
 
 int main(int argc, char** argv)
 {
