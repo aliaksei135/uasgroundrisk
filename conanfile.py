@@ -15,8 +15,6 @@ class ugrConan(ConanFile):
     
     def build_requirements(self):
         self.build_requires("doxygen/1.9.1")
-        self.build_requires("openssl/3.0.0")
-        self.build_requires("cmake/3.16.2")
     
     def requirements(self):
         self.requires("eigen/[>3.3.9]")
