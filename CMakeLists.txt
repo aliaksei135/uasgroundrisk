@@ -107,7 +107,7 @@ if (NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
             TLS_VERIFY ON)
 endif ()
 include(${CMAKE_BINARY_DIR}/conan.cmake)
-conan_cmake_run(CONANFILE conanfile.txt
+conan_cmake_run(CONANFILE conanfile.py
         BASIC_SETUP
         BUILD missing)
 
