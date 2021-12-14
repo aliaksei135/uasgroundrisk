@@ -7,11 +7,12 @@
 #ifndef UASGROUNDRISK_SRC_MAP_GEN_POPULATIONMAP_H_
 #define UASGROUNDRISK_SRC_MAP_GEN_POPULATIONMAP_H_
 
-#include "GeospatialGridMap.h"
-#include "osm/DefaultNodeLocationsForWaysHandler.h"
-#include "osm/builder/OSMOverpassQueryBuilder.h"
+#include "../../../src/map_gen/GeospatialGridMap.h"
+#include "../../../src/map_gen/osm/DefaultNodeLocationsForWaysHandler.h"
+#include "../../../src/map_gen/osm/builder/OSMOverpassQueryBuilder.h"
 #include <geos_c.h>
 #include <map>
+#include <string>
 
 namespace ugr
 {

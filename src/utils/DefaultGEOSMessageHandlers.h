@@ -8,28 +8,32 @@
 #define UASGROUNDRISK_SRC_UTILS_DEFAULTGEOSMESSAGEHANDLERS_H_
 
 #include <cstdarg>
+#include <stdio.h>
+#include <cstdlib>
 
-static void notice(const char *fmt, ...) {
-  va_list ap;
+static void notice(const char* fmt, ...)
+{
+	va_list ap;
 
-  fprintf(stdout, "NOTICE: ");
+	fprintf(stdout, "NOTICE: ");
 
-  va_start(ap, fmt);
-  vfprintf(stdout, fmt, ap);
-  va_end(ap);
-  fprintf(stdout, "\n");
+	va_start(ap, fmt);
+	vfprintf(stdout, fmt, ap);
+	va_end(ap);
+	fprintf(stdout, "\n");
 }
 
-static void log_and_exit(const char *fmt, ...) {
-  va_list ap;
+static void log_and_exit(const char* fmt, ...)
+{
+	va_list ap;
 
-  fprintf(stdout, "ERROR: ");
+	fprintf(stdout, "ERROR: ");
 
-  va_start(ap, fmt);
-  vfprintf(stdout, fmt, ap);
-  va_end(ap);
-  fprintf(stdout, "\n");
-  exit(1);
+	va_start(ap, fmt);
+	vfprintf(stdout, fmt, ap);
+	va_end(ap);
+	fprintf(stdout, "\n");
+	exit(1);
 }
 
 #endif // UASGROUNDRISK_SRC_UTILS_DEFAULTGEOSMESSAGEHANDLERS_H_

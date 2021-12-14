@@ -1,4 +1,4 @@
-#include "GridMap.h"
+#include "uasgroundrisk/gridmap/GridMap.h"
 
 using namespace ugr::gridmap;
 

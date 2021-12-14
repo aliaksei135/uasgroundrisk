@@ -10,7 +10,7 @@
 #include <array>
 #include <proj.h>
 
-#include "../gridmap/GridMap.h"
+#include "uasgroundrisk/gridmap/GridMap.h"
 
 namespace ugr
 {

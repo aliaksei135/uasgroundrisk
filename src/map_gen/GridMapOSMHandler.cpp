@@ -5,8 +5,8 @@
  */
 
 #include "GridMapOSMHandler.h"
-#include "../gridmap/GridMap.h"
-#include "../gridmap/Iterators.h"
+#include "uasgroundrisk/gridmap/GridMap.h"
+#include "uasgroundrisk/gridmap/Iterators.h"
 #include "../utils/GeometryProjectionUtils.h"
 #include <osmium/osm/way.hpp>
 #include <utility>

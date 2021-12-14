@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(uasgroundrisk
-        DESCRIPTION "Ground Risk calculation for Unmanned Aerial Systems"
-        VERSION 0.1
-        LANGUAGES CXX)
+		DESCRIPTION "Ground Risk calculation for Unmanned Aerial Systems"
+		VERSION 0.1
+		LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(PYTHON_VERSION 3)
@@ -17,52 +17,52 @@ include_guard(GLOBAL)
 ### Require out-of-source builds
 file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" LOC_PATH)
 if (EXISTS "${LOC_PATH}")
-    message(FATAL_ERROR "You cannot build in a source directory (or any directory with a CMakeLists.txt file). Please make a build subdirectory. Feel free to remove CMakeCache.txt and CMakeFiles.")
+	message(FATAL_ERROR "You cannot build in a source directory (or any directory with a CMakeLists.txt file). Please make a build subdirectory. Feel free to remove CMakeCache.txt and CMakeFiles.")
 endif ()
 
 # Cache builds
 find_program(CCACHE ccache)
 if (CCACHE)
-    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
+	set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
 endif ()
 
 ###########################################################
 # Static code analysis
 ###########################################################
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    set(ENABLE_CPPCHECK OFF)
+	set(ENABLE_CPPCHECK OFF)
 else()
-    set(ENABLE_CPPCHECK ON)
+	set(ENABLE_CPPCHECK ON)
 endif()
 if (MSVC)
-    set(ENABLE_CLANG_TIDY OFF)
+	set(ENABLE_CLANG_TIDY OFF)
 else ()
-    set(ENABLE_CLANG_TIDY ON)
+	set(ENABLE_CLANG_TIDY ON)
 endif ()
 
 if (ENABLE_CPPCHECK)
-    find_program(CPPCHECK cppcheck)
-    if (CPPCHECK)
-        set(CMAKE_CXX_CPPCHECK
-                ${CPPCHECK}
-                --suppressions-list=${CMAKE_CURRENT_SOURCE_DIR}/.cppcheck-suppressions
-                --suppress=missingIncludeSystem
-                --suppress=unmatchedSuppression
-                --cppcheck-build-dir=${CMAKE_BINARY_DIR}/cppcheck
-                --enable=all
-                --inconclusive)
-    else ()
-        message(WARNING "cppcheck requested but executable not found")
-    endif ()
+	find_program(CPPCHECK cppcheck)
+	if (CPPCHECK)
+		set(CMAKE_CXX_CPPCHECK
+				${CPPCHECK}
+				--suppressions-list=${CMAKE_CURRENT_SOURCE_DIR}/.cppcheck-suppressions
+				--suppress=missingIncludeSystem
+				--suppress=unmatchedSuppression
+				--cppcheck-build-dir=${CMAKE_BINARY_DIR}/cppcheck
+				--enable=all
+				--inconclusive)
+	else ()
+		message(WARNING "cppcheck requested but executable not found")
+	endif ()
 endif ()
 
 if (ENABLE_CLANG_TIDY)
-    find_program(CLANGTIDY clang-tidy)
-    if (CLANGTIDY)
-        set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY})
-    else ()
-        message(WARNING "clang-tidy requested but executable not found")
-    endif ()
+	find_program(CLANGTIDY clang-tidy)
+	if (CLANGTIDY)
+		set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY})
+	else ()
+		message(WARNING "clang-tidy requested but executable not found")
+	endif ()
 endif ()
 
 ##############################################################
@@ -70,30 +70,47 @@ endif ()
 ##############################################################
 
 set(UGR_SOURCES
-        ${UGR_SOURCES})
+		${UGR_SOURCES})
 
 add_subdirectory(src)
 
 if (MSVC)
-    set(${PROJECT_NAME}_BUILD_SHARED OFF)
+	set(${PROJECT_NAME}_BUILD_SHARED OFF)
 else ()
-    set(${PROJECT_NAME}_BUILD_SHARED ON)
+	set(${PROJECT_NAME}_BUILD_SHARED ON)
 endif ()
 
 if (${${PROJECT_NAME}_BUILD_SHARED})
-    add_library(${PROJECT_NAME} SHARED ${UGR_SOURCES})
+	add_library(${PROJECT_NAME} SHARED ${UGR_SOURCES})
 else ()
-    add_library(${PROJECT_NAME} STATIC ${UGR_SOURCES})
+	add_library(${PROJECT_NAME} STATIC ${UGR_SOURCES})
 endif ()
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 add_library(${PROJECT_NAME}::ugr ALIAS ${PROJECT_NAME})
 
-target_include_directories(${PROJECT_NAME} PUBLIC src)
+target_include_directories(${PROJECT_NAME}
+	PUBLIC
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>)
+
+target_sources(${PROJECT_NAME} PRIVATE
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/gridmap/GridMap.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/gridmap/Iterators.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/gridmap/TypeDefs.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/PopulationMap.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/RiskMap.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/RiskEnums.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/aircraft/AircraftDescentModel.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/aircraft/AircraftStateModel.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/aircraft/AircraftEnums.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/weather/WeatherMap.h
+	)
+
 
 if (MSVC)
-    # Prevent Windows.h overwriting min and max with macros
-    # Keep Math defines such as M_PI
-    target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX _USE_MATH_DEFINES)
+	# Prevent Windows.h overwriting min and max with macros
+	# Keep Math defines such as M_PI
+	target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX _USE_MATH_DEFINES)
 endif ()
 
 ##############################################################
@@ -103,16 +120,16 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_BINARY_DIR})
 list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR})
 
 if (NOT EXISTS "${PROJECT_BINARY_DIR}/conan.cmake")
-    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-    file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.16.1/conan.cmake"
-            "${CMAKE_BINARY_DIR}/conan.cmake"
-            EXPECTED_HASH SHA256=396e16d0f5eabdc6a14afddbcfff62a54a7ee75c6da23f32f7a31bc85db23484
-            TLS_VERIFY ON)
+	message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+	file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.16.1/conan.cmake"
+			"${CMAKE_BINARY_DIR}/conan.cmake"
+			EXPECTED_HASH SHA256=396e16d0f5eabdc6a14afddbcfff62a54a7ee75c6da23f32f7a31bc85db23484
+			TLS_VERIFY ON)
 endif ()
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 conan_cmake_run(CONANFILE conanfile.py
-        BASIC_SETUP
-        BUILD missing)
+		BASIC_SETUP
+		BUILD missing)
 
 # Don't build tests for deps
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
@@ -152,9 +169,9 @@ find_package(Threads REQUIRED)
 # GTest should be compiled with same flags as code under test
 # so using conan binaries causes strange errors
 FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG release-1.11.0
+		googletest
+		GIT_REPOSITORY https://github.com/google/googletest.git
+		GIT_TAG release-1.11.0
 )
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -166,14 +183,14 @@ FetchContent_MakeAvailable(googletest)
 # License: BSLv1
 ##################################
 FetchContent_Declare(
-        osmium
-        GIT_REPOSITORY https://github.com/osmcode/libosmium.git
-        GIT_TAG v2.16.0)
+		osmium
+		GIT_REPOSITORY https://github.com/osmcode/libosmium.git
+		GIT_TAG v2.16.0)
 FetchContent_GetProperties(osmium)
 if (NOT osmium_POPULATED)
-    FetchContent_Populate(osmium)
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${osmium_SOURCE_DIR}/cmake) # use osmium cmake scripts to find its deps
-    include_directories(${osmium_SOURCE_DIR}/include)
+	FetchContent_Populate(osmium)
+	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${osmium_SOURCE_DIR}/cmake) # use osmium cmake scripts to find its deps
+	include_directories(${osmium_SOURCE_DIR}/include)
 endif ()
 
 find_package(EXPAT CONFIG REQUIRED)
@@ -181,8 +198,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE expat::expat)
 
 find_package(BZip2 CONFIG)
 if (BZIP2_FOUND)
-    target_link_libraries(${PROJECT_NAME} PRIVATE BZip2::BZip2)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE UGR_IO_COMPRESSION_BZ2)
+	target_link_libraries(${PROJECT_NAME} PRIVATE BZip2::BZip2)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE UGR_IO_COMPRESSION_BZ2)
 endif ()
 
 ##################################
@@ -213,60 +230,60 @@ endif ()
 set(${PROJECT_NAME}_BUILD_TESTS ON)
 
 if (${PROJECT_NAME}_BUILD_TESTS)
-    ##################################
-    # GoogleTest
-    # Test framework
-    # License: BSD-3
-    ##################################
-    if (NOT TARGET gtest)
-        FetchContent_Declare(
-                googletest
-                GIT_REPOSITORY https://github.com/google/googletest.git
-                GIT_TAG release-1.11.0
-        )
-        # For Windows: Prevent overriding the parent project's compiler/linker settings
-        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-        FetchContent_MakeAvailable(googletest)
-    endif ()
+	##################################
+	# GoogleTest
+	# Test framework
+	# License: BSD-3
+	##################################
+	if (NOT TARGET gtest)
+		FetchContent_Declare(
+				googletest
+				GIT_REPOSITORY https://github.com/google/googletest.git
+				GIT_TAG release-1.11.0
+		)
+		# For Windows: Prevent overriding the parent project's compiler/linker settings
+		set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+		FetchContent_MakeAvailable(googletest)
+	endif ()
 
-    ##################################
-    # matplotlib_cpp
-    # C++ wrapper around matplotlib for plotting of tests
-    # License: BSD-3
-    ##################################
-    # We do not really care about the performance of this as it is only for testing
-    FetchContent_Declare(
-            matplotlib_cpp
-            GIT_REPOSITORY https://github.com/lava/matplotlib-cpp.git
-            GIT_TAG 61501081ea32549df1a02dca26cb4edbe0b6a890
-    )
-    FetchContent_GetProperties(matplotlib_cpp)
-    if (NOT matplotlib_cpp_POPULATED)
-        FetchContent_Populate(matplotlib_cpp)
-        include_directories(${matplotlib_cpp_SOURCE_DIR})
-    endif ()
+	##################################
+	# matplotlib_cpp
+	# C++ wrapper around matplotlib for plotting of tests
+	# License: BSD-3
+	##################################
+	# We do not really care about the performance of this as it is only for testing
+	FetchContent_Declare(
+			matplotlib_cpp
+			GIT_REPOSITORY https://github.com/lava/matplotlib-cpp.git
+			GIT_TAG 61501081ea32549df1a02dca26cb4edbe0b6a890
+	)
+	FetchContent_GetProperties(matplotlib_cpp)
+	if (NOT matplotlib_cpp_POPULATED)
+		FetchContent_Populate(matplotlib_cpp)
+		include_directories(${matplotlib_cpp_SOURCE_DIR})
+	endif ()
 
-    ##################################
-    # matplot++
-    # C++ data viz
-    # License: MIT
-    ##################################
-    # We do not really care about the performance of this as it is only for testing
-    #set(USE_SYSTEM_CIMG ON)
-    #FetchContent_Declare(
-    #    matplotplusplus
-    #    GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus
-    #    GIT_TAG origin/master
-    #)
-    #FetchContent_GetProperties(matplotplusplus)
-    #if(NOT matplotplusplus_POPULATED)
-    #    FetchContent_Populate(matplotplusplus)
-    #    add_subdirectory(${matplotplusplus_SOURCE_DIR} ${matplotplusplus_BINARY_DIR} EXCLUDE_FROM_ALL)
-    #endif()
-    #target_link_libraries(${PROJECT_NAME} PUBLIC Matplot++::matplot)
+	##################################
+	# matplot++
+	# C++ data viz
+	# License: MIT
+	##################################
+	# We do not really care about the performance of this as it is only for testing
+	#set(USE_SYSTEM_CIMG ON)
+	#FetchContent_Declare(
+	#    matplotplusplus
+	#    GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus
+	#    GIT_TAG origin/master
+	#)
+	#FetchContent_GetProperties(matplotplusplus)
+	#if(NOT matplotplusplus_POPULATED)
+	#    FetchContent_Populate(matplotplusplus)
+	#    add_subdirectory(${matplotplusplus_SOURCE_DIR} ${matplotplusplus_BINARY_DIR} EXCLUDE_FROM_ALL)
+	#endif()
+	#target_link_libraries(${PROJECT_NAME} PUBLIC Matplot++::matplot)
 
-    enable_testing()
-    add_subdirectory(test)
+	enable_testing()
+	add_subdirectory(test)
 endif ()
 
 #############################################################
@@ -274,20 +291,20 @@ endif ()
 #############################################################
 
 if (BUILD_DOC)
-    find_package(Doxygen)
-    if (DOXYGEN_FOUND)
-        SET(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in)
-        SET(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+	find_package(Doxygen)
+	if (DOXYGEN_FOUND)
+		SET(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in)
+		SET(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
-        configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+		configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
 
-        add_custom_target(doc ALL
-                COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                COMMENT "Buidling Doxygen documentation"
-                VERBATIM)
-    else (DOXYGEN_FOUND)
-        message("No doxygen binary found on the system.")
-        SET(${BUILD_DOC} OFF)
-    endif ()
+		add_custom_target(doc ALL
+				COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+				WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+				COMMENT "Buidling Doxygen documentation"
+				VERBATIM)
+	else (DOXYGEN_FOUND)
+		message("No doxygen binary found on the system.")
+		SET(${BUILD_DOC} OFF)
+	endif ()
 endif ()

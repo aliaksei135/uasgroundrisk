@@ -2,6 +2,7 @@
 #define TYPEDEFS_H
 
 #include <vector>
+#include <Eigen/Dense>
 
 namespace ugr
 {

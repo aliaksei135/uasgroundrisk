@@ -4,7 +4,8 @@
  *  Created by A.Pilko on 17/06/2021.
  */
 
-#include "WeatherMap.h"
+#include "uasgroundrisk/risk_analysis/weather/WeatherMap.h"
+
 #include "../../utils/VectorOperations.h"
 #include <cassert>
 #include <cmath>
@@ -19,7 +20,7 @@ ugr::risk::WeatherMap::WeatherMap(const std::array<float, 4> bounds, const float
 }
 
 void ugr::risk::WeatherMap::addConstantWind(const gridmap::GridMapDataType speed,
-                                            const gridmap::GridMapDataType direction)
+											const gridmap::GridMapDataType direction)
 {
 	if (speed < 0) throw std::out_of_range("Wind speed must be positive");
 	if (direction < 0 || direction > 360)

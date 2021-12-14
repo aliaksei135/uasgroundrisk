@@ -8,12 +8,12 @@
 #define UASGROUNDRISK_SRC_RISK_ANALYSIS_RISKMAP_H_
 #include <random>
 
-#include "../map_gen/PopulationMap.h"
-#include "RiskEnums.h"
-#include "aircraft/AircraftDescentModel.h"
-#include "aircraft/AircraftStateModel.h"
-#include "weather/WeatherMap.h"
-#include "../gridmap/GridMap.h"
+#include "uasgroundrisk/map_gen/PopulationMap.h"
+#include "uasgroundrisk/risk_analysis/RiskEnums.h"
+#include "uasgroundrisk/risk_analysis/aircraft/AircraftDescentModel.h"
+#include "uasgroundrisk/risk_analysis/aircraft/AircraftStateModel.h"
+#include "uasgroundrisk/risk_analysis/weather/WeatherMap.h"
+#include "uasgroundrisk/gridmap/GridMap.h"
 
 
 namespace ugr

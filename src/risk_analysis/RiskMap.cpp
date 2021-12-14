@@ -4,7 +4,7 @@
  *  Created by A.Pilko on 17/06/2021.
  */
 
-#include "RiskMap.h"
+#include "uasgroundrisk/risk_analysis/RiskMap.h"
 #include "../utils/DataFitting.h"
 #include "../utils/VectorOperations.h"
 #include <Eigen/Dense>
@@ -23,7 +23,7 @@ ugr::risk::RiskMap::RiskMap(
 	AircraftStateModel aircraftState,
 	const WeatherMap& weather)
 	: GeospatialGridMap(populationMap.getBounds(),
-	                    static_cast<int>(populationMap.getResolution())), descentModel(aircraftDescent),
+						static_cast<int>(populationMap.getResolution())), descentModel(aircraftDescent),
 	  stateModel(std::move(aircraftState)),
 	  weather(weather),
 	  generator(std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()))
@@ -45,13 +45,13 @@ ugr::gridmap::GridMap& ugr::risk::RiskMap::generateMap(
 	const std::vector<RiskType>& risksToGenerate)
 {
 	if (std::find(risksToGenerate.begin(), risksToGenerate.end(),
-	              RiskType::FATALITY) != risksToGenerate.end())
+				  RiskType::FATALITY) != risksToGenerate.end())
 	{
 		generateStrikeMap();
 		generateFatalityMap();
 	}
 	else if (std::find(risksToGenerate.begin(), risksToGenerate.end(),
-	                   RiskType::STRIKE) != risksToGenerate.end())
+					   RiskType::STRIKE) != risksToGenerate.end())
 	{
 		generateStrikeMap();
 	}
@@ -152,7 +152,7 @@ void ugr::risk::RiskMap::addPointStrikeMap(const gridmap::Index& index)
 	Matrix ballisticImpactRisk(sizeX, sizeY);
 
 	makePointImpactMap(index, glideImpactRisk, ballisticImpactRisk, glideAngle, glideVelocity, ballisticAngle,
-	                   ballisticVelocity);
+					   ballisticVelocity);
 
 	// Synchronise writing to the common gridmap
 #pragma omp critical
@@ -203,10 +203,10 @@ void ugr::risk::RiskMap::addPointStrikeMap(const gridmap::Index& index)
 }
 
 void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index, gridmap::Matrix& outGlide,
-                                            gridmap::Matrix& outBallistic,
-                                            GridMapDataType& outGlideAngle, GridMapDataType& outGlideVelocity,
-                                            GridMapDataType& outBallisticAngle,
-                                            GridMapDataType& outBallisticVelocity)
+											gridmap::Matrix& outBallistic,
+											GridMapDataType& outGlideAngle, GridMapDataType& outGlideVelocity,
+											GridMapDataType& outBallisticAngle,
+											GridMapDataType& outBallisticVelocity)
 {
 	assert(outGlide.size() == outBallistic.size());
 	const Size size{outGlide.rows(), outGlide.cols()};
@@ -341,8 +341,8 @@ double ugr::risk::RiskMap::vel2ke(const double velocity, const double mass)
 }
 
 double ugr::risk::RiskMap::fatalityProbability(const double alpha, const double beta,
-                                               const double impactEnergy,
-                                               const double shelterFactor)
+											   const double impactEnergy,
+											   const double shelterFactor)
 {
 	return 1 / (sqrt(alpha / beta)) *
 		pow(beta / impactEnergy, 1 / (4 * shelterFactor));

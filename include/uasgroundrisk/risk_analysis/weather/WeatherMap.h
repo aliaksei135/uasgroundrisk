@@ -7,7 +7,9 @@
 #ifndef UASGROUNDRISK_SRC_RISK_ANALYSIS_WEATHER_WEATHERMAP_H_
 #define UASGROUNDRISK_SRC_RISK_ANALYSIS_WEATHER_WEATHERMAP_H_
 
-#include "../../map_gen/GeospatialGridMap.h"
+#include <array>
+
+#include "../../../../src/map_gen/GeospatialGridMap.h"
 
 namespace ugr
 {

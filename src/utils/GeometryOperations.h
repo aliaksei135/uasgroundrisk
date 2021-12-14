@@ -1,6 +1,6 @@
 #ifndef GEOMETRYOPERATIONS_H
 #define GEOMETRYOPERATIONS_H
-#include "../gridmap/TypeDefs.h"
+#include "uasgroundrisk/gridmap/TypeDefs.h"
 #include <array>
 
 namespace ugr

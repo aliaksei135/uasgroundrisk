@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../src/risk_analysis/weather/WeatherMap.h"
+#include "uasgroundrisk/risk_analysis/weather/WeatherMap.h"
 
 using namespace ugr::risk;
 

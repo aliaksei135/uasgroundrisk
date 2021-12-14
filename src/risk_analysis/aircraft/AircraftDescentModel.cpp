@@ -4,7 +4,8 @@
  *  Created by A.Pilko on 17/06/2021.
  */
 
-#include "AircraftDescentModel.h"
+#include "uasgroundrisk/risk_analysis/aircraft/AircraftDescentModel.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -15,11 +16,11 @@ using namespace ugr::risk;
 #define AIR_DENSITY 1.225
 
 AircraftDescentModel::AircraftDescentModel(const double mass, const double width,
-                                           const double length, const double cruiseSpeed,
-                                           const double ballisticFrontalArea,
-                                           const double ballisticDragCoeff,
-                                           const double glideAirspeed,
-                                           const double glideRatio)
+										   const double length, const double cruiseSpeed,
+										   const double ballisticFrontalArea,
+										   const double ballisticDragCoeff,
+										   const double glideAirspeed,
+										   const double glideRatio)
 	: mass(mass), width(width), length(length), cruiseSpeed(cruiseSpeed),
 	  ballisticFrontalArea(ballisticFrontalArea),
 	  ballisticDragCoeff(ballisticDragCoeff), glideAirspeed(glideAirspeed),
@@ -49,7 +50,7 @@ std::vector<ImpactDataStruct> ugr::risk::AircraftDescentModel::glideImpact(
 }
 
 ugr::risk::ImpactDataStruct ugr::risk::AircraftDescentModel::ballisticImpact(const double altitude, const double velX,
-                                                                             double velZ) const
+																			 double velZ) const
 {
 	// This is essentially a port of
 	// https://github.com/JARUS-QM/casex/blob/master/casex/ballistic_descent_models.py
@@ -75,7 +76,7 @@ ugr::risk::ImpactDataStruct ugr::risk::AircraftDescentModel::ballisticImpact(con
 		mass / c * log1p(vxTop * c * (fmin(impactTime, tC) - tTop) / mass);
 	const auto vixC = velX / (1 + (tC * velX) / (mass / c));
 	const auto viyC = fmin(gamma * 0.999,
-	                       gamma * tanh(GRAVITY_ACCEL * (tC - tTop) / gamma + Hd));
+						   gamma * tanh(GRAVITY_ACCEL * (tC - tTop) / gamma + Hd));
 	const auto mx = fmax(0, impactTime - tC);
 	const auto x3 = vixC * exp(-1. / 2 * log(1 - pow(viyC, 2) / pow(gamma, 2))) *
 		gamma / GRAVITY_ACCEL *

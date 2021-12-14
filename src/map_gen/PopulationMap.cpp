@@ -4,7 +4,7 @@
  *  Created by A.Pilko on 09/04/2021.
  */
 
-#include "PopulationMap.h"
+#include "uasgroundrisk/map_gen/PopulationMap.h"
 #include "../utils/GeometryProjectionUtils.h"
 #include "GridMapOSMHandler.h"
 
@@ -12,17 +12,17 @@
 using namespace ugr::util;
 
 ugr::mapping::PopulationMap::PopulationMap(std::array<float, 4> bounds,
-                                           const int resolution)
+										   const int resolution)
 	: GeospatialGridMap(bounds, resolution),
 	  builder(osmium::geom::Coordinates(bounds[1], bounds[0]),
-	          osmium::geom::Coordinates(bounds[3], bounds[2]))
+			  osmium::geom::Coordinates(bounds[3], bounds[2]))
 {
 	n2wHandler.ignore_errors();
 }
 
 void ugr::mapping::PopulationMap::addOSMLayer(const std::string& layerName,
-                                              const std::vector<OSMTag>& tags,
-                                              float defaultValue)
+											  const std::vector<OSMTag>& tags,
+											  float defaultValue)
 {
 	add(layerName, defaultValue);
 	get(layerName).setZero();
@@ -50,7 +50,7 @@ void ugr::mapping::PopulationMap::eval()
 		return;
 	}
 	GridMapOSMHandler handler(this, tagLayerMap, popDensityGeomMap,
-	                          densityTagMap);
+							  densityTagMap);
 	OSMOverpassQuery query = builder.build();
 	query.makeQuery(n2wHandler, handler);
 

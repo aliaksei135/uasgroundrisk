@@ -3,8 +3,10 @@
  *
  *  Created by A.Pilko on 17/06/2021.
  */
-#include "../src/risk_analysis/aircraft/AircraftDescentModel.h"
+
 #include <gtest/gtest.h>
+
+#include "uasgroundrisk/risk_analysis/aircraft/AircraftDescentModel.h"
 
 using namespace ugr::risk;
 

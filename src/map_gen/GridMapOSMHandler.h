@@ -9,7 +9,7 @@
 
 #include "osm/OSMOverpassQuery.h"
 #include <geos_c.h>
-#include "../gridmap/GridMap.h"
+#include "uasgroundrisk/gridmap/GridMap.h"
 #include <map>
 #include <osmium/handler.hpp>
 #include <proj.h>

@@ -4,14 +4,17 @@
  *  Created by A.Pilko on 15/06/2021.
  */
 
-#include "../src/utils/GeometryProjectionUtils.h"
-#include <../src/map_gen/PopulationMap.h>
+#include "uasgroundrisk/gridmap/TypeDefs.h"
+#include "uasgroundrisk/map_gen/PopulationMap.h"
 #include <Eigen/Dense>
 // #include <matplotlibcpp.h>
+#include <array>
+#include <fstream>
 #include <gtest/gtest.h>
 
 
 using namespace ugr::mapping;
+using namespace ugr::gridmap;
 // namespace plt = matplotlibcpp;
 
 class PopulationMapTests : public ::testing::Test
@@ -57,7 +60,7 @@ TEST_F(PopulationMapTests, SingleLayerTest)
 
 	auto size = popMap.getSize();
 
-	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+	const static Eigen::IOFormat CSVFormat(Eigen::FullPrecision, Eigen::DontAlignCols, ", ", "\n");
 
 	std::ofstream file("schools_pop_mat.csv");
 	if (file.is_open())

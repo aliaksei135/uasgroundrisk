@@ -4,7 +4,7 @@
  *  Created by A.Pilko on 17/06/2021.
  */
 
-#include "../src/risk_analysis/RiskMap.h"
+#include "uasgroundrisk/risk_analysis/RiskMap.h"
 #include <gtest/gtest.h>
 // #include <matplotlibcpp.h>
 
