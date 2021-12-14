@@ -3,6 +3,7 @@
 
 #include "../map_gen/GeospatialGridMap.h"
 #include "../utils/GeometryOperations.h"
+#include <memory>
 
 
 namespace ugr
