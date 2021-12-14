@@ -1,21 +1,6 @@
-src/gridmap/GridMap.h:127:9: performance:inconclusive: Technically the member function 'ugr::gridmap::GridMap::writeToNetCDF' can be static (but you may consider moving to unnamed namespace). [functionStatic]
-   void writeToNetCDF(const std::string& path) const;
-        ^
-src/gridmap/GridMap.cpp:103:15: note: Technically the member function 'ugr::gridmap::GridMap::writeToNetCDF' can be static (but you may consider moving to unnamed namespace).
-void GridMap::writeToNetCDF(const std::string& path) const
-              ^
-src/gridmap/GridMap.h:127:9: note: Technically the member function 'ugr::gridmap::GridMap::writeToNetCDF' can be static (but you may consider moving to unnamed namespace).
-   void writeToNetCDF(const std::string& path) const;
-        ^
 src/gridmap/GridMap.cpp:24:8: style: Consider using std::transform algorithm instead of a raw loop. [useStlAlgorithm]
   keys.emplace_back(pair.first);
        ^
-src/map_gen/GeospatialGridMap.h:83:9: performance:inconclusive: Technically the member function 'ugr::mapping::GeospatialGridMap::eval' can be static (but you may consider moving to unnamed namespace). [functionStatic]
-   void eval()
-        ^
-src/gridmap/Iterators.h:89:19: style: Consider using std::transform algorithm instead of a raw loop. [useStlAlgorithm]
-     localPolygon.emplace_back(gridmap.world2Local(point));
-                  ^
 src/utils/GeometryProjectionUtils.h:112:0: information: Skipping configuration 'PROJ_DATA_PATH' since the value of 'PROJ_DATA_PATH' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly. [ConfigurationNotChecked]
    projDataPaths[0] = PROJ_DATA_PATH;
 ^
@@ -52,10 +37,10 @@ test/GridMapOSMConstructionTests.cpp:83:12: style: Variable 'size' is assigned a
 test/OSMResponseTests.cpp:125:38: style: Consider using std::any_of algorithm instead of a raw loop. [useStlAlgorithm]
           if (!n.location().valid()) {
                                      ^
-test/PopulationMapTests.cpp:58:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
+test/PopulationMapTests.cpp:61:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
  auto size = popMap.getSize();
            ^
-test/PopulationMapTests.cpp:98:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
+test/PopulationMapTests.cpp:101:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
  auto size = popMap.getSize();
            ^
 test/ProjectionTests.cpp:22:0: information: Skipping configuration 'PROJ_DATA_PATH' since the value of 'PROJ_DATA_PATH' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly. [ConfigurationNotChecked]
@@ -73,8 +58,5 @@ test/GridMapOSMConstructionTests.cpp:31:0: style: The function 'SetUp' is never 
 src/map_gen/osm/builder/OSMOverpassQueryBuilder.cpp:31:0: style: The function 'withTimeout' is never used. [unusedFunction]
 
 ^
-src/gridmap/GridMap.cpp:103:0: style: The function 'writeToNetCDF' is never used. [unusedFunction]
-
-^
-nofile:0:0: information: Cppcheck cannot find all the include files (use --check-config for details) [missingIncludeSystem]
+nofile:0:0: information: Cppcheck cannot find all the include files (use --check-config for details) [missingInclude]
 
