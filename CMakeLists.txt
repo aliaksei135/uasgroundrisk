@@ -102,11 +102,11 @@ list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR})
 if (NOT EXISTS "${PROJECT_BINARY_DIR}/conan.cmake")
     message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
     file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.16.1/conan.cmake"
-            "${PROJECT_BINARY_DIR}/conan.cmake"
+            "${CMAKE_BINARY_DIR}/conan.cmake"
             EXPECTED_HASH SHA256=396e16d0f5eabdc6a14afddbcfff62a54a7ee75c6da23f32f7a31bc85db23484
             TLS_VERIFY ON)
 endif ()
-include(${PROJECT_BINARY_DIR}/conan.cmake)
+include(${CMAKE_BINARY_DIR}/conan.cmake)
 conan_cmake_run(CONANFILE conanfile.py
         BASIC_SETUP
         BUILD missing)
@@ -132,9 +132,11 @@ set(PROJ_DATA ${PROJ_proj_RES_DIRS_${${PROJECT_NAME}_UPPER_BUILD_TYPE}})
 target_compile_definitions(${PROJECT_NAME} PUBLIC PROJ_DATA_PATH="${PROJ_DATA}")
 target_link_libraries(${PROJECT_NAME} PUBLIC PROJ::PROJ)
 
+find_package(geos CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PUBLIC GEOS::GEOS)
 
 find_package(OpenMP REQUIRED)
-target_link_directories(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
+target_link_directories(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
 if(OPENMP_FOUND)
 message("OPENMP FOUND")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
