@@ -133,7 +133,7 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC PROJ_DATA_PATH="${PROJ_DATA}")
 target_link_libraries(${PROJECT_NAME} PUBLIC PROJ::PROJ)
 
 find_package(geos CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PUBLIC GEOS::GEOS)
+target_link_libraries(${PROJECT_NAME} PUBLIC GEOS::geos_c)
 
 find_package(OpenMP REQUIRED)
 target_link_directories(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
