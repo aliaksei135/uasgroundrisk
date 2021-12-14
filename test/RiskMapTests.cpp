@@ -266,8 +266,8 @@ TEST_F(RiskMapTests, NilWindPointImpactMapTest)
 	                           dummy, dummy, dummy, dummy);
 
 	// Make sure they are actually PDFs
-	ASSERT_NEAR(glideImpact.sum(), 1, 1e-5);
-	ASSERT_NEAR(ballisticImpact.sum(), 1, 1e-5);
+	ASSERT_NEAR(glideImpact.sum(), 1, 1e-3);
+	ASSERT_NEAR(ballisticImpact.sum(), 1, 1e-3);
 
 	int gmx, gmy, bmx, bmy;
 	glideImpact.maxCoeff(&gmx, &gmy);
@@ -330,8 +330,8 @@ TEST_F(RiskMapTests, WindPointImpactMapTest)
 	                           dummy, dummy, dummy, dummy);
 
 	// Make sure they are actually PDFs
-	ASSERT_NEAR(glideImpact.sum(), 1, 1e-5);
-	ASSERT_NEAR(ballisticImpact.sum(), 1, 1e-5);
+	ASSERT_NEAR(glideImpact.sum(), 1, 1e-3);
+	ASSERT_NEAR(ballisticImpact.sum(), 1, 1e-3);
 
 	int gmx, gmy, bmx, bmy;
 	glideImpact.maxCoeff(&gmx, &gmy);
