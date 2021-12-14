@@ -7,7 +7,7 @@ project(uasgroundrisk
 set(CMAKE_CXX_STANDARD 11)
 set(PYTHON_VERSION 3)
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 Include(FetchContent)
 include_guard(GLOBAL)
 
@@ -98,7 +98,6 @@ endif ()
 ##############################################################
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_BINARY_DIR})
 list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR})
-message("Current Bin dir ${CMAKE_BINARY_DIR}")
 
 if (NOT EXISTS "${PROJECT_BINARY_DIR}/conan.cmake")
     message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
