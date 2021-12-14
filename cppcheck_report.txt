@@ -13,7 +13,7 @@ src/gridmap/GridMap.cpp:24:8: style: Consider using std::transform algorithm ins
 src/map_gen/GeospatialGridMap.h:83:9: performance:inconclusive: Technically the member function 'ugr::mapping::GeospatialGridMap::eval' can be static (but you may consider moving to unnamed namespace). [functionStatic]
    void eval()
         ^
-src/gridmap/Iterators.h:88:19: style: Consider using std::transform algorithm instead of a raw loop. [useStlAlgorithm]
+src/gridmap/Iterators.h:89:19: style: Consider using std::transform algorithm instead of a raw loop. [useStlAlgorithm]
      localPolygon.emplace_back(gridmap.world2Local(point));
                   ^
 src/utils/GeometryProjectionUtils.h:112:0: information: Skipping configuration 'PROJ_DATA_PATH' since the value of 'PROJ_DATA_PATH' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly. [ConfigurationNotChecked]
