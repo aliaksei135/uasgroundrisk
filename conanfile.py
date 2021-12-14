@@ -10,6 +10,7 @@ class ugrConan(ConanFile):
     license = "Proprietary"
     generators = "cmake_find_package_multi"
     build_requires = "cmake/3.16.2"
+    build_policy = 'missing'
 
     exports_sources = "CMakeLists.txt", "src/*"
     
@@ -19,7 +20,6 @@ class ugrConan(ConanFile):
     def requirements(self):
         self.requires("eigen/[>3.3.9]")
         self.requires("openssl/3.0.0")
-        self.requires("geos/3.9.1")
         self.requires("libcurl/[>7.75.0]")
         self.requires("proj/8.0.1")
         self.requires("cpr/1.6.2")
@@ -49,8 +49,9 @@ class ugrConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure()
+        cmake.configure(source_folder=self._source_subfolder)
         cmake.build()
+        cmake.test()
 
 
     def package(self):
