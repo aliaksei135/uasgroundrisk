@@ -191,7 +191,7 @@ FetchContent_GetProperties(osmium)
 if (NOT osmium_POPULATED)
 	FetchContent_Populate(osmium)
 	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${osmium_SOURCE_DIR}/cmake) # use osmium cmake scripts to find its deps
-	target_include_directories(${PROJECT_NAME} PRIVATE ${osmium_SOURCE_DIR}/include)
+	target_include_directories(${PROJECT_NAME} PUBLIC ${osmium_SOURCE_DIR}/include)
 endif ()
 
 find_package(EXPAT CONFIG REQUIRED)
@@ -208,7 +208,9 @@ endif ()
 # Testing
 ##############################################################
 
-set(${PROJECT_NAME}_BUILD_TESTS ON)
+if (PROJECT_IS_TOP_LEVEL)
+	set(${PROJECT_NAME}_BUILD_TESTS ON)
+endif()
 
 if (${PROJECT_NAME}_BUILD_TESTS)
 	##################################
@@ -241,7 +243,7 @@ if (${PROJECT_NAME}_BUILD_TESTS)
 	FetchContent_GetProperties(matplotlib_cpp)
 	if (NOT matplotlib_cpp_POPULATED)
 		FetchContent_Populate(matplotlib_cpp)
-		target_include_directories(${PROJECT_NAME} PRIVATE ${matplotlib_cpp_SOURCE_DIR})
+		target_include_directories(${PROJECT_NAME} PUBLIC ${matplotlib_cpp_SOURCE_DIR})
 	endif ()
 
 	##################################
