@@ -191,7 +191,7 @@ FetchContent_GetProperties(osmium)
 if (NOT osmium_POPULATED)
 	FetchContent_Populate(osmium)
 	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${osmium_SOURCE_DIR}/cmake) # use osmium cmake scripts to find its deps
-	include_directories(${osmium_SOURCE_DIR}/include)
+	target_include_directories(${PROJECT_NAME} PRIVATE ${osmium_SOURCE_DIR}/include)
 endif ()
 
 find_package(EXPAT CONFIG REQUIRED)
@@ -203,26 +203,6 @@ if (BZIP2_FOUND)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE UGR_IO_COMPRESSION_BZ2)
 endif ()
 
-##################################
-# grid_map
-# Grid Map and Octomap interface
-# License: BSD-3
-##################################
-#set(GRID_MAP_VERSION 1.6.4)
-#set(CATKIN_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
-#
-#FetchContent_Declare(
-#        grid_map
-#        GIT_REPOSITORY https://github.com/anybotics/grid_map.git
-#        GIT_TAG ${GRID_MAP_VERSION}
-#)
-#FetchContent_GetProperties(grid_map)
-#if (NOT grid_map_POPULATED)
-#    FetchContent_Populate(grid_map)
-#    add_subdirectory(${grid_map_SOURCE_DIR}/grid_map_core)
-#    include_directories(${grid_map_SOURCE_DIR}/grid_map_core/include)
-#endif ()
-#target_link_libraries(${PROJECT_NAME} PUBLIC grid_map_core)
 
 ##############################################################
 # Testing
@@ -261,7 +241,7 @@ if (${PROJECT_NAME}_BUILD_TESTS)
 	FetchContent_GetProperties(matplotlib_cpp)
 	if (NOT matplotlib_cpp_POPULATED)
 		FetchContent_Populate(matplotlib_cpp)
-		include_directories(${matplotlib_cpp_SOURCE_DIR})
+		target_include_directories(${PROJECT_NAME} PRIVATE ${matplotlib_cpp_SOURCE_DIR})
 	endif ()
 
 	##################################
