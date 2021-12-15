@@ -14,7 +14,7 @@
 #include <osmium/handler.hpp>
 #include <proj.h>
 
-#include "GeospatialGridMap.h"
+#include "uasgroundrisk/map_gen/GeospatialGridMap.h"
 
 using namespace ugr::gridmap;
 using namespace ugr::mapping;

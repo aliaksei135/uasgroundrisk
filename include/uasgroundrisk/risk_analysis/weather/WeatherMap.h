@@ -9,7 +9,7 @@
 
 #include <array>
 
-#include "../../../../src/map_gen/GeospatialGridMap.h"
+#include "uasgroundrisk/map_gen/GeospatialGridMap.h"
 
 namespace ugr
 {

@@ -1,9 +1,10 @@
 #ifndef ITERATORS_H
 #define ITERATORS_H
 
-#include "../../../src/map_gen/GeospatialGridMap.h"
 #include "../../../src/utils/GeometryOperations.h"
 #include <memory>
+
+#include "uasgroundrisk/map_gen/GeospatialGridMap.h"
 
 
 namespace ugr

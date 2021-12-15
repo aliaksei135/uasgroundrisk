@@ -4,7 +4,7 @@
  *  Created by A.Pilko on 18/06/2021.
  */
 
-#include "GeospatialGridMap.h"
+#include "uasgroundrisk/map_gen/GeospatialGridMap.h"
 
 #include "../utils/GeometryProjectionUtils.h"
 

@@ -9,6 +9,7 @@
 #include <random>
 
 #include "uasgroundrisk/map_gen/PopulationMap.h"
+#include "uasgroundrisk/map_gen/GeospatialGridMap.h"
 #include "uasgroundrisk/risk_analysis/RiskEnums.h"
 #include "uasgroundrisk/risk_analysis/aircraft/AircraftDescentModel.h"
 #include "uasgroundrisk/risk_analysis/aircraft/AircraftStateModel.h"
