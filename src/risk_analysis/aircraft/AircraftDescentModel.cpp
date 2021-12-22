@@ -16,15 +16,18 @@ using namespace ugr::risk;
 #define AIR_DENSITY 1.225
 
 AircraftDescentModel::AircraftDescentModel(const double mass, const double width,
-										   const double length, const double cruiseSpeed,
-										   const double ballisticFrontalArea,
-										   const double ballisticDragCoeff,
-										   const double glideAirspeed,
-										   const double glideRatio)
+                                           const double length, const double cruiseSpeed,
+                                           const double ballisticFrontalArea,
+                                           const double ballisticDragCoeff,
+                                           const double glideAirspeed,
+                                           const double glideRatio, const double parachuteDragCoeff,
+                                           const double parachuteArea, const double parachuteDeployTime)
 	: mass(mass), width(width), length(length), cruiseSpeed(cruiseSpeed),
 	  ballisticFrontalArea(ballisticFrontalArea),
 	  ballisticDragCoeff(ballisticDragCoeff), glideAirspeed(glideAirspeed),
-	  glideRatio(glideRatio), c(0.5 * ballisticFrontalArea * AIR_DENSITY * ballisticDragCoeff),
+	  glideRatio(glideRatio), parachuteDragCoeff(parachuteDragCoeff), parachuteArea(parachuteArea),
+	  parachuteDeployTime(parachuteDeployTime),
+	  c(0.5 * ballisticFrontalArea * AIR_DENSITY * ballisticDragCoeff),
 	  gamma(sqrt((mass * GRAVITY_ACCEL) / c))
 {
 }
@@ -50,7 +53,7 @@ std::vector<ImpactDataStruct> ugr::risk::AircraftDescentModel::glideImpact(
 }
 
 ugr::risk::ImpactDataStruct ugr::risk::AircraftDescentModel::ballisticImpact(const double altitude, const double velX,
-																			 double velZ) const
+                                                                             double velZ) const
 {
 	// This is essentially a port of
 	// https://github.com/JARUS-QM/casex/blob/master/casex/ballistic_descent_models.py
@@ -76,7 +79,7 @@ ugr::risk::ImpactDataStruct ugr::risk::AircraftDescentModel::ballisticImpact(con
 		mass / c * log1p(vxTop * c * (fmin(impactTime, tC) - tTop) / mass);
 	const auto vixC = velX / (1 + (tC * velX) / (mass / c));
 	const auto viyC = fmin(gamma * 0.999,
-						   gamma * tanh(GRAVITY_ACCEL * (tC - tTop) / gamma + Hd));
+	                       gamma * tanh(GRAVITY_ACCEL * (tC - tTop) / gamma + Hd));
 	const auto mx = fmax(0, impactTime - tC);
 	const auto x3 = vixC * exp(-1. / 2 * log(1 - pow(viyC, 2) / pow(gamma, 2))) *
 		gamma / GRAVITY_ACCEL *
@@ -114,5 +117,32 @@ std::vector<ImpactDataStruct> ugr::risk::AircraftDescentModel::ballisticImpact(
 	{
 		out[i] = ballisticImpact(altitude[i], velX[i], velZ[i]);
 	}
+	return out;
+}
+
+ImpactDataStruct AircraftDescentModel::parachuteImpact(const double altitude, const double velX) const
+{
+	/* Distance travelled before parachute fully deploys */
+	const auto preDeployDistance = parachuteDeployTime * velX;
+
+	/* Lateral velocity instantly reduces to zero after deploy */
+	const auto dropTime = altitude * sqrt((parachuteArea * parachuteDragCoeff) / 2 * mass * GRAVITY_ACCEL);
+	const auto impactVel = altitude / dropTime;
+	constexpr auto impactAngle = 90; //degrees
+
+	return {preDeployDistance, impactVel, impactAngle, dropTime};
+}
+
+std::vector<ImpactDataStruct> AircraftDescentModel::parachuteImpact(const std::vector<double>& altitude,
+                                                                    const std::vector<double>& velX) const
+{
+	assert(altitude.size() == velX.size());
+
+	std::vector<ImpactDataStruct> out(altitude.size());
+	for (int i = 0; i < altitude.size(); ++i)
+	{
+		out[i] = parachuteImpact(altitude[i], velX[i]);
+	}
+
 	return out;
 }

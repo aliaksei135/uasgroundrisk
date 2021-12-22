@@ -52,10 +52,16 @@ namespace ugr
 			double glideAirspeed;
 			double glideRatio;
 
+			/* Parachute Params */
+			double parachuteDragCoeff;
+			double parachuteArea;
+			double parachuteDeployTime;
+
 			AircraftDescentModel(double mass, double width, double length,
 			                     double cruiseSpeed, double ballisticFrontalArea,
 			                     double ballisticDragCoeff, double glideAirspeed,
-			                     double glideRatio);
+			                     double glideRatio, double parachuteDragCoeff, double parachuteArea,
+			                     double parachuteDeployTime);
 
 			/**
 			 * The glide impact data of the aircraft from a given altitude
@@ -86,6 +92,21 @@ namespace ugr
 			std::vector<ImpactDataStruct> ballisticImpact(const std::vector<double>& altitude,
 			                                              const std::vector<double>& velX,
 			                                              const std::vector<double>& velZ) const;
+
+
+			/**
+			 * \brief The parachute impact data of the aircraft from a given altitude and velocity
+			 * \param altitude the altitude in metres
+			 * \param velX the horizontal velocity in m/s
+			 * \return an ImpactDataStruct of the impact
+			 */
+			ImpactDataStruct parachuteImpact(double altitude, double velX) const;
+
+			/**
+			 * A vectorised version of parachuteImpact. All inputs must be of a common length
+			 */
+			std::vector<ImpactDataStruct> parachuteImpact(const std::vector<double>& altitude,
+			                                              const std::vector<double>& velX) const;
 
 		protected:
 			double c;
