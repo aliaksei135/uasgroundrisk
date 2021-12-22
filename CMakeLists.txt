@@ -208,7 +208,7 @@ endif ()
 # Testing
 ##############################################################
 
-if (PROJECT_IS_TOP_LEVEL)
+if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 	set(${PROJECT_NAME}_BUILD_TESTS ON)
 endif()
 
