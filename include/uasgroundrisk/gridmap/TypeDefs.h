@@ -1,5 +1,5 @@
-#ifndef TYPEDEFS_H
-#define TYPEDEFS_H
+#ifndef UGR_TYPEDEFS_H
+#define UGR_TYPEDEFS_H
 
 #include <vector>
 #include <Eigen/Dense>
@@ -35,4 +35,4 @@ namespace ugr
 		typedef std::vector<Position> GeoPolygon;
 	}
 }
-#endif // TYPEDEFS_H
+#endif // UGR_TYPEDEFS_H
