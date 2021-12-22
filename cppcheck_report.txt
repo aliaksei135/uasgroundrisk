@@ -46,10 +46,10 @@ test/PopulationMapTests.cpp:101:12: style: Variable 'size' is assigned a value t
 test/ProjectionTests.cpp:22:0: information: Skipping configuration 'PROJ_DATA_PATH' since the value of 'PROJ_DATA_PATH' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly. [ConfigurationNotChecked]
     projDataPaths[0] = PROJ_DATA_PATH;
 ^
-test/RiskMapTests.cpp:19:34: warning: Found suspicious operator ',' [constStatement]
+test/RiskMapTests.cpp:20:34: warning: Found suspicious operator ',' [constStatement]
   aircraft.state.position << 0, 0, 120;
                                  ^
-test/RiskMapTests.cpp:20:35: warning: Found suspicious operator ',' [constStatement]
+test/RiskMapTests.cpp:21:35: warning: Found suspicious operator ',' [constStatement]
   aircraft.state.velocity << 20, 0, 0;
                                   ^
 test/GridMapOSMConstructionTests.cpp:31:0: style: The function 'SetUp' is never used. [unusedFunction]
