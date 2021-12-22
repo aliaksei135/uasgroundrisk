@@ -8,6 +8,7 @@
 #define UASGROUNDRISK_SRC_RISK_ANALYSIS_RISKMAP_H_
 #include <random>
 
+#include "aircraft/AircraftModel.h"
 #include "uasgroundrisk/map_gen/PopulationMap.h"
 #include "uasgroundrisk/map_gen/GeospatialGridMap.h"
 #include "uasgroundrisk/risk_analysis/RiskEnums.h"
@@ -30,13 +31,17 @@ namespace ugr
 			 * Construct a static Risk map of a single AircraftModel
 			 * @param populationMap a GridMap of population density. Usually from
 			 * PopulationMap#eval()
-			 * @param aircraftDescent the aircraft descent model to use
-			 * @param aircraftState the current aircraft state
+			 * @param aircraftModel the aircraft model to use
 			 * @param weather the weather map
 			 */
 			RiskMap(ugr::mapping::PopulationMap& populationMap,
-			        const AircraftDescentModel& aircraftDescent,
-			        AircraftStateModel aircraftState, const WeatherMap& weather);
+			        AircraftModel& aircraftModel,
+			        const WeatherMap& weather);
+
+			RiskMap(const RiskMap& other) = delete;
+			RiskMap(RiskMap&& other) noexcept = default;
+			RiskMap& operator=(const RiskMap& other) = delete;
+			RiskMap& operator=(RiskMap&& other) noexcept = default;
 
 			/**
 			 * Generate the actual risk map(s). This takes a vector of RiskType enum
@@ -48,15 +53,15 @@ namespace ugr
 			GridMap& generateMap(const std::vector<ugr::risk::RiskType>& risksToGenerate);
 
 			void makePointImpactMap(const gridmap::Index& index,
-			                        gridmap::Matrix& outGlide, gridmap::Matrix& outBallistic,
-			                        GridMapDataType& outGlideAngle, GridMapDataType& outGlideVelocity,
-			                        GridMapDataType& outBallisticAngle, GridMapDataType& outBallisticVelocity);
+			                        std::vector<gridmap::Matrix, aligned_allocator<GridMapDataType>>& impactPDFs,
+			                        std::vector<GridMapDataType>& impactAngles,
+			                        std::vector<GridMapDataType>& impactVelocities);
 
 			void eval();
 
 		protected:
-			AircraftDescentModel descentModel;
-			AircraftStateModel stateModel;
+			AircraftModel aircraftModel;
+
 			WeatherMap weather;
 			int nSamples = 50; //CLT says 30-50 samples is good enough
 			std::default_random_engine generator;

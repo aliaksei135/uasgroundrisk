@@ -14,17 +14,17 @@
 #include <random>
 #include <utility>
 
+#include "uasgroundrisk/risk_analysis/aircraft/AircraftModel.h"
+
 
 using namespace ugr::gridmap;
 
 ugr::risk::RiskMap::RiskMap(
 	mapping::PopulationMap& populationMap,
-	const AircraftDescentModel& aircraftDescent,
-	AircraftStateModel aircraftState,
+	AircraftModel& aircraftModel,
 	const WeatherMap& weather)
 	: GeospatialGridMap(populationMap.getBounds(),
-						static_cast<int>(populationMap.getResolution())), descentModel(aircraftDescent),
-	  stateModel(std::move(aircraftState)),
+	                    static_cast<int>(populationMap.getResolution())), aircraftModel(std::move(aircraftModel)),
 	  weather(weather),
 	  generator(std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()))
 {
@@ -45,13 +45,13 @@ ugr::gridmap::GridMap& ugr::risk::RiskMap::generateMap(
 	const std::vector<RiskType>& risksToGenerate)
 {
 	if (std::find(risksToGenerate.begin(), risksToGenerate.end(),
-				  RiskType::FATALITY) != risksToGenerate.end())
+	              RiskType::FATALITY) != risksToGenerate.end())
 	{
 		generateStrikeMap();
 		generateFatalityMap();
 	}
 	else if (std::find(risksToGenerate.begin(), risksToGenerate.end(),
-					   RiskType::STRIKE) != risksToGenerate.end())
+	                   RiskType::STRIKE) != risksToGenerate.end())
 	{
 		generateStrikeMap();
 	}
@@ -80,6 +80,11 @@ void ugr::risk::RiskMap::initRiskMapLayers()
 	initLayer("Ballistic Fatality Risk");
 	initLayer("Ballistic Impact Angle");
 	initLayer("Ballistic Impact Velocity");
+
+	initLayer("Parachute Strike Risk");
+	initLayer("Parachute Fatality Risk");
+	initLayer("Parachute Impact Angle");
+	initLayer("Parachute Impact Velocity");
 }
 
 
@@ -105,7 +110,7 @@ void ugr::risk::RiskMap::generateStrikeMap()
 
 void ugr::risk::RiskMap::generateFatalityMap()
 {
-	const auto uasMass = descentModel.mass;
+	const auto uasMass = aircraftModel.mass;
 
 	const Size size = getSize();
 	const auto len1d = size.x() * size.y();
@@ -143,74 +148,50 @@ void ugr::risk::RiskMap::generateFatalityMap()
 
 void ugr::risk::RiskMap::addPointStrikeMap(const gridmap::Index& index)
 {
-	GridMapDataType glideAngle = 0;
-	GridMapDataType ballisticAngle = 0;
-	GridMapDataType glideVelocity = 0;
-	GridMapDataType ballisticVelocity = 0;
+	std::vector<GridMapDataType> impactAngles, impactVelocities;
+	std::vector<Matrix, aligned_allocator<GridMapDataType>> impactPDFs;
 
-	Matrix glideImpactRisk(sizeX, sizeY);
-	Matrix ballisticImpactRisk(sizeX, sizeY);
+	makePointImpactMap(index, impactPDFs, impactAngles, impactVelocities);
 
-	makePointImpactMap(index, glideImpactRisk, ballisticImpactRisk, glideAngle, glideVelocity, ballisticAngle,
-					   ballisticVelocity);
 
-	// Synchronise writing to the common gridmap
-#pragma omp critical
-	{
-		at("Glide Impact Angle", index) = glideAngle;
-		at("Glide Impact Velocity", index) = glideVelocity;
-		at("Ballistic Impact Angle", index) = ballisticAngle;
-		at("Ballistic Impact Velocity", index) = ballisticVelocity;
-	}
-
-	/* We have now evaluated the impact risk of the aircraft across the entire map*/
+	/* We have now evaluated the impact PDF of the aircraft*/
 	/* Now we move onto the strike risk analysis */
 
 	// These are used later
 	const GridMapDataType pixelArea = getResolution() * getResolution();
-	const auto uasWidth = descentModel.width;
+	const auto uasWidth = aircraftModel.width;
 	// Get population map and convert from people/km^2 to people/m^2
 	const Matrix& populationDensityMap = get("Population Density") * 1e-6;
 
 
-	// Work out the lethal area of the aircraft when it crashes
-	const auto& glideLethalArea = lethalArea(glideAngle, uasWidth);
-	const auto& ballisticLethalArea = lethalArea(ballisticAngle, uasWidth);
-
-	// This is a matrix version of the lethal area calculation
-	// We only have a point to analyse, so this is reduced to a scalar
-	// initLayer("Glide Lethal Area");
-	// const Matrix& glideImpactAngles = get("Glide Impact Angle");
-	// Matrix glideLethalAreas(getSize().x(), getSize().y());
-	// auto* pGlideLethalAreas = glideLethalAreas.data();
-	// for (size_t i = 0; i < len1d; ++i)
-	// {
-	// 	pGlideLethalAreas[i] = lethalArea(glideImpactAngles(i), uasWidth);
-	// }
-
-	const Matrix glideStrikeRisk = (glideImpactRisk.cwiseProduct(populationDensityMap) * glideLethalArea) / pixelArea;
-	const Matrix ballisticStrikeRisk = (ballisticImpactRisk.cwiseProduct(populationDensityMap) * ballisticLethalArea) /
-		pixelArea;
-
-	// As we are only generating the strike risk from a single point,
-	// this is summed across the entire strike risk map for that point
-	// and set as the scalar value for the point it was generated for
-#pragma omp critical
+	for (int i = 0; i < aircraftModel.descents.size(); ++i)
 	{
-		at("Glide Strike Risk", index) = glideStrikeRisk.sum();
-		at("Ballistic Strike Risk", index) = ballisticStrikeRisk.sum();
+		// Work out the lethal area of the aircraft when it crashes
+		const auto letArea = lethalArea(impactAngles[i], uasWidth);
+		const Matrix strikeRisk = (impactPDFs[i].cwiseProduct(populationDensityMap) * letArea) / pixelArea;
+		const auto strikeRiskSum = strikeRisk.sum();
+
+		const auto descentName = aircraftModel.descents[i]->getName();
+
+		// Synchronise writing to the common gridmap
+#pragma omp critical
+		{
+			// As we are only generating the strike risk from a single point,
+			// this is summed across the entire strike risk map for that point
+			// and set as the scalar value for the point it was generated for
+			at(descentName + " Strike Risk", index) = strikeRiskSum;
+			at(descentName + " Impact Angle", index) = impactAngles[i];
+			at(descentName + " Impact Velocity", index) = impactVelocities[i];
+		}
 	}
 }
 
-void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index, gridmap::Matrix& outGlide,
-											gridmap::Matrix& outBallistic,
-											GridMapDataType& outGlideAngle, GridMapDataType& outGlideVelocity,
-											GridMapDataType& outBallisticAngle,
-											GridMapDataType& outBallisticVelocity)
+void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index,
+                                            std::vector<gridmap::Matrix, aligned_allocator<GridMapDataType>>&
+                                            impactPDFs,
+                                            std::vector<GridMapDataType>& impactAngles,
+                                            std::vector<GridMapDataType>& impactVelocities)
 {
-	assert(outGlide.size() == outBallistic.size());
-	const Size size{outGlide.rows(), outGlide.cols()};
-
 	const auto& windVelX = weather.at("Wind VelX", index);
 	const auto& windVelY = weather.at("Wind VelY", index);
 	auto windXVelDist = std::normal_distribution<double>(windVelX, 5);
@@ -219,9 +200,9 @@ void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index, gridmap
 	// const Vector2d windMeans{windVelX, windVelY};
 
 	// Create samples of state distributions
-	const auto& altitude = stateModel.getAltitude();
-	const auto& lateralVel = sqrt(pow(stateModel.velocity(0), 2) + pow(stateModel.velocity(1), 2));
-	const auto& verticalVel = stateModel.velocity(2);
+	const auto& altitude = aircraftModel.state.getAltitude();
+	const auto& lateralVel = sqrt(pow(aircraftModel.state.velocity(0), 2) + pow(aircraftModel.state.velocity(1), 2));
+	const auto& verticalVel = aircraftModel.state.velocity(2);
 	auto altDist = std::normal_distribution<double>(altitude, 5);
 	auto lateralVelDist = std::normal_distribution<double>(lateralVel, 1.5);
 	auto verticalVelDist = std::normal_distribution<double>(verticalVel, 0.5);
@@ -238,91 +219,80 @@ void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index, gridmap
 
 	// Create common heading rotation
 	const Rotation2Dd headingRotation(
-		util::bearing2Angle(DEG2RAD(stateModel.getHeading())));
-
+		util::bearing2Angle(DEG2RAD(aircraftModel.state.getHeading())));
 
 	// Convert Index into vector for easy arithmetic later
 	const Vector2d indexVec{index[0], index[1]};
 
-	// Propagate samples through impact prediction
-	const auto& glideImpactSamples = descentModel.glideImpact(altVect);
-	const auto& ballisticImpactSamples =
-		descentModel.ballisticImpact(altVect, lateralVelVect, verticalVelVect);
-	util::Point2DVector glideImpactPoss(nSamples);
-	util::Point2DVector ballisticImpactPoss(nSamples);
+	std::vector<util::Gaussian2DParamVector> descentDistrParams;
 
-	double glideAngle = 0;
-	double ballisticAngle = 0;
-	double glideVelocity = 0;
-	double ballisticVelocity = 0;
-
-	// Model the descents of each of the random samples for LoC state vector to find an equal
-	// number of ground impact samples we can fit distributions to.
-#pragma omp parallel for reduction(+:ballisticAngle, ballisticVelocity, glideAngle, glideVelocity)
-	for (int i = 0; i < nSamples; ++i)
+	for (const auto& descentModel : aircraftModel.descents)
 	{
-		const auto& glideImpactSample = glideImpactSamples[i];
-		const auto& ballisticImpactSample = ballisticImpactSamples[i];
+		const auto& samples = descentModel->impact(altVect, lateralVelVect, verticalVelVect);
 
-		// As the heading rotation is an angle not a bearing, it is measured counter clockwise from
-		// the x axis corresponding to the geospatial gridmap axes.
-		// Therefore a zero rotation should correspond to motion in the x axis only, hence the y=0 here
-		const Vector2d glideDist1D(glideImpactSample.impactDistance, 0);
-		const Vector2d ballisticDist1D(ballisticImpactSample.impactDistance, 0);
+		util::Point2DVector impactPositions(nSamples);
+		double impactAngle = 0, impactVelocity = 0;
 
-		glideImpactPoss[i] =
-			((headingRotation * glideDist1D + (glideImpactSample.impactTime * windVect[i])) / xyRes) + indexVec;
-		ballisticImpactPoss[i] =
-			((headingRotation * ballisticDist1D + (ballisticImpactSample.impactTime * windVect[i])) / xyRes) + indexVec;
+		// Model the descents of each of the random samples for LoC state vector to find an equal
+		// number of ground impact samples we can fit distributions to.
+#pragma omp parallel for reduction(+:impactAngle, impactVelocity)
+		for (int i = 0; i < nSamples; ++i)
+		{
+			const auto& sample = samples[i];
 
-		ballisticAngle += ballisticImpactSample.impactAngle;
-		ballisticVelocity += ballisticImpactSample.impactVelocity;
-		glideAngle += glideImpactSample.impactAngle;
-		glideVelocity += glideImpactSample.impactVelocity;
+			// As the heading rotation is an angle not a bearing, it is measured counter clockwise from
+			// the x axis corresponding to the geospatial gridmap axes.
+			// Therefore a zero rotation should correspond to motion in the x axis only, hence the y=0 here
+			const Vector2d dist1D(sample.impactDistance, 0);
+
+			impactPositions[i] =
+				((headingRotation * dist1D + (sample.impactTime * windVect[i])) / xyRes) + indexVec;
+
+
+			impactAngle += sample.impactAngle;
+			impactVelocity += sample.impactVelocity;
+		}
+
+		// Fit a distribution to the propagated samples
+		auto distParams = util::Gaussian2DFit(impactPositions);
+		impactAngle /= nSamples;
+		impactVelocity /= nSamples;
+
+		descentDistrParams.emplace_back(distParams);
+		impactAngles.emplace_back(impactAngle);
+		impactVelocities.emplace_back(impactVelocity);
 	}
 
-	//TODO: The parameter vector can be memoised for a given set of input distribution means. Ignores the variance though?
-	// Fit a distribution to the propagated samples
-	auto glideDistParams = util::Gaussian2DFit(glideImpactPoss);
-	auto ballisticDistParams = util::Gaussian2DFit(ballisticImpactPoss);
-
-	// Find the impact state means instead of fitting a distribution to them again
-	outGlideAngle = glideAngle / nSamples;
-	outBallisticAngle = ballisticAngle / nSamples;
-	outGlideVelocity = glideVelocity / nSamples;
-	outBallisticVelocity = ballisticVelocity / nSamples;
-
-
+	//TODO: This evaluation grid can be pregenerated
 	// Iterate through all cells in the grid map
-	Eigen::Vector<GridMapDataType, Dynamic> xs(size[0] * size[1]), ys(size[0] * size[1]);
-
-
+	Eigen::Vector<GridMapDataType, Dynamic> xs(this->sizeX * this->sizeY), ys(this->sizeX * this->sizeY);
 	int i = 0;
-	for (int x = 0; x < size[0]; ++x)
+	for (int x = 0; x < sizeX; ++x)
 	{
-		for (int y = 0; y < size[1]; ++y)
+		for (int y = 0; y < sizeY; ++y)
 		{
 			// Invert x in line with the axes convention chosen here
-			xs[i] = size[0] - x;
+			xs[i] = sizeX - x;
 			ys[i] = y;
 			++i;
 		}
 	}
-	// Set amplitudes to 1 to avoid zero division errors when normalising to PDF later
-	glideDistParams[0] = 1;
-	ballisticDistParams[0] = 1;
 
-	// Fit 2D gaussian kernels to the descent model samples instead of propagating the samples all the way to strike risk.
-	// This should account for a more accurate probabilstic picture of the risk.
-	outGlide = util::gaussian2D(xs, ys, glideDistParams).reshaped<RowMajor>(size[0], size[1]);
-	outBallistic = util::gaussian2D(xs, ys, ballisticDistParams).reshaped<RowMajor>(size[0], size[1]);
+	for (auto& distParams : descentDistrParams)
+	{
+		// Set amplitudes to 1 to avoid zero division errors when normalising to PDF later
+		distParams[0] = 1;
 
-	// Turn fitted impact risk gaussians into PDFs that we can use.
-	// Work these out first to avoid aliasing Eigen expressions
-	const auto glideQuot = outGlide.sum();
-	const auto ballisticQuot = outBallistic.sum();
-	outGlide /= glideQuot;
-	outBallistic /= ballisticQuot;
+		// Fit 2D gaussian kernels to the descent model samples instead of propagating the samples all the way to strike risk.
+		// This should account for a more accurate probabilistic picture of the risk.
+		Matrix impactPDFGrid = util::gaussian2D(xs, ys, distParams).reshaped<RowMajor>(sizeX, sizeY);
+
+		// Turn fitted impact risk gaussians into PDFs that we can use.
+		// Work these out first to avoid aliasing Eigen expressions
+		const auto pdfQuot = impactPDFGrid.sum();
+		impactPDFGrid /= pdfQuot;
+		impactPDFs.emplace_back(impactPDFGrid);
+	}
 }
 
 double ugr::risk::RiskMap::lethalArea(const double impactAngle, const double uasWidth)
@@ -341,9 +311,10 @@ double ugr::risk::RiskMap::vel2ke(const double velocity, const double mass)
 }
 
 double ugr::risk::RiskMap::fatalityProbability(const double alpha, const double beta,
-											   const double impactEnergy,
-											   const double shelterFactor)
+                                               const double impactEnergy,
+                                               const double shelterFactor)
 {
+	if (impactEnergy < 1e-15) return 0;
 	return 1 / (sqrt(alpha / beta)) *
 		pow(beta / impactEnergy, 1 / (4 * shelterFactor));
 }
