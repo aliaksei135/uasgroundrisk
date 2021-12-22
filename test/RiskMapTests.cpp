@@ -20,9 +20,12 @@ protected:
 		aircraft.state.position << 0, 0, 120;
 		aircraft.state.velocity << 20, 0, 0;
 
-		aircraft.descents.emplace_back(std::make_unique<GlideDescentModel>(90, 2.8, 3.2, 21, 15));
-		aircraft.descents.emplace_back(std::make_unique<BallisticDescentModel>(90, 2.8, 3.2, 0.6 * 0.6, 0.8));
-		aircraft.descents.emplace_back(std::make_unique<ParachuteDescentModel>(90, 2.8, 3.2, 1.2, 12.5, 2));
+		aircraft.descents.emplace_back(
+			std::unique_ptr<GlideDescentModel>(new GlideDescentModel(90, 2.8, 3.2, 21, 15)));
+		aircraft.descents.emplace_back(
+			std::unique_ptr<BallisticDescentModel>(new BallisticDescentModel(90, 2.8, 3.2, 0.6 * 0.6, 0.8)));
+		aircraft.descents.emplace_back(
+			std::unique_ptr<ParachuteDescentModel>(new ParachuteDescentModel(90, 2.8, 3.2, 1.2, 12.5, 2)));
 	}
 
 	std::array<float, 4> bounds{
