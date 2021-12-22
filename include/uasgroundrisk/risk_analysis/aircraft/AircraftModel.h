@@ -1,6 +1,7 @@
 #ifndef AIRCRAFTMODEL_H
 #define AIRCRAFTMODEL_H
 #include <vector>
+#include <memory>
 
 #include "AircraftDescentModel.h"
 #include "AircraftStateModel.h"

@@ -3,6 +3,7 @@
  *
  *  Created by A.Pilko on 17/06/2021.
  */
+#include <memory>
 
 #include "uasgroundrisk/risk_analysis/RiskMap.h"
 #include <gtest/gtest.h>
