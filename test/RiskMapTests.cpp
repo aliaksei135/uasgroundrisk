@@ -16,8 +16,12 @@ class RiskMapTests : public testing::Test
 protected:
 	void SetUp() override
 	{
-		state.position << 0, 0, 120;
-		state.velocity << 20, 0, 0;
+		aircraft.state.position << 0, 0, 120;
+		aircraft.state.velocity << 20, 0, 0;
+
+		aircraft.descents.emplace_back(std::make_unique<GlideDescentModel>(90, 2.8, 3.2, 21, 15));
+		aircraft.descents.emplace_back(std::make_unique<BallisticDescentModel>(90, 2.8, 3.2, 0.6 * 0.6, 0.8));
+		aircraft.descents.emplace_back(std::make_unique<ParachuteDescentModel>(90, 2.8, 3.2, 1.2, 12.5, 2));
 	}
 
 	std::array<float, 4> bounds{
@@ -25,8 +29,7 @@ protected:
 		-1.3419628f
 	};
 	int resolution = 60;
-	AircraftStateModel state;
-	AircraftDescentModel descent{90, 2.8, 3.2, 28, 0.6 * 0.6, 0.8, 21, 15};
+	AircraftModel aircraft;
 };
 
 TEST_F(RiskMapTests, EmptyMapLayerConstructionTest)
@@ -38,7 +41,7 @@ TEST_F(RiskMapTests, EmptyMapLayerConstructionTest)
 	weather.addConstantWind(5, 90);
 	weather.eval();
 
-	const RiskMap riskMap(population, descent, state, weather);
+	const RiskMap riskMap(population, aircraft, weather);
 
 	auto layers = riskMap.getLayers();
 	// Check all the layers are there
@@ -69,7 +72,7 @@ TEST_F(RiskMapTests, ZeroStrikeRiskMapTest)
 	weather.addConstantWind(5, 90);
 	weather.eval();
 
-	RiskMap riskMap(population, descent, state, weather);
+	RiskMap riskMap(population, aircraft, weather);
 	auto strikeMap = riskMap.generateMap({RiskType::STRIKE});
 
 	ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
@@ -113,7 +116,7 @@ TEST_F(RiskMapTests, ZeroFatalityRiskMapTest)
 	weather.addConstantWind(5, 90);
 	weather.eval();
 
-	RiskMap riskMap(population, descent, state, weather);
+	RiskMap riskMap(population, aircraft, weather);
 	auto fatalityMap = riskMap.generateMap({RiskType::FATALITY});
 
 	ugr::gridmap::Matrix& glideRisk = fatalityMap.get("Glide Fatality Risk");
@@ -162,7 +165,7 @@ TEST_F(RiskMapTests, SchoolsStrikeRiskMapTest)
 	weather.addConstantWind(5, 90);
 	weather.eval();
 
-	RiskMap riskMap(population, descent, state, weather);
+	RiskMap riskMap(population, aircraft, weather);
 	auto strikeMap = riskMap.generateMap({RiskType::STRIKE});
 
 	ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
@@ -211,7 +214,7 @@ TEST_F(RiskMapTests, ResidentialStrikeRiskMapTest)
 	weather.addConstantWind(5, 90);
 	weather.eval();
 
-	RiskMap riskMap(population, descent, state, weather);
+	RiskMap riskMap(population, aircraft, weather);
 	auto strikeMap = riskMap.generateMap({RiskType::STRIKE});
 
 	ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
@@ -254,16 +257,19 @@ TEST_F(RiskMapTests, NilWindPointImpactMapTest)
 	WeatherMap weather(bounds, resolution);
 	weather.eval();
 
-	RiskMap riskMap(population, descent, state, weather);
+	RiskMap riskMap(population, aircraft, weather);
 
 	const auto size = riskMap.getSize();
 
-	ugr::gridmap::Matrix glideImpact(size[0], size[1]);
-	ugr::gridmap::Matrix ballisticImpact(size[0], size[1]);
-	GridMapDataType dummy = 0; // We are not testing the descent models here
+	std::vector<GridMapDataType> impactAngles, impactVelocities;
+	std::vector<ugr::gridmap::Matrix, aligned_allocator<GridMapDataType>> impactPDFs;
 	ugr::gridmap::Index idx{20, 20};
-	riskMap.makePointImpactMap(idx, glideImpact, ballisticImpact,
-	                           dummy, dummy, dummy, dummy);
+	riskMap.makePointImpactMap(idx, impactPDFs, impactAngles, impactVelocities);
+
+
+	// These are added in known order, so we can skip a step checking which model is which
+	const auto& glideImpact = impactPDFs[0];
+	const auto& ballisticImpact = impactPDFs[1];
 
 	// Make sure they are actually PDFs
 	ASSERT_NEAR(glideImpact.sum(), 1, 1e-3);
@@ -318,16 +324,18 @@ TEST_F(RiskMapTests, WindPointImpactMapTest)
 	weather.addConstantWind(5, 90);
 	weather.eval();
 
-	RiskMap riskMap(population, descent, state, weather);
+	RiskMap riskMap(population, aircraft, weather);
 
 	const auto size = riskMap.getSize();
 
-	ugr::gridmap::Matrix glideImpact(size[0], size[1]);
-	ugr::gridmap::Matrix ballisticImpact(size[0], size[1]);
-	GridMapDataType dummy = 0; // We are not testing the descent models here
+	std::vector<GridMapDataType> impactAngles, impactVelocities;
+	std::vector<ugr::gridmap::Matrix, aligned_allocator<GridMapDataType>> impactPDFs;
 	ugr::gridmap::Index idx{20, 20};
-	riskMap.makePointImpactMap(idx, glideImpact, ballisticImpact,
-	                           dummy, dummy, dummy, dummy);
+	riskMap.makePointImpactMap(idx, impactPDFs, impactAngles, impactVelocities);
+
+	// These are added in known order, so we can skip a step checking which model is which
+	const auto& glideImpact = impactPDFs[0];
+	const auto& ballisticImpact = impactPDFs[1];
 
 	// Make sure they are actually PDFs
 	ASSERT_NEAR(glideImpact.sum(), 1, 1e-3);
