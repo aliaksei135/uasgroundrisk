@@ -15,24 +15,35 @@ using namespace ugr::risk;
 #define GRAVITY_ACCEL 9.81
 #define AIR_DENSITY 1.225
 
-AircraftDescentModel::AircraftDescentModel(const double mass, const double width,
-                                           const double length, const double cruiseSpeed,
-                                           const double ballisticFrontalArea,
-                                           const double ballisticDragCoeff,
-                                           const double glideAirspeed,
-                                           const double glideRatio, const double parachuteDragCoeff,
-                                           const double parachuteArea, const double parachuteDeployTime)
-	: mass(mass), width(width), length(length), cruiseSpeed(cruiseSpeed),
-	  ballisticFrontalArea(ballisticFrontalArea),
-	  ballisticDragCoeff(ballisticDragCoeff), glideAirspeed(glideAirspeed),
-	  glideRatio(glideRatio), parachuteDragCoeff(parachuteDragCoeff), parachuteArea(parachuteArea),
-	  parachuteDeployTime(parachuteDeployTime),
-	  c(0.5 * ballisticFrontalArea * AIR_DENSITY * ballisticDragCoeff),
-	  gamma(sqrt((mass * GRAVITY_ACCEL) / c))
+DescentModel::DescentModel(const double mass, const double width, const double length, const std::string name):
+	mass(mass),
+	width(width),
+	length(length),
+	name(name)
 {
 }
 
-ugr::risk::ImpactDataStruct ugr::risk::AircraftDescentModel::glideImpact(const double altitude) const
+std::vector<ImpactDataStruct> DescentModel::impact(const std::vector<double>& altitude, const std::vector<double>& velX,
+                                                   const std::vector<double>& velZ) const
+{
+	assert(altitude.size() == velX.size());
+	assert(altitude.size() == velZ.size());
+	std::vector<ImpactDataStruct> out(altitude.size());
+	for (int i = 0; i < altitude.size(); ++i)
+	{
+		out[i] = impact(altitude[i], velX[i], velZ[i]);
+	}
+	return out;
+}
+
+GlideDescentModel::GlideDescentModel(const double mass, const double width, const double length,
+                                     const double glideAirspeed, const double glideRatio):
+	DescentModel(mass, width, length, "Glide"), glideAirspeed(glideAirspeed),
+	glideRatio(glideRatio)
+{
+}
+
+ImpactDataStruct GlideDescentModel::impact(const double altitude, const double velX, const double velZ) const
 {
 	const auto distance = glideRatio * altitude;
 	const auto time = sqrt(pow(distance, 2) + pow(altitude, 2)) / glideAirspeed;
@@ -41,19 +52,20 @@ ugr::risk::ImpactDataStruct ugr::risk::AircraftDescentModel::glideImpact(const d
 	return {distance, velocity, angle, time};
 }
 
-std::vector<ImpactDataStruct> ugr::risk::AircraftDescentModel::glideImpact(
-	const std::vector<double>& altitude) const
+BallisticDescentModel::BallisticDescentModel(const double mass, const double width, const double length,
+                                             const double ballisticFrontalArea,
+                                             const double ballisticDragCoeff): DescentModel(mass, width, length,
+	                                                                               "Ballistic"),
+                                                                               ballisticFrontalArea(
+	                                                                               ballisticFrontalArea),
+                                                                               ballisticDragCoeff(ballisticDragCoeff),
+                                                                               c(0.5 * ballisticFrontalArea *
+	                                                                               AIR_DENSITY * ballisticDragCoeff),
+                                                                               gamma(sqrt((mass * GRAVITY_ACCEL) / c))
 {
-	std::vector<ImpactDataStruct> out(altitude.size());
-	for (size_t i = 0; i < altitude.size(); ++i)
-	{
-		out[i] = glideImpact(altitude[i]);
-	}
-	return out;
 }
 
-ugr::risk::ImpactDataStruct ugr::risk::AircraftDescentModel::ballisticImpact(const double altitude, const double velX,
-                                                                             double velZ) const
+ImpactDataStruct BallisticDescentModel::impact(const double altitude, const double velX, double velZ) const
 {
 	// This is essentially a port of
 	// https://github.com/JARUS-QM/casex/blob/master/casex/ballistic_descent_models.py
@@ -105,22 +117,16 @@ ugr::risk::ImpactDataStruct ugr::risk::AircraftDescentModel::ballisticImpact(con
 	return {impactDistance, impactVelocity, impactAngle, impactTime};
 }
 
-std::vector<ImpactDataStruct> ugr::risk::AircraftDescentModel::ballisticImpact(
-	const std::vector<double>& altitude, const std::vector<double>& velX,
-	const std::vector<double>& velZ) const
+ParachuteDescentModel::ParachuteDescentModel(const double mass, const double width, const double length,
+                                             const double parachuteDragCoeff,
+                                             const double parachuteArea, const double parachuteDeployTime):
+	DescentModel(mass, width, length, "Parachute"), parachuteDragCoeff(parachuteDragCoeff),
+	parachuteArea(parachuteArea),
+	parachuteDeployTime(parachuteDeployTime)
 {
-	assert(altitude.size() == velX.size());
-	assert(altitude.size() == velZ.size());
-
-	std::vector<ImpactDataStruct> out(altitude.size());
-	for (size_t i = 0; i < altitude.size(); ++i)
-	{
-		out[i] = ballisticImpact(altitude[i], velX[i], velZ[i]);
-	}
-	return out;
 }
 
-ImpactDataStruct AircraftDescentModel::parachuteImpact(const double altitude, const double velX) const
+ImpactDataStruct ParachuteDescentModel::impact(const double altitude, const double velX, const double velZ) const
 {
 	/* Distance travelled before parachute fully deploys */
 	const auto preDeployDistance = parachuteDeployTime * velX;
@@ -131,18 +137,4 @@ ImpactDataStruct AircraftDescentModel::parachuteImpact(const double altitude, co
 	constexpr auto impactAngle = 90; //degrees
 
 	return {preDeployDistance, impactVel, impactAngle, dropTime};
-}
-
-std::vector<ImpactDataStruct> AircraftDescentModel::parachuteImpact(const std::vector<double>& altitude,
-                                                                    const std::vector<double>& velX) const
-{
-	assert(altitude.size() == velX.size());
-
-	std::vector<ImpactDataStruct> out(altitude.size());
-	for (int i = 0; i < altitude.size(); ++i)
-	{
-		out[i] = parachuteImpact(altitude[i], velX[i]);
-	}
-
-	return out;
 }

@@ -7,6 +7,7 @@
 #ifndef UASGROUNDRISK_SRC_RISK_ANALYSIS_AIRCRAFT_AIRCRAFTDESCENTMODEL_H_
 #define UASGROUNDRISK_SRC_RISK_ANALYSIS_AIRCRAFT_AIRCRAFTDESCENTMODEL_H_
 
+#include <string>
 #include <vector>
 
 namespace ugr
@@ -30,87 +31,108 @@ namespace ugr
 
 		/**
 		 * A limited model of an aircraft and its descent.
-		 * Based on the CasEx model @link
-		 * https://github.com/JARUS-QM/casex/blob/master/casex/aircraft_specs.py
 		 *
 		 * All units are MKS.
 		 */
-		class AircraftDescentModel
+		class DescentModel
 		{
 		public:
-			/* Basic params */
-			double mass;
-			double width;
-			double length;
-			double cruiseSpeed;
-
-			/* Ballistic Params */
-			double ballisticFrontalArea;
-			double ballisticDragCoeff;
-
-			/* Glide Params */
-			double glideAirspeed;
-			double glideRatio;
-
-			/* Parachute Params */
-			double parachuteDragCoeff;
-			double parachuteArea;
-			double parachuteDeployTime;
-
-			AircraftDescentModel(double mass, double width, double length,
-			                     double cruiseSpeed, double ballisticFrontalArea,
-			                     double ballisticDragCoeff, double glideAirspeed,
-			                     double glideRatio, double parachuteDragCoeff, double parachuteArea,
-			                     double parachuteDeployTime);
+			DescentModel() = delete;
+			DescentModel(double mass, double width, double length, std::string name);
 
 			/**
-			 * The glide impact data of the aircraft from a given altitude
-			 * @param altitude the altitude in metres
-			 * @return an ImpactDataStruct of the impact
-			 */
-			ImpactDataStruct glideImpact(double altitude) const;
-			/**
-			 * A vectorised version of glideImpact
-			 */
-			std::vector<ImpactDataStruct>
-			glideImpact(const std::vector<double>& altitude) const;
-
-			/**
-			 * The ballistic impact data of the aircraft from a given altitude and
+			 * The impact data of the aircraft from a given altitude and
 			 * velocity components
 			 * @param altitude the altitude in metres
 			 * @param velX the horizontal velocity in m/s
 			 * @param velZ the vertical velocity in m/s
 			 * @return an ImpactDataStruct of the impact
 			 */
-			ImpactDataStruct ballisticImpact(double altitude, double velX,
-			                                 double velZ) const;
-			/**
-			 * A vectorised version of ballisticImpact. All inputs must be of a common
-			 * length
-			 */
-			std::vector<ImpactDataStruct> ballisticImpact(const std::vector<double>& altitude,
-			                                              const std::vector<double>& velX,
-			                                              const std::vector<double>& velZ) const;
-
+			virtual ImpactDataStruct impact(double altitude, double velX, double velZ) const = 0;
 
 			/**
-			 * \brief The parachute impact data of the aircraft from a given altitude and velocity
-			 * \param altitude the altitude in metres
-			 * \param velX the horizontal velocity in m/s
-			 * \return an ImpactDataStruct of the impact
+			 * A vectorised version of above
 			 */
-			ImpactDataStruct parachuteImpact(double altitude, double velX) const;
+			std::vector<ImpactDataStruct> impact(const std::vector<double>& altitude, const std::vector<double>& velX,
+			                                     const std::vector<double>& velZ) const;
+
+			std::string getName() const { return name; }
+
+			virtual ~DescentModel() = default;
+
+			/* Basic params */
+			double mass;
+			double width;
+			double length;
+			std::string name;
+		};
+
+		class GlideDescentModel final : public DescentModel
+		{
+		public:
+			GlideDescentModel() = delete;
+			GlideDescentModel(double mass, double width, double length, double glideAirspeed,
+			                  double glideRatio);
 
 			/**
-			 * A vectorised version of parachuteImpact. All inputs must be of a common length
+			 * The impact data of the aircraft from a given altitude and
+			 * velocity components
+			 * @param altitude the altitude in metres
+			 * @param velX the horizontal velocity in m/s
+			 * @param velZ the vertical velocity in m/s
+			 * @return an ImpactDataStruct of the impact
 			 */
-			std::vector<ImpactDataStruct> parachuteImpact(const std::vector<double>& altitude,
-			                                              const std::vector<double>& velX) const;
-
+			ImpactDataStruct impact(double altitude, double velX, double velZ) const override;
 		protected:
+			double glideAirspeed;
+			double glideRatio;
+		};
+
+		class BallisticDescentModel final : public DescentModel
+		{
+		public:
+			BallisticDescentModel() = delete;
+			BallisticDescentModel(double mass, double width, double length, double ballisticFrontalArea,
+			                      double ballisticDragCoeff);
+
+			/**
+			 * The impact data of the aircraft from a given altitude and
+			 * velocity components
+			 * @param altitude the altitude in metres
+			 * @param velX the horizontal velocity in m/s
+			 * @param velZ the vertical velocity in m/s
+			 * @return an ImpactDataStruct of the impact
+			 */
+			ImpactDataStruct impact(double altitude, double velX, double velZ) const override;
+		protected:
+			double ballisticFrontalArea;
+			double ballisticDragCoeff;
+
 			double c;
 			double gamma;
+		};
+
+		class ParachuteDescentModel final : public DescentModel
+		{
+		public:
+			ParachuteDescentModel() = delete;
+			ParachuteDescentModel(double mass, double width, double length, double parachuteDragCoeff,
+			                      double parachuteArea,
+			                      double parachuteDeployTime);
+
+			/**
+			 * The impact data of the aircraft from a given altitude and
+			 * velocity components
+			 * @param altitude the altitude in metres
+			 * @param velX the horizontal velocity in m/s
+			 * @param velZ the vertical velocity in m/s
+			 * @return an ImpactDataStruct of the impact
+			 */
+			ImpactDataStruct impact(double altitude, double velX, double velZ) const override;
+		protected:
+			double parachuteDragCoeff;
+			double parachuteArea;
+			double parachuteDeployTime;
 		};
 	} // namespace risk
 } // namespace ugr
