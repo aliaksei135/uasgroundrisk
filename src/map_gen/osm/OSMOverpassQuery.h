@@ -7,6 +7,7 @@
 #ifndef UASGROUNDRISK_SRC_MAP_GEN_OSMOVERPASSQUERY_H_
 #define UASGROUNDRISK_SRC_MAP_GEN_OSMOVERPASSQUERY_H_
 
+#include <ostream>
 #include <cpr/cpr.h>
 #include <osmium/geom/coordinates.hpp>
 #include <osmium/handler.hpp>
@@ -32,6 +33,15 @@ public:
 	}
 
 	bool operator<(const OSMTag& other) const { return key < other.key; }
+
+	std::string to_string() const
+	{
+		if (value.empty())
+		{
+			return key;
+		}
+		return key + "=" + value;
+	}
 };
 
 class OSMOverpassQuery

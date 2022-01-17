@@ -107,15 +107,15 @@ std::string OSMOverpassQuery::buildQueryStringQL() const
 	queryString += "(";
 	for (const auto& tag : nodeTags)
 	{
-		queryString += "node[" + tag.key + "=" + tag.value + "];";
+		queryString += "node[" + tag.to_string() + "];";
 	}
 	for (const auto& tag : wayTags)
 	{
-		queryString += "way[" + tag.key + "=" + tag.value + "];";
+		queryString += "way[" + tag.to_string() + "];";
 	}
 	for (const auto& tag : relationTags)
 	{
-		queryString += "rel[" + tag.key + "=" + tag.value + "];";
+		queryString += "rel[" + tag.to_string() + "];";
 	}
 	queryString += "way(r); node(w);"; // Recurse relation-way and way-node
 	queryString += ");";
