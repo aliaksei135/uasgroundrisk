@@ -98,6 +98,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/gridmap/Iterators.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/gridmap/TypeDefs.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/PopulationMap.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/OSMMap.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/GeospatialGridMap.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/RiskMap.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/RiskEnums.h

@@ -13,26 +13,10 @@ using namespace ugr::util;
 
 ugr::mapping::PopulationMap::PopulationMap(std::array<float, 4> bounds,
 										   const int resolution)
-	: GeospatialGridMap(bounds, resolution),
-	  builder(osmium::geom::Coordinates(bounds[1], bounds[0]),
-			  osmium::geom::Coordinates(bounds[3], bounds[2]))
+	: OSMMap(bounds, resolution)
 {
-	n2wHandler.ignore_errors();
 }
 
-void ugr::mapping::PopulationMap::addOSMLayer(const std::string& layerName,
-											  const std::vector<OSMTag>& tags,
-											  float defaultValue)
-{
-	add(layerName, defaultValue);
-	get(layerName).setZero();
-	for (const auto& tag : tags)
-	{
-		tagLayerMap.emplace(tag, layerName);
-		densityTagMap.emplace(tag, defaultValue);
-		builder.withNodeTag(OSMTag(tag)).withWayTag(OSMTag(tag));
-	}
-}
 
 void ugr::mapping::PopulationMap::eval()
 {
@@ -42,7 +26,7 @@ void ugr::mapping::PopulationMap::eval()
 	add(densitySumLayerName, 0);
 	get(densitySumLayerName).setZero();
 
-	if (tagLayerMap.empty() && popDensityGeomMap.empty() && densityTagMap.empty())
+	if (popDensityGeomMap.empty() && densityTagMap.empty())
 	{
 		// No point evaluating an empty population map
 		// Ensure the empty population density layer is created anyway
@@ -51,8 +35,7 @@ void ugr::mapping::PopulationMap::eval()
 	}
 	GridMapOSMHandler handler(this, tagLayerMap, popDensityGeomMap,
 							  densityTagMap);
-	OSMOverpassQuery query = builder.build();
-	query.makeQuery(n2wHandler, handler);
+	OSMMap::eval(handler);
 
 	for (const auto& layerName : getLayers())
 	{
