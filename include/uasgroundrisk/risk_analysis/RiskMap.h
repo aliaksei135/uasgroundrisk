@@ -65,6 +65,7 @@ namespace ugr
 			WeatherMap weather;
 			int nSamples = 50; //CLT says 30-50 samples is good enough
 			std::default_random_engine generator;
+			Eigen::Vector<GridMapDataType, Dynamic> evalXs,evalYs;
 
 			void generateStrikeMap();
 

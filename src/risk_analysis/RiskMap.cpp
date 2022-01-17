@@ -24,7 +24,7 @@ ugr::risk::RiskMap::RiskMap(
 	AircraftModel& aircraftModel,
 	const WeatherMap& weather)
 	: GeospatialGridMap(populationMap.getBounds(),
-	                    static_cast<int>(populationMap.getResolution())), aircraftModel(std::move(aircraftModel)),
+						static_cast<int>(populationMap.getResolution())), aircraftModel(std::move(aircraftModel)),
 	  weather(weather),
 	  generator(std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()))
 {
@@ -39,19 +39,34 @@ ugr::risk::RiskMap::RiskMap(
 	// construct a trivial random generator engine from a time-based seed:
 
 	initRiskMapLayers();
+
+	// Generate eval grid once instead of on every iteration
+	evalXs.resize(this->sizeX);
+	evalYs.resize(this->sizeY);
+	int i = 0;
+	for (int x = 0; x < sizeX; ++x)
+	{
+		for (int y = 0; y < sizeY; ++y)
+		{
+			// Invert x in line with the axes convention chosen here
+			evalXs[i] = sizeX - x;
+			evalYs[i] = y;
+			++i;
+		}
+	}
 }
 
 ugr::gridmap::GridMap& ugr::risk::RiskMap::generateMap(
 	const std::vector<RiskType>& risksToGenerate)
 {
 	if (std::find(risksToGenerate.begin(), risksToGenerate.end(),
-	              RiskType::FATALITY) != risksToGenerate.end())
+				  RiskType::FATALITY) != risksToGenerate.end())
 	{
 		generateStrikeMap();
 		generateFatalityMap();
 	}
 	else if (std::find(risksToGenerate.begin(), risksToGenerate.end(),
-	                   RiskType::STRIKE) != risksToGenerate.end())
+					   RiskType::STRIKE) != risksToGenerate.end())
 	{
 		generateStrikeMap();
 	}
@@ -187,10 +202,10 @@ void ugr::risk::RiskMap::addPointStrikeMap(const gridmap::Index& index)
 }
 
 void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index,
-                                            std::vector<gridmap::Matrix, aligned_allocator<GridMapDataType>>&
-                                            impactPDFs,
-                                            std::vector<GridMapDataType>& impactAngles,
-                                            std::vector<GridMapDataType>& impactVelocities)
+											std::vector<gridmap::Matrix, aligned_allocator<GridMapDataType>>&
+											impactPDFs,
+											std::vector<GridMapDataType>& impactAngles,
+											std::vector<GridMapDataType>& impactVelocities)
 {
 	const auto& windVelX = weather.at("Wind VelX", index);
 	const auto& windVelY = weather.at("Wind VelY", index);
@@ -263,21 +278,6 @@ void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index,
 		impactVelocities.emplace_back(impactVelocity);
 	}
 
-	//TODO: This evaluation grid can be pregenerated
-	// Iterate through all cells in the grid map
-	Eigen::Vector<GridMapDataType, Dynamic> xs(this->sizeX * this->sizeY), ys(this->sizeX * this->sizeY);
-	int i = 0;
-	for (int x = 0; x < sizeX; ++x)
-	{
-		for (int y = 0; y < sizeY; ++y)
-		{
-			// Invert x in line with the axes convention chosen here
-			xs[i] = sizeX - x;
-			ys[i] = y;
-			++i;
-		}
-	}
-
 	for (auto& distParams : descentDistrParams)
 	{
 		// Set amplitudes to 1 to avoid zero division errors when normalising to PDF later
@@ -285,7 +285,7 @@ void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index,
 
 		// Fit 2D gaussian kernels to the descent model samples instead of propagating the samples all the way to strike risk.
 		// This should account for a more accurate probabilistic picture of the risk.
-		Matrix impactPDFGrid = util::gaussian2D(xs, ys, distParams).reshaped<RowMajor>(sizeX, sizeY);
+		Matrix impactPDFGrid = util::gaussian2D(evalXs, evalYs, distParams).reshaped<RowMajor>(sizeX, sizeY);
 
 		// Turn fitted impact risk gaussians into PDFs that we can use.
 		// Work these out first to avoid aliasing Eigen expressions
@@ -311,8 +311,8 @@ double ugr::risk::RiskMap::vel2ke(const double velocity, const double mass)
 }
 
 double ugr::risk::RiskMap::fatalityProbability(const double alpha, const double beta,
-                                               const double impactEnergy,
-                                               const double shelterFactor)
+											   const double impactEnergy,
+											   const double shelterFactor)
 {
 	if (impactEnergy < 1e-15) return 0;
 	return 1 / (sqrt(alpha / beta)) *
