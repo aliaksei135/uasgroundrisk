@@ -83,6 +83,14 @@ namespace ugr
 
 			static double fatalityProbability(double alpha, double beta,
 			                                  double impactEnergy, double shelterFactor);
+
+			static ugr::gridmap::Matrix ugr::risk::RiskMap::lethalArea(const ugr::gridmap::Matrix& impactAngle, double uasWidth);
+
+			static ugr::gridmap::Matrix ugr::risk::RiskMap::vel2ke(const ugr::gridmap::Matrix& velocity, double mass);
+
+			static ugr::gridmap::Matrix ugr::risk::RiskMap::fatalityProbability(double alpha, double beta,
+			                                                                    const ugr::gridmap::Matrix& impactEnergy,
+			                                                                    const ugr::gridmap::Matrix& shelterFactor);
 		};
 	} // namespace risk
 } // namespace ugr

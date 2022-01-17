@@ -24,7 +24,7 @@ ugr::risk::RiskMap::RiskMap(
 	AircraftModel& aircraftModel,
 	const WeatherMap& weather)
 	: GeospatialGridMap(populationMap.getBounds(),
-						static_cast<int>(populationMap.getResolution())), aircraftModel(std::move(aircraftModel)),
+	                    static_cast<int>(populationMap.getResolution())), aircraftModel(std::move(aircraftModel)),
 	  weather(weather),
 	  generator(std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()))
 {
@@ -56,17 +56,17 @@ ugr::risk::RiskMap::RiskMap(
 	}
 }
 
-ugr::gridmap::GridMap& ugr::risk::RiskMap::generateMap(
+GridMap& ugr::risk::RiskMap::generateMap(
 	const std::vector<RiskType>& risksToGenerate)
 {
 	if (std::find(risksToGenerate.begin(), risksToGenerate.end(),
-				  RiskType::FATALITY) != risksToGenerate.end())
+	              RiskType::FATALITY) != risksToGenerate.end())
 	{
 		generateStrikeMap();
 		generateFatalityMap();
 	}
 	else if (std::find(risksToGenerate.begin(), risksToGenerate.end(),
-					   RiskType::STRIKE) != risksToGenerate.end())
+	                   RiskType::STRIKE) != risksToGenerate.end())
 	{
 		generateStrikeMap();
 	}
@@ -130,38 +130,26 @@ void ugr::risk::RiskMap::generateFatalityMap()
 	const Size size = getSize();
 	const auto len1d = size.x() * size.y();
 
-	const Matrix& glideStrikeRiskMap = get("Glide Strike Risk");
-	initLayer("Glide Impact Energy");
-	const Matrix& glideImpactVelocities = get("Glide Impact Velocity");
-	Matrix glideImpactProbs(getSize().x(), getSize().y());
-	auto* pGlideImpactProbs = glideImpactProbs.data();
-	for (size_t i = 0; i < len1d; ++i)
+	// TODO Add mapped shelter factor
+	add("Shelter Factor", 0.3);
+	const Matrix shelterFactorMap = get("Shelter Factor");
+
+	for (int i = 0; i < aircraftModel.descents.size(); ++i)
 	{
-		pGlideImpactProbs[i] = fatalityProbability(
-			1e6, 34, vel2ke(glideImpactVelocities(i), uasMass), 0.3);
+		const auto descentName = aircraftModel.descents[i]->getName();
+		const Matrix& strikeRiskMap = get(descentName + " Strike Risk");
+		const Matrix& impactVelocities = get(descentName + " Impact Velocity");
+		// const Matrix& impactAngles = get(descentName + " Impact Angle");
+
+		const Matrix fatalityRisk = strikeRiskMap * fatalityProbability(
+			1e6, 34, vel2ke(impactVelocities, uasMass), shelterFactorMap);
+
+#pragma omp critical
+		get(descentName + " Fatality Risk") = fatalityRisk;
 	}
-
-	const Matrix glideFatalityRisk = glideStrikeRiskMap * glideImpactProbs;
-	initLayer("Glide Fatality Risk");
-	get("Glide Fatality Risk") = glideFatalityRisk;
-
-	const auto ballisticStrikeRiskMap = get("Ballistic Strike Risk");
-	initLayer("Ballistic Impact Energy");
-	const Matrix& ballisticImpactVelocities = get("Ballistic Impact Velocity");
-	Matrix ballisticImpactProbs(getSize().x(), getSize().y());
-	auto* pBallisticImpactProbs = ballisticImpactProbs.data();
-	for (size_t i = 0; i < len1d; ++i)
-	{
-		pBallisticImpactProbs[i] = fatalityProbability(
-			1e6, 34, vel2ke(ballisticImpactVelocities(i), uasMass), 0.3);
-	}
-
-	const Matrix ballisticFatalityRisk = ballisticStrikeRiskMap * ballisticImpactProbs;
-	initLayer("Ballistic Fatality Risk");
-	get("Ballistic Fatality Risk") = ballisticFatalityRisk;
 }
 
-void ugr::risk::RiskMap::addPointStrikeMap(const gridmap::Index& index)
+void ugr::risk::RiskMap::addPointStrikeMap(const ugr::gridmap::Index& index)
 {
 	std::vector<GridMapDataType> impactAngles, impactVelocities;
 	std::vector<Matrix, aligned_allocator<GridMapDataType>> impactPDFs;
@@ -201,17 +189,17 @@ void ugr::risk::RiskMap::addPointStrikeMap(const gridmap::Index& index)
 	}
 }
 
-void ugr::risk::RiskMap::makePointImpactMap(const gridmap::Index& index,
-											std::vector<gridmap::Matrix, aligned_allocator<GridMapDataType>>&
-											impactPDFs,
-											std::vector<GridMapDataType>& impactAngles,
-											std::vector<GridMapDataType>& impactVelocities)
+void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
+                                            std::vector<ugr::gridmap::Matrix, aligned_allocator<GridMapDataType>>&
+                                            impactPDFs,
+                                            std::vector<GridMapDataType>& impactAngles,
+                                            std::vector<GridMapDataType>& impactVelocities)
 {
 	const auto& windVelX = weather.at("Wind VelX", index);
 	const auto& windVelY = weather.at("Wind VelY", index);
 	auto windXVelDist = std::normal_distribution<double>(windVelX, 5);
 	auto windYVelDist = std::normal_distribution<double>(windVelY, 0.5);
-	std::vector<Eigen::Vector2d, Eigen::aligned_allocator<double>> windVect(nSamples);
+	std::vector<Vector2d, aligned_allocator<double>> windVect(nSamples);
 	// const Vector2d windMeans{windVelX, windVelY};
 
 	// Create samples of state distributions
@@ -311,10 +299,33 @@ double ugr::risk::RiskMap::vel2ke(const double velocity, const double mass)
 }
 
 double ugr::risk::RiskMap::fatalityProbability(const double alpha, const double beta,
-											   const double impactEnergy,
-											   const double shelterFactor)
+                                               const double impactEnergy,
+                                               const double shelterFactor)
 {
 	if (impactEnergy < 1e-15) return 0;
 	return 1 / (sqrt(alpha / beta)) *
 		pow(beta / impactEnergy, 1 / (4 * shelterFactor));
+}
+
+ugr::gridmap::Matrix ugr::risk::RiskMap::lethalArea(const ugr::gridmap::Matrix& impactAngle, const double uasWidth)
+{
+	constexpr auto personRadius = 1;
+	constexpr auto personHeight = 1.8;
+	const auto uasRadius = uasWidth / 2;
+	return (2 * personHeight * (personRadius + uasRadius) /
+		tan(impactAngle.array()) +
+		M_PI * pow(uasRadius + personRadius, 2)).matrix();
+}
+
+ugr::gridmap::Matrix ugr::risk::RiskMap::vel2ke(const ugr::gridmap::Matrix& velocity, const double mass)
+{
+	return (0.5 * mass * pow(velocity.array(), 2)).matrix();
+}
+
+ugr::gridmap::Matrix ugr::risk::RiskMap::fatalityProbability(const double alpha, const double beta,
+                                                             const ugr::gridmap::Matrix& impactEnergy,
+                                                             const ugr::gridmap::Matrix& shelterFactor)
+{
+	return (1 / (sqrt(alpha / beta)) *
+		pow(beta / impactEnergy.array(), 1 / (4 * shelterFactor.array()))).matrix();
 }
