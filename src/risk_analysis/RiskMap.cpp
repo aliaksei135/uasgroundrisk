@@ -25,7 +25,7 @@ ugr::risk::RiskMap::RiskMap(
 	AircraftModel& aircraftModel,
 	const WeatherMap& weather)
 	: GeospatialGridMap(populationMap.getBounds(),
-	                    static_cast<int>(populationMap.getResolution())), aircraftModel(std::move(aircraftModel)),
+						static_cast<int>(populationMap.getResolution())), aircraftModel(std::move(aircraftModel)),
 	  weather(weather),
 	  generator(std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()))
 {
@@ -61,13 +61,13 @@ GridMap& ugr::risk::RiskMap::generateMap(
 	const std::vector<RiskType>& risksToGenerate)
 {
 	if (std::find(risksToGenerate.begin(), risksToGenerate.end(),
-	              RiskType::FATALITY) != risksToGenerate.end())
+				  RiskType::FATALITY) != risksToGenerate.end())
 	{
 		generateStrikeMap();
 		generateFatalityMap();
 	}
 	else if (std::find(risksToGenerate.begin(), risksToGenerate.end(),
-	                   RiskType::STRIKE) != risksToGenerate.end())
+					   RiskType::STRIKE) != risksToGenerate.end())
 	{
 		generateStrikeMap();
 	}
@@ -191,17 +191,16 @@ void ugr::risk::RiskMap::addPointStrikeMap(const ugr::gridmap::Index& index)
 }
 
 void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
-                                            std::vector<ugr::gridmap::Matrix, aligned_allocator<GridMapDataType>>&
-                                            impactPDFs,
-                                            std::vector<GridMapDataType>& impactAngles,
-                                            std::vector<GridMapDataType>& impactVelocities)
+											std::vector<ugr::gridmap::Matrix, aligned_allocator<GridMapDataType>>&
+											impactPDFs,
+											std::vector<GridMapDataType>& impactAngles,
+											std::vector<GridMapDataType>& impactVelocities)
 {
 	const auto& windVelX = weather.at("Wind VelX", index);
 	const auto& windVelY = weather.at("Wind VelY", index);
 	auto windXVelDist = std::normal_distribution<double>(windVelX, 5);
 	auto windYVelDist = std::normal_distribution<double>(windVelY, 0.5);
 	std::vector<Vector2d, aligned_allocator<double>> windVect(nSamples);
-	// const Vector2d windMeans{windVelX, windVelY};
 
 	// Create samples of state distributions
 	const auto& altitude = aircraftModel.state.getAltitude();
@@ -210,20 +209,34 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
 	auto altDist = std::normal_distribution<double>(altitude, 5);
 	auto lateralVelDist = std::normal_distribution<double>(lateralVel, 1.5);
 	auto verticalVelDist = std::normal_distribution<double>(verticalVel, 0.5);
+	auto headingUniformDist = std::uniform_real_distribution<double>(DEG2RAD(0),DEG2RAD(360));
+	auto headingNormalDist = std::normal_distribution<double>(DEG2RAD(aircraftModel.state.getHeading()), DEG2RAD(5));
+
+
+	// Generate random variable samples for LoC states
 	std::vector<double> altVect(nSamples);
 	std::vector<double> lateralVelVect(nSamples);
 	std::vector<double> verticalVelVect(nSamples);
+	std::vector<Rotation2Dd, Eigen::aligned_allocator<Rotation2Dd>> headingVect(nSamples);
 	for (size_t i = 0; i < nSamples; ++i)
 	{
 		altVect[i] = altDist(generator);
 		lateralVelVect[i] = lateralVelDist(generator);
 		verticalVelVect[i] = verticalVelDist(generator);
 		windVect[i] = {windXVelDist(generator), windYVelDist(generator)};
+		if (anyHeading)
+		{
+			headingVect[i] = Rotation2Dd(util::bearing2Angle(headingUniformDist(generator)));
+		}
+		else
+		{
+			headingVect[i] = Rotation2Dd(util::bearing2Angle(headingNormalDist(generator)));
+		}
 	}
 
-	// Create common heading rotation
-	const Rotation2Dd headingRotation(
-		util::bearing2Angle(DEG2RAD(aircraftModel.state.getHeading())));
+	// // Create common heading rotation
+	// const Rotation2Dd headingRotation(
+	// 	util::bearing2Angle(DEG2RAD(aircraftModel.state.getHeading())));
 
 	// Convert Index into vector for easy arithmetic later
 	const Vector2d indexVec{index[0], index[1]};
@@ -250,7 +263,7 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
 			const Vector2d dist1D(sample.impactDistance, 0);
 
 			impactPositions[i] =
-				((headingRotation * dist1D + (sample.impactTime * windVect[i])) / xyRes) + indexVec;
+				((headingVect[i] * dist1D + (sample.impactTime * windVect[i])) / xyRes) + indexVec;
 
 
 			impactAngle += sample.impactAngle;
@@ -300,8 +313,8 @@ double ugr::risk::RiskMap::vel2ke(const double velocity, const double mass)
 }
 
 double ugr::risk::RiskMap::fatalityProbability(const double alpha, const double beta,
-                                               const double impactEnergy,
-                                               const double shelterFactor)
+											   const double impactEnergy,
+											   const double shelterFactor)
 {
 	if (impactEnergy < 1e-15) return 0;
 	return 1 / (sqrt(alpha / beta)) *
@@ -324,8 +337,8 @@ ugr::gridmap::Matrix ugr::risk::RiskMap::vel2ke(const ugr::gridmap::Matrix& velo
 }
 
 ugr::gridmap::Matrix ugr::risk::RiskMap::fatalityProbability(const double alpha, const double beta,
-                                                             const ugr::gridmap::Matrix& impactEnergy,
-                                                             const ugr::gridmap::Matrix& shelterFactor)
+															 const ugr::gridmap::Matrix& impactEnergy,
+															 const ugr::gridmap::Matrix& shelterFactor)
 {
 	return (1 / (sqrt(alpha / beta)) *
 		pow(beta / impactEnergy.array(), 1 / (4 * shelterFactor.array()))).matrix();
