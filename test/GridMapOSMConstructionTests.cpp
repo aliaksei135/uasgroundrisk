@@ -16,14 +16,17 @@
 // #include <matplot/matplot.h>
 
 
-#include "../src/map_gen/GridMapOSMHandler.h"
-#include "../src/map_gen/osm/DefaultNodeLocationsForWaysHandler.h"
-#include "../src/map_gen/osm/builder/OSMOverpassQueryBuilder.h"
+#include "uasgroundrisk/map_gen/osm/handlers/DefaultNodeLocationsForWaysHandler.h"
+#include "uasgroundrisk/map_gen/osm/OSMOverpassQueryBuilder.h"
+#include "uasgroundrisk/map_gen/osm/OSMTag.h"
 #include "../src/utils/DefaultGEOSMessageHandlers.h"
+#include "uasgroundrisk/map_gen/GeospatialGridMap.h"
+#include "uasgroundrisk/map_gen/osm/handlers/GridMapOSMHandler.h"
 
 // namespace plt = matplot;
 // using namespace matplot;
 using namespace ugr::gridmap;
+using namespace ugr::mapping::osm;
 
 class GridMapOSMConstructionTests : public ::testing::Test
 {
@@ -53,10 +56,12 @@ TEST_F(GridMapOSMConstructionTests, OSMDataTest)
 	using namespace osmium::index::map;
 	using namespace ugr::gridmap;
 
-	GeospatialGridMap gridMap({
-		                          static_cast<float>(southWestCoords.y), static_cast<float>(southWestCoords.x),
-		                          static_cast<float>(northEastCoords.y), static_cast<float>(northEastCoords.x)
-	                          }, 30);
+	ugr::mapping::GeospatialGridMap gridMap({
+		                                        static_cast<float>(southWestCoords.y),
+		                                        static_cast<float>(southWestCoords.x),
+		                                        static_cast<float>(northEastCoords.y),
+		                                        static_cast<float>(northEastCoords.x)
+	                                        }, 30);
 
 	// Setup an empty OSM query
 	OSMOverpassQueryBuilder builder =

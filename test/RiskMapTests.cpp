@@ -7,9 +7,13 @@
 
 #include "uasgroundrisk/risk_analysis/RiskMap.h"
 #include <gtest/gtest.h>
+#include <fstream>
+
+#include "uasgroundrisk/map_gen/osm/OSMTag.h"
 // #include <matplotlibcpp.h>
 
 using namespace ugr::risk;
+using namespace ugr::mapping::osm;
 // namespace plt = matplotlibcpp;
 
 class RiskMapTests : public testing::Test
@@ -158,7 +162,7 @@ TEST_F(RiskMapTests, ZeroFatalityRiskMapTest)
 TEST_F(RiskMapTests, SchoolsStrikeRiskMapTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
-	population.addOSMLayer("Schools", {{"amenity", "school"}}, 100);
+	population.addOSMLayer("Schools", {OSMTag("amenity", "school")}, 100);
 	population.eval();
 
 	// Assert the population map actually generated something otherwise

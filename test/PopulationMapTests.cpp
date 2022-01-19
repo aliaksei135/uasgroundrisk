@@ -12,8 +12,11 @@
 #include <fstream>
 #include <gtest/gtest.h>
 
+#include "uasgroundrisk/map_gen/osm/OSMTag.h"
+
 
 using namespace ugr::mapping;
+using namespace osm;
 using namespace ugr::gridmap;
 // namespace plt = matplotlibcpp;
 
@@ -48,7 +51,7 @@ TEST_F(PopulationMapTests, EmptyMapTest)
 TEST_F(PopulationMapTests, SingleLayerTest)
 {
 	PopulationMap popMap(bounds, resolution);
-	popMap.addOSMLayer("Schools", {{"amenity", "school"}}, 10);
+	popMap.addOSMLayer("Schools", {OSMTag("amenity", "school")}, 10);
 	popMap.eval();
 
 	// Inside Bitterne Park School, Southampton

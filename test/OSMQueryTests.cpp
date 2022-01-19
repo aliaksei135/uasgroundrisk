@@ -3,10 +3,13 @@
  *
  *  Created by A.Pilko on 25/03/2021.
  */
-#include "../src/map_gen/osm/builder/OSMOverpassQueryBuilder.h"
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <osmium/geom/coordinates.hpp>
+
+#include "uasgroundrisk/map_gen/osm/OSMOverpassQueryBuilder.h"
+#include "uasgroundrisk/map_gen/osm/OSMTag.h"
 
 #if __unix__
 #define GTEST_USES_POSIX_RE 1
@@ -35,9 +38,9 @@ class OSMXMLQueryTests : public OSMQueryTests
 
 TEST_F(OSMQLQueryTests, EmptyQueryStringTest)
 {
-	OSMOverpassQueryBuilder builder =
-		OSMOverpassQuery::create(southWestCoords, northEastCoords);
-	OSMOverpassQuery query = builder.build();
+	ugr::mapping::osm::OSMOverpassQueryBuilder builder =
+		ugr::mapping::osm::OSMOverpassQuery::create(southWestCoords, northEastCoords);
+	ugr::mapping::osm::OSMOverpassQuery query = builder.build();
 	std::string queryString = query.buildQueryString(false);
 
 #if GTEST_USES_POSIX_RE
@@ -68,11 +71,11 @@ TEST_F(OSMQLQueryTests, EmptyQueryStringTest)
 
 TEST_F(OSMQLQueryTests, BuilderNodeOverloadTest)
 {
-	OSMOverpassQueryBuilder builder =
-		OSMOverpassQuery::create(southWestCoords, northEastCoords);
-	builder.withNodeTag(OSMTag("key", "value"));
+	ugr::mapping::osm::OSMOverpassQueryBuilder builder =
+		ugr::mapping::osm::OSMOverpassQuery::create(southWestCoords, northEastCoords);
+	builder.withNodeTag(ugr::mapping::osm::OSMTag("key", "value"));
 	std::string s1 = builder.build().buildQueryString(false);
-	builder = OSMOverpassQuery::create(southWestCoords, northEastCoords);
+	builder = ugr::mapping::osm::OSMOverpassQuery::create(southWestCoords, northEastCoords);
 	builder.withNodeTag("key", "value");
 	std::string s2 = builder.build().buildQueryString(false);
 
@@ -81,11 +84,11 @@ TEST_F(OSMQLQueryTests, BuilderNodeOverloadTest)
 
 TEST_F(OSMQLQueryTests, BuilderWayOverloadTest)
 {
-	OSMOverpassQueryBuilder builder =
-		OSMOverpassQuery::create(southWestCoords, northEastCoords);
-	builder.withWayTag(OSMTag("key", "value"));
+	ugr::mapping::osm::OSMOverpassQueryBuilder builder =
+		ugr::mapping::osm::OSMOverpassQuery::create(southWestCoords, northEastCoords);
+	builder.withWayTag(ugr::mapping::osm::OSMTag("key", "value"));
 	std::string s1 = builder.build().buildQueryString(false);
-	builder = OSMOverpassQuery::create(southWestCoords, northEastCoords);
+	builder = ugr::mapping::osm::OSMOverpassQuery::create(southWestCoords, northEastCoords);
 	builder.withWayTag("key", "value");
 	std::string s2 = builder.build().buildQueryString(false);
 
@@ -94,11 +97,11 @@ TEST_F(OSMQLQueryTests, BuilderWayOverloadTest)
 
 TEST_F(OSMQLQueryTests, BuilderRelationOverloadTest)
 {
-	OSMOverpassQueryBuilder builder =
-		OSMOverpassQuery::create(southWestCoords, northEastCoords);
-	builder.withRelationTag(OSMTag("key", "value"));
+	ugr::mapping::osm::OSMOverpassQueryBuilder builder =
+		ugr::mapping::osm::OSMOverpassQuery::create(southWestCoords, northEastCoords);
+	builder.withRelationTag(ugr::mapping::osm::OSMTag("key", "value"));
 	std::string s1 = builder.build().buildQueryString(false);
-	builder = OSMOverpassQuery::create(southWestCoords, northEastCoords);
+	builder = ugr::mapping::osm::OSMOverpassQuery::create(southWestCoords, northEastCoords);
 	builder.withRelationTag("key", "value");
 	std::string s2 = builder.build().buildQueryString(false);
 
