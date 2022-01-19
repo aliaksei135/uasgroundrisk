@@ -27,9 +27,9 @@ namespace ugr
 			 */
 			PopulationMap(std::array<float, 4> bounds, int resolution);
 
-			void ugr::mapping::PopulationMap::addOSMLayer(const std::string& layerName,
-			                                              const std::vector<osm::OSMTag>& tags,
-			                                              float defaultValue);
+			void addOSMLayer(const std::string& layerName,
+			                 const std::vector<osm::OSMTag>& tags,
+			                 float defaultValue);
 
 			void eval();
 
