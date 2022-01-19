@@ -7,17 +7,17 @@ src/utils/GeometryProjectionUtils.h:112:0: information: Skipping configuration '
 src/map_gen/GeospatialGridMap.cpp:22:0: information: Skipping configuration 'PROJ_DATA_PATH' since the value of 'PROJ_DATA_PATH' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly. [ConfigurationNotChecked]
  projDataPaths[0] = PROJ_DATA_PATH;
 ^
-src/map_gen/GridMapOSMHandler.cpp:29:0: information: Skipping configuration 'PROJ_DATA_PATH' since the value of 'PROJ_DATA_PATH' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly. [ConfigurationNotChecked]
+src/map_gen/GridMapOSMHandler.cpp:32:0: information: Skipping configuration 'PROJ_DATA_PATH' since the value of 'PROJ_DATA_PATH' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly. [ConfigurationNotChecked]
  projDataPaths[0] = PROJ_DATA_PATH;
 ^
 src/map_gen/osm/OSMOverpassQuery.cpp:110:15: style: Consider using std::accumulate algorithm instead of a raw loop. [useStlAlgorithm]
-  queryString += "node[" + tag.key + "=" + tag.value + "];";
+  queryString += "node[" + tag.to_string() + "];";
               ^
 src/map_gen/osm/OSMOverpassQuery.cpp:114:15: style: Consider using std::accumulate algorithm instead of a raw loop. [useStlAlgorithm]
-  queryString += "way[" + tag.key + "=" + tag.value + "];";
+  queryString += "way[" + tag.to_string() + "];";
               ^
 src/map_gen/osm/OSMOverpassQuery.cpp:118:15: style: Consider using std::accumulate algorithm instead of a raw loop. [useStlAlgorithm]
-  queryString += "rel[" + tag.key + "=" + tag.value + "];";
+  queryString += "rel[" + tag.to_string() + "];";
               ^
 src/utils/DataFitting.h:117:8: performance:inconclusive: Technically the member function 'ugr::internal::Gaussian2DFunctor::inputs' can be static (but you may consider moving to unnamed namespace). [functionStatic]
    int inputs() const { return 7; }
@@ -25,37 +25,37 @@ src/utils/DataFitting.h:117:8: performance:inconclusive: Technically the member 
 src/utils/DataFitting.h:104:68: style: Parameter 'fvec' can be declared with const [constParameter]
    int operator()(const Gaussian2DParamVector& x, Eigen::VectorXd& fvec) const
                                                                    ^
+src/risk_analysis/RiskMap.cpp:132:19: style: Variable 'len1d' is assigned a value that is never used. [unreadVariable]
+ const auto len1d = size.x() * size.y();
+                  ^
 test/DataFittingTests.cpp:12:29: warning: Found suspicious operator ',' [constStatement]
  param << 1, 20, 20, 4, 4, 0, 0;
                             ^
 test/DataFittingTests.cpp:51:29: warning: Found suspicious operator ',' [constStatement]
  param << 1, 20, 20, 4, 4, 0, 0;
                             ^
-test/GridMapOSMConstructionTests.cpp:83:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
+test/GridMapOSMConstructionTests.cpp:88:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
  auto size = gridMap.getSize();
            ^
-test/OSMResponseTests.cpp:125:38: style: Consider using std::any_of algorithm instead of a raw loop. [useStlAlgorithm]
-          if (!n.location().valid()) {
-                                     ^
-test/PopulationMapTests.cpp:61:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
+test/OSMResponseTests.cpp:140:5: style: Consider using std::any_of algorithm instead of a raw loop. [useStlAlgorithm]
+    {
+    ^
+test/PopulationMapTests.cpp:64:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
  auto size = popMap.getSize();
            ^
-test/PopulationMapTests.cpp:101:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
+test/PopulationMapTests.cpp:104:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
  auto size = popMap.getSize();
            ^
 test/ProjectionTests.cpp:22:0: information: Skipping configuration 'PROJ_DATA_PATH' since the value of 'PROJ_DATA_PATH' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly. [ConfigurationNotChecked]
     projDataPaths[0] = PROJ_DATA_PATH;
 ^
-test/RiskMapTests.cpp:20:34: warning: Found suspicious operator ',' [constStatement]
+test/RiskMapTests.cpp:24:34: warning: Found suspicious operator ',' [constStatement]
   aircraft.state.position << 0, 0, 120;
                                  ^
-test/RiskMapTests.cpp:21:35: warning: Found suspicious operator ',' [constStatement]
+test/RiskMapTests.cpp:25:35: warning: Found suspicious operator ',' [constStatement]
   aircraft.state.velocity << 20, 0, 0;
                                   ^
-test/GridMapOSMConstructionTests.cpp:31:0: style: The function 'SetUp' is never used. [unusedFunction]
-
-^
-src/map_gen/osm/builder/OSMOverpassQueryBuilder.cpp:31:0: style: The function 'withTimeout' is never used. [unusedFunction]
+test/GridMapOSMConstructionTests.cpp:34:0: style: The function 'SetUp' is never used. [unusedFunction]
 
 ^
 nofile:0:0: information: Cppcheck cannot find all the include files (use --check-config for details) [missingInclude]
