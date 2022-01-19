@@ -1,4 +1,4 @@
-#include "GridMapOSMBuildingsHandler.h"
+#include "uasgroundrisk/map_gen/osm/handlers/GridMapOSMBuildingsHandler.h"
 
 #include <iostream>
 
@@ -10,12 +10,13 @@
 #include <osmium/osm/way.hpp>
 
 using namespace ugr::gridmap;
+using namespace ugr::mapping;
 
 GridMapOSMBuildingsHandler::GridMapOSMBuildingsHandler(ugr::mapping::GeospatialGridMap* gridMap,
-													   const float levelHeight,
-													   std::string gridCRS) : gridMap(gridMap),
-																			  buildingLevelHeight(levelHeight),
-																			  gridCRS(gridCRS)
+                                                       const float levelHeight,
+                                                       std::string gridCRS) : gridMap(gridMap),
+                                                                              buildingLevelHeight(levelHeight),
+                                                                              gridCRS(gridCRS)
 {
 	gridMap->add("Building Height", 0);
 }
@@ -59,7 +60,7 @@ void GridMapOSMBuildingsHandler::way(const osmium::Way& way) const noexcept
 	}
 
 	for (PolygonIterator iter(*gridMap, poly); !iter.isPastEnd();
-		 ++iter)
+	     ++iter)
 	{
 		const auto gridMapPoint = (*iter);
 		gridMap->at("Building Height", gridMapPoint) = buildingHeight;

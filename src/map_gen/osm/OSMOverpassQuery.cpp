@@ -16,11 +16,11 @@
 #include <osmium/io/any_compression.hpp>
 #endif
 
-#include "OSMOverpassQuery.h"
 #include "OverpassExceptions.h"
-#include "builder/OSMOverpassQueryBuilder.h"
+#include "uasgroundrisk/map_gen/osm/OSMOverpassQueryBuilder.h"
 
 using namespace osmium::io;
+using namespace ugr::mapping::osm;
 
 OSMOverpassQueryBuilder
 OSMOverpassQuery::create(const Coordinates& southWestCoord,

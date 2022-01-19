@@ -4,7 +4,9 @@
  *  Created by A.Pilko on 09/04/2021.
  */
 
-#include "GridMapOSMHandler.h"
+
+#include "uasgroundrisk/map_gen/osm/handlers/GridMapOSMHandler.h"
+#include "uasgroundrisk/map_gen/osm/OSMTag.h"
 #include "uasgroundrisk/gridmap/GridMap.h"
 #include "uasgroundrisk/gridmap/Iterators.h"
 #include "../utils/GeometryProjectionUtils.h"
@@ -15,6 +17,7 @@
 #include <iostream>
 
 using namespace ugr::gridmap;
+using namespace ugr::mapping::osm;
 
 GridMapOSMHandler::GridMapOSMHandler(
 	GeospatialGridMap* const gridMap, std::map<OSMTag, std::string> tagLayerMap,
@@ -30,19 +33,19 @@ GridMapOSMHandler::GridMapOSMHandler(
 	proj_context_set_search_paths(projCtx, 1, projDataPaths);
 #endif
 	reproj = proj_create_crs_to_crs(projCtx, "EPSG:4326", this->gridCRS.c_str(),
-									nullptr);
+	                                nullptr);
 	std::map<GEOSGeometry*, float> reprojectedPopulationGeomMap;
 	std::transform(densityGeometryMap.cbegin(), densityGeometryMap.cend(),
-				   std::inserter(reprojectedPopulationGeomMap,
-								 reprojectedPopulationGeomMap.begin()),
-				   [this](std::pair<GEOSGeometry*, float> in)
-			   -> std::pair<GEOSGeometry*, float>
-				   {
-					   auto* reprojPoly = ugr::util::reprojectPolygon(
-						   reproj,
-						   in.first);
-					   return {reprojPoly, in.second};
-				   });
+	               std::inserter(reprojectedPopulationGeomMap,
+	                             reprojectedPopulationGeomMap.begin()),
+	               [this](std::pair<GEOSGeometry*, float> in)
+               -> std::pair<GEOSGeometry*, float>
+	               {
+		               auto* reprojPoly = ugr::util::reprojectPolygon(
+			               reproj,
+			               in.first);
+		               return {reprojPoly, in.second};
+	               });
 }
 
 void GridMapOSMHandler::way(const osmium::Way& way) const noexcept
@@ -91,7 +94,7 @@ void GridMapOSMHandler::way(const osmium::Way& way) const noexcept
 			// polygon iterator
 			std::string layerName = tagLayerIter->second;
 			for (PolygonIterator iter(*gridMap, poly); !iter.isPastEnd();
-				 ++iter)
+			     ++iter)
 			{
 				const auto gridMapPoint = (*iter);
 
@@ -100,7 +103,7 @@ void GridMapOSMHandler::way(const osmium::Way& way) const noexcept
 					// Each point must be converted to a GEOS geometry for the geometric
 					// predicates to work
 					auto* p = GEOSGeom_createPointFromXY(gridMapPoint.x(),
-														 gridMapPoint.y()); // GEOS alloc
+					                                     gridMapPoint.y()); // GEOS alloc
 
 					// Iterate through population geometries to find the which one this
 					// point is within
