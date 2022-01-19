@@ -9,6 +9,7 @@
 #include "../utils/VectorOperations.h"
 #include <Eigen/Dense>
 #include <cassert>
+#include <chrono>
 #include <iostream>
 #include <omp.h>
 #include <random>
@@ -41,8 +42,8 @@ ugr::risk::RiskMap::RiskMap(
 	initRiskMapLayers();
 
 	// Generate eval grid once instead of on every iteration
-	evalXs.resize(this->sizeX);
-	evalYs.resize(this->sizeY);
+	evalXs.resize(this->sizeX * this->sizeY);
+	evalYs.resize(this->sizeX * this->sizeY);
 	int i = 0;
 	for (int x = 0; x < sizeX; ++x)
 	{
