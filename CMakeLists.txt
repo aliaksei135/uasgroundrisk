@@ -100,6 +100,11 @@ target_sources(${PROJECT_NAME} PRIVATE
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/PopulationMap.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/OSMMap.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/GeospatialGridMap.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/osm/OSMTag.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/osm/OSMOverpassQuery.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/osm/OSMOverpassQueryBuilder.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/osm/handlers/GridMapOSMHandler.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/osm/handlers/GridMapOSMBuildingsHandler.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/RiskMap.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/RiskEnums.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/aircraft/AircraftDescentModel.h
