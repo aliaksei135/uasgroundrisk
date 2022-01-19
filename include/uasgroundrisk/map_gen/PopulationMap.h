@@ -8,8 +8,7 @@
 #define UASGROUNDRISK_SRC_MAP_GEN_POPULATIONMAP_H_
 
 #include "uasgroundrisk/map_gen/OSMMap.h"
-#include "../../../src/map_gen/osm/DefaultNodeLocationsForWaysHandler.h"
-#include "../../../src/map_gen/osm/builder/OSMOverpassQueryBuilder.h"
+#include "uasgroundrisk/map_gen/osm/OSMTag.h"
 #include <geos_c.h>
 #include <map>
 #include <string>
@@ -28,11 +27,15 @@ namespace ugr
 			 */
 			PopulationMap(std::array<float, 4> bounds, int resolution);
 
+			void ugr::mapping::PopulationMap::addOSMLayer(const std::string& layerName,
+			                                              const std::vector<osm::OSMTag>& tags,
+			                                              float defaultValue);
+
 			void eval();
 
 		protected:
 			std::map<GEOSGeometry*, GridMapDataType> popDensityGeomMap;
-			std::map<OSMTag, GridMapDataType> densityTagMap;
+			std::map<osm::OSMTag, GridMapDataType> densityTagMap;
 		};
 	} // namespace mapping
 } // namespace ugr

@@ -6,17 +6,26 @@
 
 #include "uasgroundrisk/map_gen/PopulationMap.h"
 #include "../utils/GeometryProjectionUtils.h"
-#include "GridMapOSMHandler.h"
-
+#include "uasgroundrisk/map_gen/osm/handlers/GridMapOSMHandler.h"
+#include "uasgroundrisk/map_gen/osm/OSMOverpassQuery.h"
 
 using namespace ugr::util;
 
-ugr::mapping::PopulationMap::PopulationMap(std::array<float, 4> bounds,
-										   const int resolution)
+ugr::mapping::PopulationMap::PopulationMap(const std::array<float, 4> bounds,
+                                           const int resolution)
 	: OSMMap(bounds, resolution)
 {
 }
 
+void ugr::mapping::PopulationMap::addOSMLayer(const std::string& layerName, const std::vector<osm::OSMTag>& tags,
+                                              float defaultValue)
+{
+	for (const auto& tag : tags)
+	{
+		densityTagMap.emplace(tag, defaultValue);
+	}
+	OSMMap::addOSMLayer(layerName, tags, defaultValue);
+}
 
 void ugr::mapping::PopulationMap::eval()
 {
@@ -26,15 +35,9 @@ void ugr::mapping::PopulationMap::eval()
 	add(densitySumLayerName, 0);
 	get(densitySumLayerName).setZero();
 
-	if (popDensityGeomMap.empty() && densityTagMap.empty())
-	{
-		// No point evaluating an empty population map
-		// Ensure the empty population density layer is created anyway
-		// in case it is evaluated
-		return;
-	}
-	GridMapOSMHandler handler(this, tagLayerMap, popDensityGeomMap,
-							  densityTagMap);
+	osm::GridMapOSMHandler handler(this, tagLayerMap, popDensityGeomMap,
+	                               densityTagMap);
+
 	OSMMap::eval(handler);
 
 	for (const auto& layerName : getLayers())
