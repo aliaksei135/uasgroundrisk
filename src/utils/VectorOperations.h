@@ -15,6 +15,9 @@ namespace ugr
 {
 	namespace util
 	{
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 #define DEG2RAD(ang) (ang * (M_PI / 180))
 #define RAD2DEG(ang) (ang * (180 / M_PI))
 
