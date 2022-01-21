@@ -8,6 +8,7 @@
 #include "../utils/GeometryProjectionUtils.h"
 #include "uasgroundrisk/map_gen/osm/handlers/GridMapOSMHandler.h"
 #include "uasgroundrisk/map_gen/osm/OSMOverpassQuery.h"
+#include "uasgroundrisk/map_gen/osm/handlers/GridMapOSMBuildingsHandler.h"
 
 using namespace ugr::util;
 
@@ -38,7 +39,10 @@ void ugr::mapping::PopulationMap::eval()
 	osm::GridMapOSMHandler handler(this, tagLayerMap, popDensityGeomMap,
 	                               densityTagMap);
 
-	OSMMap::eval(handler);
+	OSMMap::addOSMLayer("Building Height", {osm::OSMTag("building")});
+	GridMapOSMBuildingsHandler buildingHeighthandler(this);
+
+	OSMMap::eval(handler, buildingHeighthandler);
 
 	for (const auto& layerName : getLayers())
 	{
