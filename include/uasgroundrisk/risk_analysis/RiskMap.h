@@ -53,7 +53,8 @@ namespace ugr
 			void makePointImpactMap(const gridmap::Index& index,
 			                        std::vector<gridmap::Matrix, aligned_allocator<GridMapDataType>>& impactPDFs,
 			                        std::vector<GridMapDataType>& impactAngles,
-			                        std::vector<GridMapDataType>& impactVelocities);
+			                        std::vector<GridMapDataType>& impactVelocities,
+			                        std::vector<GridMapDataType>& buildingImpactProbs);
 
 			void eval();
 

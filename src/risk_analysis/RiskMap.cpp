@@ -7,6 +7,7 @@
 #include "uasgroundrisk/risk_analysis/RiskMap.h"
 #include "../utils/DataFitting.h"
 #include "../utils/VectorOperations.h"
+#include "../utils/GeometryOperations.h"
 #include <Eigen/Dense>
 #include <cassert>
 #include <chrono>
@@ -25,16 +26,18 @@ ugr::risk::RiskMap::RiskMap(
 	AircraftModel& aircraftModel,
 	const WeatherMap& weather)
 	: GeospatialGridMap(populationMap.getBounds(),
-						static_cast<int>(populationMap.getResolution())), aircraftModel(std::move(aircraftModel)),
+	                    static_cast<int>(populationMap.getResolution())), aircraftModel(std::move(aircraftModel)),
 	  weather(weather),
 	  generator(std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()))
 {
 	// Evaluate population density map
 	populationMap.eval();
-	// Copy across only the the population density layer
+	// Copy across only the the population density and building height layer
 	constexpr auto popDensityLayerName = "Population Density";
 	initLayer(popDensityLayerName);
+	initLayer("Building Height");
 	get(popDensityLayerName) = populationMap.get(popDensityLayerName);
+	get("Building Height") = populationMap.get("Building Height");
 
 	// Create objects required for sample distribution generation
 	// construct a trivial random generator engine from a time-based seed:
@@ -61,13 +64,13 @@ GridMap& ugr::risk::RiskMap::generateMap(
 	const std::vector<RiskType>& risksToGenerate)
 {
 	if (std::find(risksToGenerate.begin(), risksToGenerate.end(),
-				  RiskType::FATALITY) != risksToGenerate.end())
+	              RiskType::FATALITY) != risksToGenerate.end())
 	{
 		generateStrikeMap();
 		generateFatalityMap();
 	}
 	else if (std::find(risksToGenerate.begin(), risksToGenerate.end(),
-					   RiskType::STRIKE) != risksToGenerate.end())
+	                   RiskType::STRIKE) != risksToGenerate.end())
 	{
 		generateStrikeMap();
 	}
@@ -101,6 +104,8 @@ void ugr::risk::RiskMap::initRiskMapLayers()
 	initLayer("Parachute Fatality Risk");
 	initLayer("Parachute Impact Angle");
 	initLayer("Parachute Impact Velocity");
+
+	initLayer("Shelter Factor");
 }
 
 
@@ -132,7 +137,7 @@ void ugr::risk::RiskMap::generateFatalityMap()
 	const auto len1d = size.x() * size.y();
 
 	// TODO Add mapped shelter factor
-	add("Shelter Factor", 0.3);
+	// add("Shelter Factor", 0.3);
 	const Matrix shelterFactorMap = get("Shelter Factor");
 
 	for (int i = 0; i < aircraftModel.descents.size(); ++i)
@@ -152,11 +157,13 @@ void ugr::risk::RiskMap::generateFatalityMap()
 
 void ugr::risk::RiskMap::addPointStrikeMap(const ugr::gridmap::Index& index)
 {
-	std::vector<GridMapDataType> impactAngles, impactVelocities;
+	std::vector<GridMapDataType> impactAngles, impactVelocities, buildingImpactProbs;
 	std::vector<Matrix, aligned_allocator<GridMapDataType>> impactPDFs;
 
-	makePointImpactMap(index, impactPDFs, impactAngles, impactVelocities);
+	makePointImpactMap(index, impactPDFs, impactAngles, impactVelocities, buildingImpactProbs);
 
+	at("Shelter Factor", index) = std::accumulate(buildingImpactProbs.begin(), buildingImpactProbs.end(), 0.0) /
+		nSamples;
 
 	/* We have now evaluated the impact PDF of the aircraft*/
 	/* Now we move onto the strike risk analysis */
@@ -191,10 +198,11 @@ void ugr::risk::RiskMap::addPointStrikeMap(const ugr::gridmap::Index& index)
 }
 
 void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
-											std::vector<ugr::gridmap::Matrix, aligned_allocator<GridMapDataType>>&
-											impactPDFs,
-											std::vector<GridMapDataType>& impactAngles,
-											std::vector<GridMapDataType>& impactVelocities)
+                                            std::vector<ugr::gridmap::Matrix, aligned_allocator<GridMapDataType>>&
+                                            impactPDFs,
+                                            std::vector<GridMapDataType>& impactAngles,
+                                            std::vector<GridMapDataType>& impactVelocities,
+                                            std::vector<GridMapDataType>& buildingImpactProbs)
 {
 	const auto& windVelX = weather.at("Wind VelX", index);
 	const auto& windVelY = weather.at("Wind VelY", index);
@@ -249,10 +257,11 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
 
 		util::Point2DVector impactPositions(nSamples);
 		double impactAngle = 0, impactVelocity = 0;
+		int buildingCollisionCount = 0;
 
 		// Model the descents of each of the random samples for LoC state vector to find an equal
 		// number of ground impact samples we can fit distributions to.
-#pragma omp parallel for reduction(+:impactAngle, impactVelocity)
+#pragma omp parallel for reduction(+:impactAngle, impactVelocity, buildingCollisionCount)
 		for (int i = 0; i < nSamples; ++i)
 		{
 			const auto& sample = samples[i];
@@ -265,6 +274,27 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
 			impactPositions[i] =
 				((headingVect[i] * dist1D + (sample.impactTime * windVect[i])) / xyRes) + indexVec;
 
+			const auto groundTrackIndices = ugr::util::bresenham2D(index, {
+				                                                       std::ceil(impactPositions[i][0]),
+				                                                       std::ceil(impactPositions[i][1])
+			                                                       });
+			for (const auto& trackIndex : groundTrackIndices)
+			{
+				if (!isInBounds(trackIndex)) continue;
+				// Get this points distance from the impact point
+				const auto dx = trackIndex[0] - index[0];
+				const auto dy = trackIndex[1] - index[1];
+				const auto distToImpact = std::sqrt(dx * dx + dy * dy) * xyRes;
+				if (distToImpact < xyRes) continue;
+				// Estimate the altitude at this point
+				const auto altAtPoint = distToImpact * std::tan(DEG2RAD(sample.impactAngle));
+				const GridMapDataType& buildingHeightAtPoint = at("Building Height", trackIndex);
+				if (altAtPoint <= buildingHeightAtPoint)
+				{
+					++buildingCollisionCount;
+					break;
+				}
+			}
 
 			impactAngle += sample.impactAngle;
 			impactVelocity += sample.impactVelocity;
@@ -274,10 +304,12 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
 		auto distParams = util::Gaussian2DFit(impactPositions);
 		impactAngle /= nSamples;
 		impactVelocity /= nSamples;
+		const double buildingCollisionProb = buildingCollisionCount / nSamples;
 
 		descentDistrParams.emplace_back(distParams);
 		impactAngles.emplace_back(impactAngle);
 		impactVelocities.emplace_back(impactVelocity);
+		buildingImpactProbs.emplace_back(buildingCollisionProb);
 	}
 
 	for (auto& distParams : descentDistrParams)
@@ -313,8 +345,8 @@ double ugr::risk::RiskMap::vel2ke(const double velocity, const double mass)
 }
 
 double ugr::risk::RiskMap::fatalityProbability(const double alpha, const double beta,
-											   const double impactEnergy,
-											   const double shelterFactor)
+                                               const double impactEnergy,
+                                               const double shelterFactor)
 {
 	if (impactEnergy < 1e-15) return 0;
 	return 1 / (sqrt(alpha / beta)) *
@@ -337,8 +369,8 @@ ugr::gridmap::Matrix ugr::risk::RiskMap::vel2ke(const ugr::gridmap::Matrix& velo
 }
 
 ugr::gridmap::Matrix ugr::risk::RiskMap::fatalityProbability(const double alpha, const double beta,
-															 const ugr::gridmap::Matrix& impactEnergy,
-															 const ugr::gridmap::Matrix& shelterFactor)
+                                                             const ugr::gridmap::Matrix& impactEnergy,
+                                                             const ugr::gridmap::Matrix& shelterFactor)
 {
 	return (1 / (sqrt(alpha / beta)) *
 		pow(beta / impactEnergy.array(), 1 / (4 * shelterFactor.array()))).matrix();
