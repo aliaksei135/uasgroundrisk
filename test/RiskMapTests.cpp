@@ -43,7 +43,7 @@ protected:
 TEST_F(RiskMapTests, EmptyMapLayerConstructionTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
-	population.eval();
+	// population.eval();
 
 	WeatherMap weather(bounds, resolution);
 	weather.addConstantWind(5, 90);
@@ -74,7 +74,7 @@ TEST_F(RiskMapTests, EmptyMapLayerConstructionTest)
 TEST_F(RiskMapTests, ZeroStrikeRiskMapTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
-	population.eval();
+	// population.eval();
 
 	WeatherMap weather(bounds, resolution);
 	weather.addConstantWind(5, 90);
@@ -118,7 +118,7 @@ TEST_F(RiskMapTests, ZeroStrikeRiskMapTest)
 TEST_F(RiskMapTests, ZeroFatalityRiskMapTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
-	population.eval();
+	// population.eval();
 
 	WeatherMap weather(bounds, resolution);
 	weather.addConstantWind(5, 90);
@@ -163,7 +163,7 @@ TEST_F(RiskMapTests, SchoolsStrikeRiskMapTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
 	population.addOSMLayer("Schools", {OSMTag("amenity", "school")}, 100);
-	population.eval();
+	// population.eval();
 
 	// Assert the population map actually generated something otherwise
 	// this test is pointless and equivalent to the zero* tests
@@ -212,7 +212,7 @@ TEST_F(RiskMapTests, ResidentialStrikeRiskMapTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
 	population.addOSMLayer("Residential", {{"landuse", "residential"}}, 100);
-	population.eval();
+	// population.eval();
 
 	// Assert the population map actually generated something otherwise
 	// this test is pointless and equivalent to the zero* tests
@@ -260,7 +260,7 @@ TEST_F(RiskMapTests, ResidentialStrikeRiskMapTest)
 TEST_F(RiskMapTests, NilWindPointImpactMapTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
-	population.eval();
+	// population.eval();
 
 	WeatherMap weather(bounds, resolution);
 	weather.eval();
@@ -269,10 +269,10 @@ TEST_F(RiskMapTests, NilWindPointImpactMapTest)
 
 	const auto size = riskMap.getSize();
 
-	std::vector<GridMapDataType> impactAngles, impactVelocities;
+	std::vector<GridMapDataType> impactAngles, impactVelocities, buildingImpactProbs;
 	std::vector<ugr::gridmap::Matrix, aligned_allocator<GridMapDataType>> impactPDFs;
 	ugr::gridmap::Index idx{20, 20};
-	riskMap.makePointImpactMap(idx, impactPDFs, impactAngles, impactVelocities);
+	riskMap.makePointImpactMap(idx, impactPDFs, impactAngles, impactVelocities, buildingImpactProbs);
 
 
 	// These are added in known order, so we can skip a step checking which model is which
@@ -326,7 +326,7 @@ TEST_F(RiskMapTests, NilWindPointImpactMapTest)
 TEST_F(RiskMapTests, WindPointImpactMapTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
-	population.eval();
+	// population.eval();
 
 	WeatherMap weather(bounds, resolution);
 	weather.addConstantWind(5, 90);
@@ -336,10 +336,10 @@ TEST_F(RiskMapTests, WindPointImpactMapTest)
 
 	const auto size = riskMap.getSize();
 
-	std::vector<GridMapDataType> impactAngles, impactVelocities;
+	std::vector<GridMapDataType> impactAngles, impactVelocities, buildingImpactProbs;
 	std::vector<ugr::gridmap::Matrix, aligned_allocator<GridMapDataType>> impactPDFs;
 	ugr::gridmap::Index idx{20, 20};
-	riskMap.makePointImpactMap(idx, impactPDFs, impactAngles, impactVelocities);
+	riskMap.makePointImpactMap(idx, impactPDFs, impactAngles, impactVelocities, buildingImpactProbs);
 
 	// These are added in known order, so we can skip a step checking which model is which
 	const auto& glideImpact = impactPDFs[0];
