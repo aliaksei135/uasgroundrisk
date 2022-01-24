@@ -33,10 +33,9 @@ ugr::risk::RiskMap::RiskMap(
 	// Evaluate population density map
 	populationMap.eval();
 	// Copy across only the the population density and building height layer
-	constexpr auto popDensityLayerName = "Population Density";
-	initLayer(popDensityLayerName);
+	initLayer("Population Density");
 	initLayer("Building Height");
-	get(popDensityLayerName) = populationMap.get(popDensityLayerName);
+	get("Population Density") = populationMap.get("Population Density");
 	get("Building Height") = populationMap.get("Building Height");
 
 	// Create objects required for sample distribution generation
@@ -105,7 +104,8 @@ void ugr::risk::RiskMap::initRiskMapLayers()
 	initLayer("Parachute Impact Angle");
 	initLayer("Parachute Impact Velocity");
 
-	initLayer("Shelter Factor");
+	// Setting shelter factor to 0 results in infinite fatality risk, so we set a small value instead
+	add("Shelter Factor", 0.1);
 }
 
 
@@ -162,8 +162,9 @@ void ugr::risk::RiskMap::addPointStrikeMap(const ugr::gridmap::Index& index)
 
 	makePointImpactMap(index, impactPDFs, impactAngles, impactVelocities, buildingImpactProbs);
 
-	at("Shelter Factor", index) = std::accumulate(buildingImpactProbs.begin(), buildingImpactProbs.end(), 0.0) /
-		nSamples;
+	const auto shelterFactorSum = std::accumulate(buildingImpactProbs.begin(), buildingImpactProbs.end(), 0.0);
+	if (shelterFactorSum > 0.0)
+		at("Shelter Factor", index) = shelterFactorSum / nSamples;
 
 	/* We have now evaluated the impact PDF of the aircraft*/
 	/* Now we move onto the strike risk analysis */
@@ -178,7 +179,7 @@ void ugr::risk::RiskMap::addPointStrikeMap(const ugr::gridmap::Index& index)
 	for (int i = 0; i < aircraftModel.descents.size(); ++i)
 	{
 		// Work out the lethal area of the aircraft when it crashes
-		const auto letArea = lethalArea(impactAngles[i], uasWidth);
+		const auto letArea = lethalArea(DEG2RAD(impactAngles[i]), uasWidth);
 		const Matrix strikeRisk = (impactPDFs[i].cwiseProduct(populationDensityMap) * letArea) / pixelArea;
 		const auto strikeRiskSum = strikeRisk.sum();
 
