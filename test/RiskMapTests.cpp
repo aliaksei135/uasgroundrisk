@@ -24,6 +24,10 @@ protected:
 		aircraft.state.position << 0, 0, 120;
 		aircraft.state.velocity << 20, 0, 0;
 
+		aircraft.mass = 50;
+		aircraft.length = 5;
+		aircraft.width = 5;
+
 		aircraft.descents.emplace_back(
 			std::unique_ptr<GlideDescentModel>(new GlideDescentModel(90, 2.8, 3.2, 21, 15)));
 		aircraft.descents.emplace_back(
@@ -43,7 +47,7 @@ protected:
 TEST_F(RiskMapTests, EmptyMapLayerConstructionTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
-	// population.eval();
+	population.eval();
 
 	WeatherMap weather(bounds, resolution);
 	weather.addConstantWind(5, 90);
@@ -69,6 +73,8 @@ TEST_F(RiskMapTests, EmptyMapLayerConstructionTest)
 		"Ballistic Impact Angle") != layers.end());
 	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
 		"Ballistic Impact Velocity") != layers.end());
+	ASSERT_TRUE(std::find(layers.begin(), layers.end(),
+		"Shelter Factor") != layers.end());
 }
 
 TEST_F(RiskMapTests, ZeroStrikeRiskMapTest)
@@ -85,11 +91,6 @@ TEST_F(RiskMapTests, ZeroStrikeRiskMapTest)
 
 	ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
 	ugr::gridmap::Matrix& ballisticRisk = strikeMap.get("Ballistic Strike Risk");
-
-	// As the population map is zero, this must all be zero as well
-	ASSERT_TRUE(glideRisk.all() == 0);
-	ASSERT_TRUE(ballisticRisk.all() == 0);
-
 
 	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
 
@@ -113,12 +114,16 @@ TEST_F(RiskMapTests, ZeroStrikeRiskMapTest)
 		//    plt::close();
 		//    delete layerPlot;
 	}
+
+	// As the population map is zero, this must all be zero as well
+	ASSERT_TRUE(glideRisk.isApproxToConstant(0));
+	ASSERT_TRUE(ballisticRisk.isApproxToConstant(0));
 }
 
 TEST_F(RiskMapTests, ZeroFatalityRiskMapTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
-	// population.eval();
+	population.eval();
 
 	WeatherMap weather(bounds, resolution);
 	weather.addConstantWind(5, 90);
@@ -129,11 +134,6 @@ TEST_F(RiskMapTests, ZeroFatalityRiskMapTest)
 
 	ugr::gridmap::Matrix& glideRisk = fatalityMap.get("Glide Fatality Risk");
 	ugr::gridmap::Matrix& ballisticRisk = fatalityMap.get("Ballistic Fatality Risk");
-
-	// As the population map is zero, this must all be zero as well
-	ASSERT_TRUE(glideRisk.all() == 0);
-	ASSERT_TRUE(ballisticRisk.all() == 0);
-
 
 	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
 
@@ -157,13 +157,17 @@ TEST_F(RiskMapTests, ZeroFatalityRiskMapTest)
 		//    plt::close();
 		//    delete layerPlot;
 	}
+
+	// As the population map is zero, this must all be zero as well
+	ASSERT_TRUE(glideRisk.isApproxToConstant(0));
+	ASSERT_TRUE(ballisticRisk.isApproxToConstant(0));
 }
 
 TEST_F(RiskMapTests, SchoolsStrikeRiskMapTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
 	population.addOSMLayer("Schools", {OSMTag("amenity", "school")}, 100);
-	// population.eval();
+	population.eval();
 
 	// Assert the population map actually generated something otherwise
 	// this test is pointless and equivalent to the zero* tests
@@ -178,11 +182,6 @@ TEST_F(RiskMapTests, SchoolsStrikeRiskMapTest)
 
 	ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
 	ugr::gridmap::Matrix& ballisticRisk = strikeMap.get("Ballistic Strike Risk");
-
-	// As the population map is zero, this must all be zero as well
-	ASSERT_NE(glideRisk.maxCoeff(), 0);
-	ASSERT_NE(ballisticRisk.maxCoeff(), 0);
-
 
 	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
 
@@ -206,13 +205,17 @@ TEST_F(RiskMapTests, SchoolsStrikeRiskMapTest)
 		//    plt::close();
 		//    delete layerPlot;
 	}
+
+	// As the population map is zero, this must all be zero as well
+	ASSERT_NE(glideRisk.maxCoeff(), 0);
+	ASSERT_NE(ballisticRisk.maxCoeff(), 0);
 }
 
 TEST_F(RiskMapTests, ResidentialStrikeRiskMapTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
 	population.addOSMLayer("Residential", {{"landuse", "residential"}}, 100);
-	// population.eval();
+	population.eval();
 
 	// Assert the population map actually generated something otherwise
 	// this test is pointless and equivalent to the zero* tests
@@ -227,11 +230,6 @@ TEST_F(RiskMapTests, ResidentialStrikeRiskMapTest)
 
 	ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
 	ugr::gridmap::Matrix& ballisticRisk = strikeMap.get("Ballistic Strike Risk");
-
-	// As the population map is zero, this must all be zero as well
-	ASSERT_NE(glideRisk.maxCoeff(), 0);
-	ASSERT_NE(ballisticRisk.maxCoeff(), 0);
-
 
 	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
 
@@ -255,12 +253,16 @@ TEST_F(RiskMapTests, ResidentialStrikeRiskMapTest)
 		//    plt::close();
 		//    delete layerPlot;
 	}
+
+	// As the population map is zero, this must all be zero as well
+	ASSERT_NE(glideRisk.maxCoeff(), 0);
+	ASSERT_NE(ballisticRisk.maxCoeff(), 0);
 }
 
 TEST_F(RiskMapTests, NilWindPointImpactMapTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
-	// population.eval();
+	population.eval();
 
 	WeatherMap weather(bounds, resolution);
 	weather.eval();
@@ -326,7 +328,7 @@ TEST_F(RiskMapTests, NilWindPointImpactMapTest)
 TEST_F(RiskMapTests, WindPointImpactMapTest)
 {
 	ugr::mapping::PopulationMap population(bounds, resolution);
-	// population.eval();
+	population.eval();
 
 	WeatherMap weather(bounds, resolution);
 	weather.addConstantWind(5, 90);
