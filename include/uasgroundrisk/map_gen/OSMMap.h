@@ -23,6 +23,7 @@ namespace ugr
 			template <typename... THandlers>
 			void eval(THandlers&&...handlers)
 			{
+				if (isEvaluated) return;
 				if (tagLayerMap.empty())
 				{
 					// No point evaluating an empty population map
@@ -43,10 +44,12 @@ namespace ugr
 
 				osm::OSMOverpassQuery query = builder.build();
 				query.makeQuery(n2wHandler, handlers...);
+				isEvaluated = true;
 			}
 
 		protected:
 			std::map<osm::OSMTag, std::string> tagLayerMap;
+			bool isEvaluated = false;
 		};
 	}
 }

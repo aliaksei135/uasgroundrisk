@@ -15,4 +15,5 @@ void ugr::mapping::OSMMap::addOSMLayer(const std::string& layerName, const std::
 	{
 		tagLayerMap.emplace(tag, layerName);
 	}
+	isEvaluated = false;
 }
