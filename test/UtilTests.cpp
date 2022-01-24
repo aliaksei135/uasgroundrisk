@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "uasgroundrisk/gridmap/TypeDefs.h"
-#include "../../src/utils/GeometryOperations.h"
+#include "../src/utils/GeometryOperations.h"
 
 TEST(UtilTests, Bresenham2D1QTest)
 {
