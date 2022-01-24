@@ -30,6 +30,7 @@ void ugr::mapping::PopulationMap::addOSMLayer(const std::string& layerName, cons
 
 void ugr::mapping::PopulationMap::eval()
 {
+	if (isEvaluated) return;
 	// Sum all layers together into a single layer using the max value for each
 	// cell
 	constexpr auto densitySumLayerName = "Population Density";
@@ -38,11 +39,7 @@ void ugr::mapping::PopulationMap::eval()
 
 	osm::GridMapOSMHandler handler(this, tagLayerMap, popDensityGeomMap,
 	                               densityTagMap);
-
-	OSMMap::addOSMLayer("Building Height", {osm::OSMTag("building")});
-	GridMapOSMBuildingsHandler buildingHeighthandler(this);
-
-	OSMMap::eval(handler, buildingHeighthandler);
+	OSMMap::eval(handler);
 
 	for (const auto& layerName : getLayers())
 	{
@@ -52,4 +49,10 @@ void ugr::mapping::PopulationMap::eval()
 		get(densitySumLayerName) =
 			get(densitySumLayerName).cwiseMax(get(layerName));
 	}
+
+	// The building heights must go at the end of this function otherwise they get copied to other layers!
+	OSMMap::addOSMLayer("Building Height", {osm::OSMTag("building")});
+	GridMapOSMBuildingsHandler buildingHeighthandler(this);
+	isEvaluated = false;
+	OSMMap::eval(buildingHeighthandler);
 }
