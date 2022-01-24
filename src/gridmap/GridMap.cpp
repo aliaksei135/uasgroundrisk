@@ -43,6 +43,7 @@ void GridMap::add(const std::string& layerName, const double constValue)
 	if (geometrySet)
 	{
 		Matrix layerData(sizeX, sizeY);
+		layerData.setConstant(constValue);
 		layers.emplace(layerName, layerData);
 	}
 	else
