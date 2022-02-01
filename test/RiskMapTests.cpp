@@ -10,11 +10,10 @@
 #include <fstream>
 
 #include "uasgroundrisk/map_gen/osm/OSMTag.h"
-// #include <matplotlibcpp.h>
+#include "TestPlottingUtils.h"
 
 using namespace ugr::risk;
 using namespace ugr::mapping::osm;
-// namespace plt = matplotlibcpp;
 
 class RiskMapTests : public testing::Test
 {
@@ -168,6 +167,7 @@ TEST_F(RiskMapTests, SchoolsStrikeRiskMapTest)
 	ugr::mapping::PopulationMap population(bounds, resolution);
 	population.addOSMLayer("Schools", {OSMTag("amenity", "school")}, 100);
 	population.eval();
+	plotMat(population.get("Schools"));
 
 	// Assert the population map actually generated something otherwise
 	// this test is pointless and equivalent to the zero* tests
@@ -197,13 +197,8 @@ TEST_F(RiskMapTests, SchoolsStrikeRiskMapTest)
 			file << strikeMap.get(layer).format(CSVFormat);
 			file.close();
 		}
-		//    PyObject *layerPlot;
-		//    plt::title(layer);
-		//    plt::imshow(impactMap.get(layer).data(), size.y(), size.x(), 1);
-		//    plt::colorbar(layerPlot);
-		//    plt::save("risk_map_" + layer + "_test.png");
-		//    plt::close();
-		//    delete layerPlot;
+
+		plotMat(strikeMap.get(layer));
 	}
 
 	// As the population map is zero, this must all be zero as well
@@ -272,7 +267,7 @@ TEST_F(RiskMapTests, NilWindPointImpactMapTest)
 	const auto size = riskMap.getSize();
 
 	std::vector<GridMapDataType> impactAngles, impactVelocities, buildingImpactProbs;
-	std::vector<ugr::gridmap::Matrix, aligned_allocator<GridMapDataType>> impactPDFs;
+	std::vector<ugr::gridmap::Matrix, aligned_allocator<ugr::gridmap::Matrix>> impactPDFs;
 	ugr::gridmap::Index idx{20, 20};
 	riskMap.makePointImpactMap(idx, impactPDFs, impactAngles, impactVelocities, buildingImpactProbs);
 
@@ -339,7 +334,7 @@ TEST_F(RiskMapTests, WindPointImpactMapTest)
 	const auto size = riskMap.getSize();
 
 	std::vector<GridMapDataType> impactAngles, impactVelocities, buildingImpactProbs;
-	std::vector<ugr::gridmap::Matrix, aligned_allocator<GridMapDataType>> impactPDFs;
+	std::vector<ugr::gridmap::Matrix, aligned_allocator<ugr::gridmap::Matrix>> impactPDFs;
 	ugr::gridmap::Index idx{20, 20};
 	riskMap.makePointImpactMap(idx, impactPDFs, impactAngles, impactVelocities, buildingImpactProbs);
 

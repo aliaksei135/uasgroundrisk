@@ -7,7 +7,7 @@
 #include "uasgroundrisk/gridmap/TypeDefs.h"
 #include "uasgroundrisk/map_gen/PopulationMap.h"
 #include <Eigen/Dense>
-// #include <matplotlibcpp.h>
+#include "TestPlottingUtils.h"
 #include <array>
 #include <fstream>
 #include <gtest/gtest.h>
@@ -18,7 +18,6 @@
 using namespace ugr::mapping;
 using namespace osm;
 using namespace ugr::gridmap;
-// namespace plt = matplotlibcpp;
 
 class PopulationMapTests : public ::testing::Test
 {
@@ -72,12 +71,7 @@ TEST_F(PopulationMapTests, SingleLayerTest)
 		file.close();
 	}
 
-	// PyObject* plot;
-	// plt::imshow(popMap.get("Schools").data(), size.y(), size.x(), 1, {},
-	//             &plot);
-	// plt::colorbar(plot);
-	// plt::save("single_layer_test.png");
-	// plt::close();
+	plotMat(popMap.get("Schools"));
 }
 
 TEST_F(PopulationMapTests, MultiLayerTest)
