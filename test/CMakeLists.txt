@@ -1,16 +1,48 @@
+##################################
+# GoogleTest
+# Test framework
+# License: BSD-3
+##################################
+if (NOT TARGET gtest)
+	FetchContent_Declare(
+			googletest
+			GIT_REPOSITORY https://github.com/google/googletest.git
+			GIT_TAG release-1.11.0
+	)
+	# For Windows: Prevent overriding the parent project's compiler/linker settings
+	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+	FetchContent_MakeAvailable(googletest)
+endif ()
 include(GoogleTest)
-find_package(Python3 COMPONENTS Interpreter Development NumPy REQUIRED)
-execute_process(COMMAND "pip3 install numpy matplotlib")
 
+##################################
+# matplot++
+# C++ data viz
+# License: MIT
+##################################
+# We do not really care about the performance of this as it is only for testing
+set(WITH_SYSTEM_CIMG ON)
+set(CIMG_INCLUDE_DIR ${${PROJECT_NAME}_EXTERN_DIR}/CImg)
+FetchContent_Declare(
+	matplotplusplus
+	GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus
+	GIT_TAG origin/master
+)
+FetchContent_GetProperties(matplotplusplus)
+if(NOT matplotplusplus_POPULATED)
+	FetchContent_Populate(matplotplusplus)
+	add_subdirectory(${matplotplusplus_SOURCE_DIR} ${matplotplusplus_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
 
 macro(ugr_add_test TESTNAME)
     # create an exectuable in which the tests will be stored
     add_executable(${TESTNAME} ${ARGN})
     # link the Google test infrastructure, mocking library, and a default main fuction to
     # the test executable.  Remove g_test_main if writing your own main function.
-    target_link_libraries(${TESTNAME} PUBLIC gmock_main gtest_main gtest gmock Python3::NumPy Python3::Python ${PROJECT_NAME})
-    include_directories(osmium)
-    include_directories(${CMAKE_CURRENT_LIST_DIR})
+    target_link_libraries(${TESTNAME} PUBLIC gmock_main gtest_main gtest gmock Matplot++::matplot ${PROJECT_NAME})
+    target_include_directories(${TESTNAME} PRIVATE osmium)
+    target_include_directories(${TESTNAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
+    target_include_directories(${TESTNAME} PRIVATE ${CIMG_INCLUDE_DIR})
     # gtest_discover_tests replaces gtest_add_tests,
     # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more options to pass to it
     gtest_discover_tests(
