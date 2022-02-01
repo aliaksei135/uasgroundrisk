@@ -51,7 +51,7 @@ namespace ugr
 			GridMap& generateMap(const std::vector<ugr::risk::RiskType>& risksToGenerate);
 
 			void makePointImpactMap(const gridmap::Index& index,
-			                        std::vector<gridmap::Matrix, aligned_allocator<GridMapDataType>>& impactPDFs,
+			                        std::vector<gridmap::Matrix, aligned_allocator<gridmap::Matrix>>& impactPDFs,
 			                        std::vector<GridMapDataType>& impactAngles,
 			                        std::vector<GridMapDataType>& impactVelocities,
 			                        std::vector<GridMapDataType>& buildingImpactProbs);
