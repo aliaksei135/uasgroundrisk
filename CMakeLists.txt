@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(PYTHON_VERSION 3)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+set(${PROJECT_NAME}_EXTERN_DIR ${PROJECT_SOURCE_DIR}/extern)
 Include(FetchContent)
 include_guard(GLOBAL)
 
@@ -32,7 +33,7 @@ endif ()
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 	set(ENABLE_CPPCHECK OFF)
 else()
-	set(ENABLE_CPPCHECK ON)
+	set(ENABLE_CPPCHECK OFF)
 endif()
 if (MSVC)
 	set(ENABLE_CLANG_TIDY OFF)
@@ -210,6 +211,14 @@ if (BZIP2_FOUND)
 endif ()
 
 
+FetchContent_Declare(
+		thrust
+		GIT_REPOSITORY https://github.com/NVIDIA/thrust.git
+		GIT_TAG 1.15.0
+)
+FetchContent_MakeAvailable(thrust)
+target_compile_definitions(${PROJECT_NAME} PUBLIC thrust.compiler_interface_cpp11)
+
 ##############################################################
 # Testing
 ##############################################################
@@ -219,58 +228,6 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 if (${PROJECT_NAME}_BUILD_TESTS)
-	##################################
-	# GoogleTest
-	# Test framework
-	# License: BSD-3
-	##################################
-	if (NOT TARGET gtest)
-		FetchContent_Declare(
-				googletest
-				GIT_REPOSITORY https://github.com/google/googletest.git
-				GIT_TAG release-1.11.0
-		)
-		# For Windows: Prevent overriding the parent project's compiler/linker settings
-		set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-		FetchContent_MakeAvailable(googletest)
-	endif ()
-
-	##################################
-	# matplotlib_cpp
-	# C++ wrapper around matplotlib for plotting of tests
-	# License: BSD-3
-	##################################
-	# We do not really care about the performance of this as it is only for testing
-	FetchContent_Declare(
-			matplotlib_cpp
-			GIT_REPOSITORY https://github.com/lava/matplotlib-cpp.git
-			GIT_TAG 61501081ea32549df1a02dca26cb4edbe0b6a890
-	)
-	FetchContent_GetProperties(matplotlib_cpp)
-	if (NOT matplotlib_cpp_POPULATED)
-		FetchContent_Populate(matplotlib_cpp)
-		target_include_directories(${PROJECT_NAME} PUBLIC ${matplotlib_cpp_SOURCE_DIR})
-	endif ()
-
-	##################################
-	# matplot++
-	# C++ data viz
-	# License: MIT
-	##################################
-	# We do not really care about the performance of this as it is only for testing
-	#set(USE_SYSTEM_CIMG ON)
-	#FetchContent_Declare(
-	#    matplotplusplus
-	#    GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus
-	#    GIT_TAG origin/master
-	#)
-	#FetchContent_GetProperties(matplotplusplus)
-	#if(NOT matplotplusplus_POPULATED)
-	#    FetchContent_Populate(matplotplusplus)
-	#    add_subdirectory(${matplotplusplus_SOURCE_DIR} ${matplotplusplus_BINARY_DIR} EXCLUDE_FROM_ALL)
-	#endif()
-	#target_link_libraries(${PROJECT_NAME} PUBLIC Matplot++::matplot)
-
 	enable_testing()
 	add_subdirectory(test)
 endif ()
