@@ -27,7 +27,7 @@ TEST(MappingTests, BasicPlotTest)
     Eigen::MatrixXd mat(700,500);
     mat.setRandom();
 
-    plotMat(mat);
+    outputMat(mat, "Plot Test");
 
     // const auto& vec = fromEigenMatrix<double, Eigen::MatrixXd>(mat);
     // // fmesh([](double x, double y) { return sin(x) + cos(y); });
