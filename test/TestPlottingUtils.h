@@ -25,21 +25,20 @@ static void outputMat(const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic
 
     const auto& vec = fromEigenMatrix<Scalar>(m);
 
-    image(vec);
-    title(titleStr);
-    xlabel("X");
-    ylabel("Y");
+    auto fig = figure(true);
+    auto cax = fig->current_axes();
+    auto img = image(cax, vec);
+    title(cax, titleStr);
+    xlabel(cax, "X");
+    ylabel(cax, "Y");
 
     if (min != max)
     {
-        colormap(gca(), palette::viridis());
-        colorbar().limits({min, max});
+        colormap(cax, palette::viridis());
+        colorbar(cax).limits({min, max});
     }
 
-#ifdef UGR_PLOT_TESTS
-    show();
-#endif
-    // save("fig/" + titleStr, "epslatex");
+    // save(fig, "fig/" + titleStr + ".eps");
 }
 
 #endif // TESTPLOTTINGUTILS_H
