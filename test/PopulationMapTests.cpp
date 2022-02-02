@@ -34,7 +34,7 @@ TEST_F(PopulationMapTests, EmptyMapTest)
 	PopulationMap popMap(bounds, resolution);
 	popMap.eval();
 
-	ASSERT_EQ(popMap.getLayers().size(), 2);
+	ASSERT_EQ(popMap.getLayers().size(), 1);
 
 	auto size = popMap.getSize();
 	ASSERT_EQ(size.y(), 601);
@@ -56,7 +56,7 @@ TEST_F(PopulationMapTests, SingleLayerTest)
 	// Inside Bitterne Park School, Southampton
 	const Position testPos(-1.369220, 50.929116);
 
-	ASSERT_EQ(popMap.getLayers().size(), 3);
+	ASSERT_EQ(popMap.getLayers().size(), 2);
 	ASSERT_EQ(popMap.get("Schools").maxCoeff(), 10);
 	EXPECT_EQ(popMap.atPosition("Schools", testPos), 10);
 
@@ -81,7 +81,7 @@ TEST_F(PopulationMapTests, MultiLayerTest)
 	popMap.addOSMLayer("Retail", {{"landuse", "retail"}}, 20);
 	popMap.eval();
 
-	ASSERT_EQ(popMap.getLayers().size(), 4);
+	ASSERT_EQ(popMap.getLayers().size(), 3);
 
 	// Inside Bitterne Park School, Southampton
 	const Position testSchoolPos(-1.369220, 50.929116);

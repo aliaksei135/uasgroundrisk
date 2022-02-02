@@ -35,7 +35,6 @@ void ugr::mapping::PopulationMap::eval()
 	// cell
 	constexpr auto densitySumLayerName = "Population Density";
 	add(densitySumLayerName, 0);
-	get(densitySumLayerName).setZero();
 
 	osm::GridMapOSMHandler handler(this, tagLayerMap, popDensityGeomMap,
 	                               densityTagMap);
@@ -51,8 +50,8 @@ void ugr::mapping::PopulationMap::eval()
 	}
 
 	// The building heights must go at the end of this function otherwise they get copied to other layers!
-	OSMMap::addOSMLayer("Building Height", {osm::OSMTag("building")});
-	GridMapOSMBuildingsHandler buildingHeighthandler(this);
+	// OSMMap::addOSMLayer("Building Height", {osm::OSMTag("building")});
+	// GridMapOSMBuildingsHandler buildingHeighthandler(this);
 	isEvaluated = false;
-	OSMMap::eval(buildingHeighthandler);
+	// OSMMap::eval(buildingHeighthandler);
 }
