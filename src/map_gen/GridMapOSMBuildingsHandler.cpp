@@ -32,9 +32,9 @@ void GridMapOSMBuildingsHandler::way(const osmium::Way& way) const noexcept
 		// to them
 		if (!n.location().valid())
 		{
-			std::cerr << "Invalid location for way node; have you used "
-				"NodeLocationsForWays handler?"
-				<< std::endl;
+			// std::cerr << "Invalid location for way node; have you used "
+			// 	"NodeLocationsForWays handler?"
+			// 	<< std::endl;
 			continue;
 		}
 		poly.emplace_back(ugr::gridmap::Position(n.lon(), n.lat()));
