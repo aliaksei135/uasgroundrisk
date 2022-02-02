@@ -37,7 +37,7 @@ ugr::risk::RiskMap::RiskMap(
     initLayer("Building Height");
     // Get population map and convert from people/km^2 to people/m^2
     get("Population Density") = populationMap.get("Population Density") * 1e-6;
-    get("Building Height") = populationMap.get("Building Height");
+    // get("Building Height") = populationMap.get("Building Height");
 
     // Create objects required for sample distribution generation
     // construct a trivial random generator engine from a time-based seed:

@@ -27,7 +27,18 @@ TEST(MappingTests, BasicPlotTest)
     Eigen::MatrixXd mat(700,500);
     mat.setRandom();
 
-    outputMat(mat, "Plot Test");
+    std::vector<double> x = {29, 17, 14, 13, 12, 4, 11};
+    bar(x);
+
+    save("img/barchart.svg");
+    save("img/barchart.eps");
+    save("img/barchart.gif");
+    save("img/barchart.jpg");
+    save("img/barchart.html");
+    save("img/barchart.txt");
+    save("img/barchart.tex");
+
+    // outputMat(mat, "Plot Test");
 
     // const auto& vec = fromEigenMatrix<double, Eigen::MatrixXd>(mat);
     // // fmesh([](double x, double y) { return sin(x) + cos(y); });
