@@ -58,9 +58,9 @@ void GridMapOSMHandler::way(const osmium::Way& way) const noexcept
 		// to them
 		if (!n.location().valid())
 		{
-			std::cerr << "Invalid location for way node; have you used "
-				"NodeLocationsForWays handler?"
-				<< std::endl;
+			// std::cerr << "Invalid location for way node; have you used "
+			// 	"NodeLocationsForWays handler?"
+			// 	<< std::endl;
 			continue;
 		}
 		// PJ_COORD c = proj_trans(reproj, PJ_FWD, proj_coord(n.lat(), n.lon(), 0, 0));
