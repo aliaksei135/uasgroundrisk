@@ -18,13 +18,28 @@ static std::vector<std::vector<Scalar>> fromEigenMatrix(const Matrix& M)
 }
 
 template <typename Scalar>
-static void plotMat(const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& m)
+static void outputMat(const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& m, const std::string& titleStr)
 {
+    const auto min = m.minCoeff();
+    const auto max = m.maxCoeff();
+
     const auto& vec = fromEigenMatrix<Scalar>(m);
-    // fmesh([](double x, double y) { return sin(x) + cos(y); });
+
     image(vec);
-    colormap(gca(), palette::viridis());
-    colorbar().limits({m.minCoeff(), m.maxCoeff()});
+    title(titleStr);
+    xlabel("X");
+    ylabel("Y");
+
+    if (min != max)
+    {
+        colormap(gca(), palette::viridis());
+        colorbar().limits({min, max});
+    }
+
+#ifdef UGR_PLOT_TESTS
     show();
+#endif
+    // save("fig/" + titleStr, "epslatex");
 }
+
 #endif // TESTPLOTTINGUTILS_H

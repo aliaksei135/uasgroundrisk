@@ -43,6 +43,9 @@ macro(ugr_add_test TESTNAME)
     target_include_directories(${TESTNAME} PRIVATE osmium)
     target_include_directories(${TESTNAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
     target_include_directories(${TESTNAME} PRIVATE ${CIMG_INCLUDE_DIR})
+    if(NOT $ENV{CI})
+        target_compile_definitions(${TESTNAME} PRIVATE UGR_PLOT_TESTS)
+    endif()
     # gtest_discover_tests replaces gtest_add_tests,
     # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more options to pass to it
     gtest_discover_tests(

@@ -511,3 +511,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/conan_imports_manifest.txt
