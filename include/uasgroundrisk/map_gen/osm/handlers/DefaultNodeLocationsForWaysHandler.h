@@ -7,10 +7,8 @@
 #ifndef UASGROUNDRISK_SRC_MAP_GEN_OSM_DEFAULTNODELOCATIONSFORWAYSHANDLER_H_
 #define UASGROUNDRISK_SRC_MAP_GEN_OSM_DEFAULTNODELOCATIONSFORWAYSHANDLER_H_
 
-#include <osmium/handler.hpp>
 #include <osmium/handler/node_locations_for_ways.hpp>
 #include <osmium/index/map/sparse_mem_array.hpp>
-#include <osmium/visitor.hpp>
 
 namespace ugr
 {
