@@ -52,7 +52,11 @@ TEST_F(RiskMapTests, EmptyMapLayerConstructionTest)
     weather.addConstantWind(5, 90);
     weather.eval();
 
-    const RiskMap riskMap(population, aircraft, weather);
+    ObstacleMap obstacleMap(bounds, resolution);
+    obstacleMap.addBuildingHeights();
+    obstacleMap.eval();
+
+    const RiskMap riskMap(population, aircraft, obstacleMap, weather);
 
     auto layers = riskMap.getLayers();
     // Check all the layers are there
@@ -85,7 +89,11 @@ TEST_F(RiskMapTests, ZeroStrikeRiskMapTest)
     weather.addConstantWind(5, 90);
     weather.eval();
 
-    RiskMap riskMap(population, aircraft, weather);
+    ObstacleMap obstacleMap(bounds, resolution);
+    obstacleMap.addBuildingHeights();
+    obstacleMap.eval();
+
+    RiskMap riskMap(population, aircraft, obstacleMap, weather);
     auto strikeMap = riskMap.generateMap({RiskType::STRIKE});
 
     ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
@@ -121,7 +129,11 @@ TEST_F(RiskMapTests, ZeroFatalityRiskMapTest)
     weather.addConstantWind(5, 90);
     weather.eval();
 
-    RiskMap riskMap(population, aircraft, weather);
+    ObstacleMap obstacleMap(bounds, resolution);
+    obstacleMap.addBuildingHeights();
+    obstacleMap.eval();
+
+    RiskMap riskMap(population, aircraft, obstacleMap, weather);
     auto fatalityMap = riskMap.generateMap({RiskType::FATALITY});
 
     ugr::gridmap::Matrix& glideRisk = fatalityMap.get("Glide Fatality Risk");
@@ -162,7 +174,11 @@ TEST_F(RiskMapTests, SchoolsStrikeRiskMapTest)
     weather.addConstantWind(5, 90);
     weather.eval();
 
-    RiskMap riskMap(population, aircraft, weather);
+    ObstacleMap obstacleMap(bounds, resolution);
+    obstacleMap.addBuildingHeights();
+    obstacleMap.eval();
+
+    RiskMap riskMap(population, aircraft, obstacleMap, weather);
     auto strikeMap = riskMap.generateMap({RiskType::STRIKE});
 
     ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
@@ -205,7 +221,11 @@ TEST_F(RiskMapTests, ResidentialStrikeRiskMapTest)
     weather.addConstantWind(5, 90);
     weather.eval();
 
-    RiskMap riskMap(population, aircraft, weather);
+    ObstacleMap obstacleMap(bounds, resolution);
+    obstacleMap.addBuildingHeights();
+    obstacleMap.eval();
+
+    RiskMap riskMap(population, aircraft, obstacleMap, weather);
     auto strikeMap = riskMap.generateMap({RiskType::STRIKE});
 
     ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
@@ -241,7 +261,11 @@ TEST_F(RiskMapTests, NilWindPointImpactMapTest)
     WeatherMap weather(bounds, resolution);
     weather.eval();
 
-    RiskMap riskMap(population, aircraft, weather);
+    ObstacleMap obstacleMap(bounds, resolution);
+    obstacleMap.addBuildingHeights();
+    obstacleMap.eval();
+
+    RiskMap riskMap(population, aircraft, obstacleMap, weather);
 
     const auto size = riskMap.getSize();
 
@@ -303,7 +327,11 @@ TEST_F(RiskMapTests, WindPointImpactMapTest)
     weather.addConstantWind(5, 90);
     weather.eval();
 
-    RiskMap riskMap(population, aircraft, weather);
+    ObstacleMap obstacleMap(bounds, 10);
+    obstacleMap.addBuildingHeights();
+    obstacleMap.eval();
+
+    RiskMap riskMap(population, aircraft, obstacleMap, weather);
 
     const auto size = riskMap.getSize();
 
