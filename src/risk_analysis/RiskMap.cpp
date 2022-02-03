@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "uasgroundrisk/risk_analysis/aircraft/AircraftModel.h"
+#include "uasgroundrisk/risk_analysis/obstacles/ObstacleMap.h"
 
 
 using namespace ugr::gridmap;
@@ -24,6 +25,7 @@ using namespace ugr::gridmap;
 ugr::risk::RiskMap::RiskMap(
     mapping::PopulationMap& populationMap,
     AircraftModel& aircraftModel,
+    ObstacleMap& obstacleMap,
     const WeatherMap& weather)
     : GeospatialGridMap(populationMap.getBounds(),
                         static_cast<int>(populationMap.getResolution())), aircraftModel(std::move(aircraftModel)),
@@ -37,7 +39,7 @@ ugr::risk::RiskMap::RiskMap(
     initLayer("Building Height");
     // Get population map and convert from people/km^2 to people/m^2
     get("Population Density") = populationMap.get("Population Density") * 1e-6;
-    // get("Building Height") = populationMap.get("Building Height");
+    get("Building Height") = obstacleMap.get("Building Height");
 
     // Create objects required for sample distribution generation
     // construct a trivial random generator engine from a time-based seed:
@@ -307,6 +309,7 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
         impactVelocity /= nSamples;
         // Get prob of building collision for this descent type
         const double buildingCollisionProb = buildingCollisionCount / nSamples;
+        std::cout << descentModel->getName() << " building collision prob: " << buildingCollisionProb << "\n";
 
         descentDistrParams.emplace_back(distParams);
         impactAngles.emplace_back(impactAngle);
