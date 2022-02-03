@@ -7,12 +7,14 @@
 #include <array>
 #include <fstream>
 #include <gtest/gtest.h>
+#include <uasgroundrisk/risk_analysis/obstacles/ObstacleMap.h>
 
 #include "uasgroundrisk/map_gen/osm/handlers/GridMapOSMBuildingsHandler.h"
 
 
 using namespace ugr::mapping;
 using namespace ugr::gridmap;
+using namespace ugr::risk;
 using namespace ugr::mapping::osm;
 // namespace plt = matplotlibcpp;
 
@@ -23,22 +25,20 @@ protected:
 		50.9065510f, -1.4500237f, 50.9517765f,
 		-1.3419628f
 	};
-	int resolution = 20;
+	int resolution = 5;
 };
 
 TEST_F(BuildingHeightMapTests, SmallMapTest)
 {
-	OSMMap gridMap(bounds, resolution);
-	gridMap.addOSMLayer("Building Height", {OSMTag("building")});
-
-	GridMapOSMBuildingsHandler handler(&gridMap);
-	gridMap.eval(handler);
+	ObstacleMap gridMap(bounds, resolution);
+	gridMap.addBuildingHeights();
+	gridMap.eval();
 
 	ASSERT_EQ(gridMap.getLayers().size(), 1);
 
 	auto size = gridMap.getSize();
-	ASSERT_EQ(size.y(), 601);
-	ASSERT_EQ(size.x(), 398);
+	ASSERT_EQ(size.x(), 1593);
+	ASSERT_EQ(size.y(), 2405);
 
 	const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
 
@@ -59,9 +59,11 @@ TEST_F(BuildingHeightMapTests, SmallMapTest)
 	const auto height = gridMap.atPosition("Building Height", centenaryBuildingPos);
 	ASSERT_FLOAT_EQ(height, 24.384f);
 
-	// const Position outPos(-1.338997, 50.933289);
-	// ASSERT_FALSE(popMap.isInBounds(popMap.world2Local(outPos)));
-	//
-	// const Position inPos(-1.404258, 50.922982);
-	// ASSERT_TRUE(popMap.isInBounds(popMap.world2Local(inPos)));
+	// Position in middle of Itchen River, Southampton
+	// Should be 0
+	const Position riverPos(-1.375755, 50.912448);
+	const auto riverHeight = gridMap.atPosition("Building Height", riverPos);
+	ASSERT_FLOAT_EQ(riverHeight, 0.0f);
+
+
 }
