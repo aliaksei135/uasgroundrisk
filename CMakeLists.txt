@@ -112,6 +112,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/aircraft/AircraftStateModel.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/aircraft/AircraftEnums.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/weather/WeatherMap.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/obstacles/ObstacleMap.h
 	)
 
 
