@@ -10,7 +10,6 @@
 #include <ostream>
 #include <cpr/cpr.h>
 #include <osmium/geom/coordinates.hpp>
-#include <osmium/handler.hpp>
 #include <osmium/memory/buffer.hpp>
 #include <osmium/visitor.hpp>
 #include "uasgroundrisk/map_gen/osm/OSMTag.h"
