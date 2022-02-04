@@ -8,6 +8,13 @@
 #include "../../utils/DefaultGEOSMessageHandlers.h"
 #include "../../utils/GeometryProjectionUtils.h"
 #include <csv.h>
+#include <rapidjson/rapidjson.h>
+#include <rapidjson/document.h>
+#include <rapidjson/filereadstream.h>
+#include <cstdio>
+#include <map>
+
+#include "uasgroundrisk/map_gen/osm/OSMTag.h"
 
 #ifndef UGR_DATA_DIR
 #define UGR_DATA_DIR "../data/"
@@ -161,6 +168,68 @@ public:
             outMap.emplace(code, density / 0.01);
         }
         return outMap;
+    }
+};
+
+class CensusNHAPSIngest // : public DataIngester<short, float>
+{
+    const std::vector<std::vector<int>> NHAPS_GROUPING{
+        {0, 1},
+        {5, 9},
+        {7},
+        {6, 8}
+    };
+
+    const std::vector<std::vector<ugr::mapping::osm::OSMTag>> NHAPS_OSM_MAPPING{
+        {{"landuse", "residential"}},
+        {{"landuse", "industrial"}, {"landuse", "commercial"}},
+        {
+            {"building", "school"}, {"building", "college"}, {"building", "university"}, {"building", "public"},
+            {"building", "government"}, {"building", "civic"}, {"building", "hospital"}
+        },
+        {{"landuse", "retail"}}
+    };
+
+public:
+    std::vector<std::vector<float>> readFile(const std::string& file) //override
+    {
+#ifdef _WIN32
+        const auto mode = "rb";
+#else
+        const auto mode = "r";
+#endif
+        FILE* f = fopen(file.c_str(), mode);
+
+        char readBuffer[65536];
+        rapidjson::FileReadStream is(f, readBuffer, sizeof(readBuffer));
+        rapidjson::Document doc;
+        doc.ParseStream(is);
+        std::vector<std::vector<float>> nhapsProportions;
+        for (rapidjson::Value::ConstMemberIterator itr = doc.MemberBegin();
+             itr != doc.MemberEnd(); ++itr)
+        {
+            std::vector<float> timeProps;
+            for (rapidjson::Value::ConstMemberIterator subitr = itr->value.MemberBegin();
+                 subitr != itr->value.MemberEnd(); ++subitr)
+            {
+                timeProps.emplace_back(subitr->value.GetFloat());
+            }
+            std::vector<float> groupedTimeProps;
+            groupedTimeProps.reserve(NHAPS_GROUPING.size());
+            for (const auto indices : NHAPS_GROUPING)
+            {
+                float groupSum = 0;
+                for (const auto index : indices)
+                {
+                    groupSum += timeProps[index];
+                }
+                groupedTimeProps.emplace_back(groupSum);
+            }
+
+            nhapsProportions.emplace_back(groupedTimeProps);
+        }
+        fclose(f);
+        return nhapsProportions;
     }
 };
 
