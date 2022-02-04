@@ -27,6 +27,7 @@ class ugrConan(ConanFile):
         self.requires("openblas/0.3.17")
         self.requires("expat/2.4.1")
         self.requires("bzip2/1.0.8")
+        self.requires("fast-cpp-csv-parser/cci.20200830")
 
     
     def imports(self):
