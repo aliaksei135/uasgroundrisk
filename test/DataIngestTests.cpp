@@ -6,7 +6,7 @@
 #include <vector>
 
 
-TEST(DataIngestTests, CensusIngestTest)
+TEST(DataIngestTests, GeometryIngestTest)
 {
     CensusGeometryIngest geomIngest;
     // Get the GEOS geoms, these are in EPSG:27700 so need reprojecting
@@ -23,17 +23,31 @@ TEST(DataIngestTests, CensusIngestTest)
     });
 
     proj_context_destroy(projCtx);
+
+    ASSERT_EQ(geoms.size(), 7707);
 }
 
 TEST(DataIngestTests, DensityIngestTest)
 {
     CensusDensityIngest densityIngest;
     const auto densityMap = densityIngest.readFile(std::string(UGR_DATA_DIR) + "density.csv");
+
+    ASSERT_EQ(densityMap.size(), 8570);
+}
+
+TEST(DataIngestTests, NHAPSIngestTest)
+{
+    CensusNHAPSIngest nhapsIngest;
+    const auto nhapsProps = nhapsIngest.readFile(std::string(UGR_DATA_DIR) + "nhaps.json");
+
+    ASSERT_EQ(nhapsProps.size(), 24);
+    ASSERT_FLOAT_EQ(nhapsProps[3][0], 0.97);
 }
 
 TEST(DataIngestTests, MergedIngestTest)
 {
     CensusIngest censusIngest;
     const auto out = censusIngest.makePopulationDensityMap();
-    out.size();
+
+    ASSERT_EQ(out.size(), 7689);
 }
