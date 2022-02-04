@@ -20,6 +20,7 @@ class ugrConan(ConanFile):
         self.requires("eigen/[>3.3.9]")
         self.requires("openssl/3.0.0")
         self.requires("geos/3.9.1")
+        self.requires("shapelib/1.5.0")
         self.requires("libcurl/[>7.75.0]")
         self.requires("proj/8.0.1")
         self.requires("cpr/1.6.2")
