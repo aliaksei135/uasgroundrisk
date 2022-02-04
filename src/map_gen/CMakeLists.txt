@@ -1,4 +1,6 @@
 add_subdirectory(osm)
+add_subdirectory(census)
+add_subdirectory(roads)
 
 set(UGR_SOURCES
         ${UGR_SOURCES}
