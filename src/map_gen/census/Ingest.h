@@ -6,14 +6,16 @@
 #include <string>
 #include <vector>
 #include "../../utils/DefaultGEOSMessageHandlers.h"
+#include <csv.h>
 
+template <typename Key, typename Value>
 class DataIngester
 {
 public:
-    virtual std::vector<GEOSGeometry*> readFile(const std::string& file) = 0;
+    virtual std::map<Key, Value> readFile(const std::string& file) = 0;
 };
 
-class CensusGeometryIngest final : public DataIngester
+class CensusGeometryIngest final : public DataIngester<std::string, GEOSGeometry*>
 {
 public:
     CensusGeometryIngest()
@@ -26,9 +28,9 @@ public:
         finishGEOS();
     }
 
-    std::vector<GEOSGeometry*> readFile(const std::string& file) override
+    std::map<std::string, GEOSGeometry*> readFile(const std::string& file) override
     {
-        std::vector<GEOSGeometry*> outGeoms;
+        std::map<std::string, GEOSGeometry*> outMap;
 
         // Remove the extension and assume the .shp, .shx and .dbf files all share a common path and name
         const auto extIdx = file.find_last_of(".");
@@ -121,13 +123,40 @@ public:
             default:
                 break;
             }
-            outGeoms.emplace_back(geom);
+            auto* code = DBFReadStringAttribute(dbfHandle, i, 3);
+            outMap.emplace(code, geom);
 
             SHPDestroyObject(obj); //dealloc
         }
-        return outGeoms;
+        return outMap;
     }
 };
 
+class CensusDensityIngest final : public DataIngester<std::string, double>
+{
+public:
+    CensusDensityIngest() = default;
+    ~CensusDensityIngest() = default;
+
+    typedef ::io::CSVReader<4, ::io::trim_chars<' ', '\t'>, ::io::no_quote_escape<','>, ::io::ignore_overflow,
+                            ::io::no_comment> CsvParser;
+
+    std::map<std::string, double> readFile(const std::string& file)
+    {
+        std::map<std::string, double> outMap;
+
+        CsvParser reader(file);
+        reader.read_header(io::ignore_extra_column, "code", "population", "area", "density");
+        std::string code;
+        int population;
+        double area, density;
+        while (reader.read_row(code, population, area, density))
+        {
+            // Scale density from per hectare to /km^2
+            outMap.emplace(code, density / 0.01);
+        }
+        return outMap;
+    }
+};
 
 #endif // UGR_CENSUS_INGEST_H
