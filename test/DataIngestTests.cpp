@@ -4,9 +4,7 @@
 #include "../../src/map_gen/census/Ingest.h"
 #include "../../src/utils/GeometryProjectionUtils.h"
 #include <vector>
-#ifndef UGR_DATA_DIR
-#define UGR_DATA_DIR "../data/"
-#endif
+
 
 TEST(DataIngestTests, CensusIngestTest)
 {
@@ -31,5 +29,11 @@ TEST(DataIngestTests, DensityIngestTest)
 {
     CensusDensityIngest densityIngest;
     const auto densityMap = densityIngest.readFile(std::string(UGR_DATA_DIR) + "density.csv");
-    int i = 4;
+}
+
+TEST(DataIngestTests, MergedIngestTest)
+{
+    CensusIngest censusIngest;
+    const auto out = censusIngest.makePopulationDensityMap();
+    out.size();
 }

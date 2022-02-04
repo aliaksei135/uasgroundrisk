@@ -6,7 +6,12 @@
 #include <string>
 #include <vector>
 #include "../../utils/DefaultGEOSMessageHandlers.h"
+#include "../../utils/GeometryProjectionUtils.h"
 #include <csv.h>
+
+#ifndef UGR_DATA_DIR
+#define UGR_DATA_DIR "../data/"
+#endif
 
 template <typename Key, typename Value>
 class DataIngester
@@ -156,6 +161,41 @@ public:
             outMap.emplace(code, density / 0.01);
         }
         return outMap;
+    }
+};
+
+class CensusIngest
+{
+public:
+    std::map<GEOSGeometry*, double> makePopulationDensityMap()
+    {
+        CensusGeometryIngest geomIngest;
+        const auto geoms = geomIngest.readFile(std::string(UGR_DATA_DIR) + "england_wa_2011_clipped.shp");
+
+        const auto projObjs = ugr::util::makeProjObject("EPSG:27700", "EPSG:3395");
+        PJ* reproj = std::get<0>(projObjs);
+        PJ_CONTEXT* projCtx = std::get<1>(projObjs);
+
+        std::for_each(geoms.begin(), geoms.end(), [reproj](std::pair<const std::string, GEOSGeometry*> p)
+        {
+            auto* rg = ugr::util::reprojectPolygon(reproj, p.second);
+            p.second = rg;
+        });
+
+        proj_context_destroy(projCtx);
+
+        CensusDensityIngest densityIngest;
+        const auto densityMap = densityIngest.readFile(std::string(UGR_DATA_DIR) + "density.csv");
+
+        std::map<GEOSGeometry*, double> mergedMap;
+        for (const std::pair<std::string, GEOSGeometry*> p : geoms)
+        {
+            if (densityMap.find(p.first) != densityMap.end())
+            {
+                mergedMap.emplace(p.second, densityMap.at(p.first));
+            }
+        }
+        return mergedMap;
     }
 };
 
