@@ -122,6 +122,18 @@ if (MSVC)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX _USE_MATH_DEFINES)
 endif ()
 
+# Data bundling
+if(NOT ENV{UGR_DATA_DIR})
+	set(UGR_DATA_DIR ${PROJECT_BINARY_DIR}/data CACHE PATH "uasgroundrisk static data directory")
+else()
+	set(UGR_DATA_DIR ENV{UGR_DATA_DIR} CACHE PATH "uasgroundrisk static data directory")
+endif()
+
+add_custom_target(ugr_bundled_data
+	${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/extern/data ${UGR_DATA_DIR})
+add_dependencies(${PROJECT_NAME} ugr_bundled_data)
+target_compile_definitions(${PROJECT_NAME} PRIVATE UGR_DATA_DIR=${UGR_DATA_DIR})
+
 ##############################################################
 # Dependencies
 ##############################################################
@@ -164,10 +176,12 @@ target_link_libraries(${PROJECT_NAME} PUBLIC PROJ::PROJ)
 find_package(geos CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC GEOS::geos_c)
 
+find_package(shapelib CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PUBLIC shapelib::shp)
+
 find_package(OpenMP REQUIRED)
 target_link_directories(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
 if(OPENMP_FOUND)
-message("OPENMP FOUND")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
