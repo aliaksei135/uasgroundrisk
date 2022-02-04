@@ -5,24 +5,31 @@
 #include "../../src/utils/GeometryProjectionUtils.h"
 #include <vector>
 #ifndef UGR_DATA_DIR
-#define UGR_DATA_DIR "../data/england_wa_2011_clipped.shp"
+#define UGR_DATA_DIR "../data/"
 #endif
 
 TEST(DataIngestTests, CensusIngestTest)
 {
     CensusGeometryIngest geomIngest;
     // Get the GEOS geoms, these are in EPSG:27700 so need reprojecting
-    const auto geoms = geomIngest.readFile(UGR_DATA_DIR);
+    auto geoms = geomIngest.readFile(std::string(UGR_DATA_DIR) + "england_wa_2011_clipped.shp");
 
     const auto projObjs = ugr::util::makeProjObject("EPSG:27700", "EPSG:3395");
     PJ* reproj = std::get<0>(projObjs);
     PJ_CONTEXT* projCtx = std::get<1>(projObjs);
 
-    std::vector<GEOSGeometry*> reprojPolys(geoms.size());
-    std::transform(geoms.begin(), geoms.end(), reprojPolys.begin(), [reproj](const GEOSGeometry* in)-> GEOSGeometry*
+    std::for_each(geoms.begin(), geoms.end(), [reproj](std::pair<const std::string, GEOSGeometry*> p)
     {
-        return ugr::util::reprojectPolygon(reproj, in);
+        auto* rg = ugr::util::reprojectPolygon(reproj, p.second);
+        p.second = rg;
     });
 
     proj_context_destroy(projCtx);
+}
+
+TEST(DataIngestTests, DensityIngestTest)
+{
+    CensusDensityIngest densityIngest;
+    const auto densityMap = densityIngest.readFile(std::string(UGR_DATA_DIR) + "density.csv");
+    int i = 4;
 }
