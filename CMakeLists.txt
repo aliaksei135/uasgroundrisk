@@ -182,6 +182,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC shapelib::shp)
 find_package(fast-cpp-csv-parser CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC fast-cpp-csv-parser::fast-cpp-csv-parser)
 
+find_package(RapidJSON CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PUBLIC RapidJSON::RapidJSON)
+
 find_package(OpenMP REQUIRED)
 target_link_directories(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
 if(OPENMP_FOUND)
