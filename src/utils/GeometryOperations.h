@@ -94,8 +94,16 @@ namespace ugr
             finishGEOS();
         }
 
+        template <typename T>
+        static T getGeometryArea(GEOSGeometry* geom)
+        {
+            double area;
+            GEOSArea(geom, &area);
+            return static_cast<T>(area);
+        }
+
         template <typename C, typename T = typename C::value_type>
-        static void destroyGEOSGeoms(C const& container)
+        static void destroyGEOSGeoms(const C& container)
         {
             for (GEOSGeometry* geom : container)
             {
