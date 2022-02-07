@@ -17,7 +17,7 @@ namespace ugr
 {
 	namespace mapping
 	{
-		class PopulationMap final : public OSMMap
+		class PopulationMap : public OSMMap
 		{
 		public:
 			/**

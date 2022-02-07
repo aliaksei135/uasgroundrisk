@@ -4,6 +4,7 @@ add_subdirectory(roads)
 
 set(UGR_SOURCES
         ${UGR_SOURCES}
+        ${CMAKE_CURRENT_LIST_DIR}/TemporalPopulationMap.h
         ${CMAKE_CURRENT_LIST_DIR}/PopulationMap.cpp
         ${CMAKE_CURRENT_LIST_DIR}/OSMMap.cpp
         ${CMAKE_CURRENT_LIST_DIR}/GeospatialGridMap.cpp
