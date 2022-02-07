@@ -233,15 +233,17 @@ public:
     }
 };
 
+
 class CensusIngest
 {
 public:
-    std::map<GEOSGeometry*, double> makePopulationDensityMap()
+    template <typename Scalar>
+    std::map<GEOSGeometry*, Scalar> makePopulationDensityMap()
     {
         CensusGeometryIngest geomIngest;
         const auto geoms = geomIngest.readFile(std::string(UGR_DATA_DIR) + "england_wa_2011_clipped.shp");
 
-        const auto projObjs = ugr::util::makeProjObject("EPSG:27700", "EPSG:3395");
+        const auto projObjs = ugr::util::makeProjObject("EPSG:27700", "EPSG:4326");
         PJ* reproj = std::get<0>(projObjs);
         PJ_CONTEXT* projCtx = std::get<1>(projObjs);
 
@@ -256,15 +258,22 @@ public:
         CensusDensityIngest densityIngest;
         const auto densityMap = densityIngest.readFile(std::string(UGR_DATA_DIR) + "density.csv");
 
-        std::map<GEOSGeometry*, double> mergedMap;
+        std::map<GEOSGeometry*, Scalar> mergedMap;
         for (const std::pair<std::string, GEOSGeometry*> p : geoms)
         {
             if (densityMap.find(p.first) != densityMap.end())
             {
-                mergedMap.emplace(p.second, densityMap.at(p.first));
+                mergedMap.emplace(p.second, static_cast<Scalar>(densityMap.at(p.first)));
             }
         }
         return mergedMap;
+    }
+
+    std::vector<std::vector<float>> makeNHAPSProportions()
+    {
+        CensusNHAPSIngest nhapsIngest;
+        const auto nhapsProps = nhapsIngest.readFile(std::string(UGR_DATA_DIR) + "nhaps.json");
+        return nhapsProps;
     }
 };
 
