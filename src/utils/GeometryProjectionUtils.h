@@ -99,8 +99,7 @@ namespace ugr
         {
             // Reproject outer ring/shell
             const GEOSGeometry* exteriorRing = GEOSGetExteriorRing(in);
-            const auto reprojShellCoords = reinterpret_cast<GEOSCoordSequence*>(
-                reprojectCoordinates(reprojector, GEOSGeom_getCoordSeq(exteriorRing)));
+            const auto reprojShellCoords = reprojectCoordinates(reprojector, GEOSGeom_getCoordSeq(exteriorRing));
             auto* shell = GEOSGeom_createLinearRing(reprojShellCoords);
 
             // Reproject each of the inner rings
