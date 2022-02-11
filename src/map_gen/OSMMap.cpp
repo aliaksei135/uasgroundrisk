@@ -10,7 +10,7 @@ ugr::mapping::OSMMap::OSMMap(const std::array<float, 4>& bounds, const float res
 void ugr::mapping::OSMMap::addOSMLayer(const std::string& layerName, const std::vector<osm::OSMTag>& tags,
                                        const float defaultValue)
 {
-	add(layerName, defaultValue);
+	add(layerName, 0);
 	for (const auto& tag : tags)
 	{
 		tagLayerMap.emplace(tag, layerName);
