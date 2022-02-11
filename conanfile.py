@@ -20,7 +20,8 @@ class ugrConan(ConanFile):
         self.requires("eigen/[>3.3.9]")
         self.requires("openssl/3.0.0")
         self.requires("boost/1.78.0")
-        self.requires("geos/3.9.1")
+        # We are careful to ONLY use the stable C API for GEOS, so can stay up to date
+        self.requires("geos/3.10.2")
         self.requires("shapelib/1.5.0")
         self.requires("libcurl/[>7.75.0]")
         self.requires("proj/8.0.1")
