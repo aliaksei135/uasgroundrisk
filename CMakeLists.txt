@@ -99,12 +99,14 @@ target_sources(${PROJECT_NAME} PRIVATE
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/gridmap/Iterators.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/gridmap/TypeDefs.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/PopulationMap.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/TemporalPopulationMap.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/OSMMap.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/GeospatialGridMap.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/osm/OSMTag.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/osm/OSMOverpassQuery.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/osm/OSMOverpassQueryBuilder.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/osm/handlers/GridMapOSMHandler.h
+	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/osm/handlers/OSMTagGeometryHandler.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/map_gen/osm/handlers/GridMapOSMBuildingsHandler.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/RiskMap.h
 	${PROJECT_SOURCE_DIR}/include/uasgroundrisk/risk_analysis/RiskEnums.h
@@ -132,7 +134,7 @@ endif()
 add_custom_target(ugr_bundled_data
 	${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/extern/data ${UGR_DATA_DIR})
 add_dependencies(${PROJECT_NAME} ugr_bundled_data)
-target_compile_definitions(${PROJECT_NAME} PRIVATE UGR_DATA_DIR=${UGR_DATA_DIR})
+target_compile_definitions(${PROJECT_NAME} PRIVATE UGR_DATA_DIR="${UGR_DATA_DIR}")
 
 ##############################################################
 # Dependencies
@@ -178,6 +180,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC GEOS::geos_c)
 
 find_package(shapelib CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC shapelib::shp)
+
+find_package(boost CONFIG COMPONENTS variant REQUIRED)
+#target_link_libraries(${PROJECT_NAME} PUBLIC boost::)
 
 find_package(fast-cpp-csv-parser CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC fast-cpp-csv-parser::fast-cpp-csv-parser)

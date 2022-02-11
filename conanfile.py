@@ -19,6 +19,7 @@ class ugrConan(ConanFile):
     def requirements(self):
         self.requires("eigen/[>3.3.9]")
         self.requires("openssl/3.0.0")
+        self.requires("boost/1.78.0")
         self.requires("geos/3.9.1")
         self.requires("shapelib/1.5.0")
         self.requires("libcurl/[>7.75.0]")
