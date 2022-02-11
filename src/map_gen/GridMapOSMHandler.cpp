@@ -16,6 +16,9 @@
 #include <geos_c.h>
 #include <iostream>
 
+#include "osmium/osm/area.hpp"
+#include "osmium/osm/relation.hpp"
+
 using namespace ugr::gridmap;
 using namespace ugr::mapping::osm;
 
@@ -26,14 +29,8 @@ GridMapOSMHandler::GridMapOSMHandler(
     : gridMap(gridMap), tagLayerMap(std::move(tagLayerMap)),
       densityTagMap(std::move(densityTagMap)), gridCRS(std::move(gridCRS))
 {
-    projCtx = proj_context_create();
-#ifdef PROJ_DATA_PATH
-    const char* projDataPaths[1];
-    projDataPaths[0] = PROJ_DATA_PATH;
-    proj_context_set_search_paths(projCtx, 1, projDataPaths);
-#endif
-    reproj = proj_create_crs_to_crs(projCtx, "EPSG:4326", this->gridCRS.c_str(),
-                                    nullptr);
+    std::tie(reproj, projCtx) = util::makeProjObject();
+
     std::map<GEOSGeometry*, float> reprojectedPopulationGeomMap;
     std::transform(densityGeometryMap.cbegin(), densityGeometryMap.cend(),
                    std::inserter(reprojectedPopulationGeomMap,
@@ -125,6 +122,88 @@ void GridMapOSMHandler::way(const osmium::Way& way) const noexcept
                 // Set the grid map at this point to the population density estimate
                 // in this geometry
                 setFallbackValue(layerName, gridMapPoint, fallbackDensity);
+            }
+        }
+    }
+}
+
+void GridMapOSMHandler::area(const osmium::Area& area) const noexcept
+{
+    std::vector<OSMTag> tags;
+    for (const auto& tag : area.tags())
+    {
+        OSMTag fullTag(tag.key(), tag.value());
+        tags.emplace_back(fullTag);
+        // Try to find the tag in our map
+        auto tagLayerIter = tagLayerMap.find(fullTag);
+        if (tagLayerIter != tagLayerMap.end())
+        {
+            // In case the population hasn't been found within predefined geometries
+            // Test if it is a uniform density by tag
+            GridMapDataType fallbackDensity = -1;
+            auto densityIter = densityTagMap.find(fullTag);
+            if (densityIter != densityTagMap.end())
+            {
+                fallbackDensity = densityIter->second;
+            }
+
+            for (const auto& or : area.outer_rings())
+            {
+                std::vector<GeoPolygon> inners;
+                for (const auto& ir : area.inner_rings(or))
+                {
+                    GeoPolygon poly;
+                    // Add to a polygon
+                    for (const auto& n : ir)
+                    {
+                        // Nodes are usually invalid because ways have not had node locations mapped
+                        // to them
+                        if (!n.location().valid())
+                        {
+                            // std::cerr << "Invalid location for way node; have you used "
+                            //     "NodeLocationsForWays handler?"
+                            //     << std::endl;
+                            continue;
+                        }
+                        // PJ_COORD c = proj_trans(reproj, PJ_FWD, proj_coord(n.lat(), n.lon(), 0, 0));
+                        poly.emplace_back(Position(n.lon(), n.lat()));
+                    }
+                    inners.emplace_back(poly);
+                }
+
+                GeoPolygon orPoly;
+                // Add to a polygon
+                for (const auto& n : or)
+                {
+                    // Nodes are usually invalid because ways have not had node locations mapped
+                    // to them
+                    if (!n.location().valid())
+                    {
+                        // std::cerr << "Invalid location for way node; have you used "
+                        //     "NodeLocationsForWays handler?"
+                        //     << std::endl;
+                        continue;
+                    }
+                    // PJ_COORD c = proj_trans(reproj, PJ_FWD, proj_coord(n.lat(), n.lon(), 0, 0));
+                    orPoly.emplace_back(Position(n.lon(), n.lat()));
+                }
+
+                std::string layerName = tagLayerIter->second;
+                for (PolygonIterator iter(*gridMap, orPoly); !iter.isPastEnd();
+                     ++iter)
+                {
+                    const auto gridMapPoint = (*iter);
+                    setFallbackValue(layerName, gridMapPoint, fallbackDensity);
+                }
+                for (const auto irPoly : inners)
+                {
+                    for (PolygonIterator iter(*gridMap, irPoly); !iter.isPastEnd();
+                         ++iter)
+                    {
+                        const auto gridMapPoint = (*iter);
+                        setFallbackValue(layerName, gridMapPoint, 0);
+                    }
+                }
             }
         }
     }

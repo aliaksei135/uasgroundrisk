@@ -51,8 +51,8 @@ namespace ugr
                 ~GridMapOSMHandler();
 
                 void way(const osmium::Way& way) const noexcept;
-                void setFallbackValue(const std::string& layerName, const Index& gridMapPoint,
-                                      const Matrix::Scalar& fallbackDensity) const;
+
+                void area(const osmium::Area& area) const noexcept;
 
             protected:
                 PJ_CONTEXT* projCtx;
@@ -64,6 +64,9 @@ namespace ugr
                 std::map<GEOSGeometry*, GridMapDataType> densityGeometryMap;
 
                 std::string gridCRS;
+
+                void setFallbackValue(const std::string& layerName, const Index& gridMapPoint,
+                                      const Matrix::Scalar& fallbackDensity) const;
             };
         }
     }
