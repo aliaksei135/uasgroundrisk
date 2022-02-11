@@ -1,5 +1,8 @@
 #include "uasgroundrisk/map_gen/osm/handlers/OSMTagGeometryHandler.h"
 
+#include <osmium/osm/way.hpp>
+#include <osmium/osm/area.hpp>
+
 #include "uasgroundrisk/gridmap/TypeDefs.h"
 #include "uasgroundrisk/gridmap/Iterators.h"
 
