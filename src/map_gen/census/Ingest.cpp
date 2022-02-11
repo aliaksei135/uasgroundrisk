@@ -5,10 +5,11 @@
 #include <cstdio>
 #include <shapefil.h>
 #include <geos_c.h>
+#include <proj.h>
 #include <iostream>
 #include <csv.h>
 #include "../../utils/DefaultGEOSMessageHandlers.h"
-#include "../../utils/GeometryProjectionUtils.h"
+
 
 const std::vector<std::vector<int>> CensusNHAPSIngest::NHAPS_GROUPING = {
     {0, 1},
@@ -19,23 +20,16 @@ const std::vector<std::vector<int>> CensusNHAPSIngest::NHAPS_GROUPING = {
 
 const std::vector<std::vector<ugr::mapping::osm::OSMTag>> CensusNHAPSIngest::NHAPS_OSM_MAPPING = {
     {{"landuse", "residential"}},
-    {{"landuse", "industrial"}, {"landuse", "commercial"}},
+    {{"landuse", "industrial"}, {"landuse", "commercial"},{"building", "office"}},
     {
         {"building", "school"}, {"building", "college"}, {"building", "university"}, {"building", "public"},
-        {"building", "government"}, {"building", "civic"}, {"building", "hospital"}
+        {"building", "government"}, {"building", "civic"}, {"building", "hospital"}, {"landuse", "education"},
+        {"amenity", "courthouse"}, {"amenity", "townhall"}, {"amenity", "police"}, {"amenity", "fire_station"},
+        {"amenity", "clinic"}, {"amenity", "courthouse"}, {"building", "transportation"},{"landuse", "religious"}
     },
-    {{"landuse", "retail"}}
+    {{"landuse", "retail"}, {"building", "supermarket"}, {"building", "retail"}}
 };
 
-CensusGeometryIngest::CensusGeometryIngest()
-{
-    initGEOS(notice, log_and_exit);
-}
-
-CensusGeometryIngest::~CensusGeometryIngest()
-{
-    finishGEOS();
-}
 
 std::map<std::string, GEOSGeometry*> CensusGeometryIngest::readFile(const std::string& file)
 {
@@ -71,28 +65,28 @@ std::map<std::string, GEOSGeometry*> CensusGeometryIngest::readFile(const std::s
 
             // Allocate a GEOS coord sequence
             // ugr is only 2D and so is the grid map, so only 2 dimensions used, even if data has more
-            auto* objGeosCoordSeq = GEOSCoordSeq_create(nVert, 2);
+            auto* objGeosCoordSeq = GEOSCoordSeq_create_r(geosCtx, nVert, 2);
 
             const auto startVertIdx = obj->panPartStart[j];
             const double startX = obj->padfX[startVertIdx], startY = obj->padfY[startVertIdx];
 
-            GEOSCoordSeq_setOrdinate(objGeosCoordSeq, 0, 0, startX);
-            GEOSCoordSeq_setOrdinate(objGeosCoordSeq, 0, 1, startY);
+            GEOSCoordSeq_setOrdinate_r(geosCtx, objGeosCoordSeq, 0, 0, startX);
+            GEOSCoordSeq_setOrdinate_r(geosCtx, objGeosCoordSeq, 0, 1, startY);
 
             for (unsigned k = startVertIdx + 1; k < nVert; ++k)
             {
-                GEOSCoordSeq_setOrdinate(objGeosCoordSeq, k, 0, obj->padfX[k]);
-                GEOSCoordSeq_setOrdinate(objGeosCoordSeq, k, 1, obj->padfY[k]);
+                GEOSCoordSeq_setOrdinate_r(geosCtx, objGeosCoordSeq, k, 0, obj->padfX[k]);
+                GEOSCoordSeq_setOrdinate_r(geosCtx, objGeosCoordSeq, k, 1, obj->padfY[k]);
             }
 
             // Ensure a closed ring is formed
             double endX, endY;
-            GEOSCoordSeq_getOrdinate(objGeosCoordSeq, nVert - 1, 0, &endX);
-            GEOSCoordSeq_getOrdinate(objGeosCoordSeq, nVert - 1, 1, &endY);
+            GEOSCoordSeq_getOrdinate_r(geosCtx, objGeosCoordSeq, nVert - 1, 0, &endX);
+            GEOSCoordSeq_getOrdinate_r(geosCtx, objGeosCoordSeq, nVert - 1, 1, &endY);
             if (startX != endX || startY != endY)
             {
-                GEOSCoordSeq_setOrdinate(objGeosCoordSeq, nVert - 1, 0, startX);
-                GEOSCoordSeq_setOrdinate(objGeosCoordSeq, nVert - 1, 1, startY);
+                GEOSCoordSeq_setOrdinate_r(geosCtx, objGeosCoordSeq, nVert - 1, 0, startX);
+                GEOSCoordSeq_setOrdinate_r(geosCtx, objGeosCoordSeq, nVert - 1, 1, startY);
             }
 
 
@@ -101,10 +95,10 @@ std::map<std::string, GEOSGeometry*> CensusGeometryIngest::readFile(const std::s
             case SHPP_FIRSTRING:
             case SHPP_OUTERRING:
             case SHPP_RING:
-                outerRing = GEOSGeom_createLinearRing(objGeosCoordSeq);
+                outerRing = GEOSGeom_createLinearRing_r(geosCtx, objGeosCoordSeq);
                 break;
             case SHPP_INNERRING:
-                innerRings.emplace_back(GEOSGeom_createLinearRing(objGeosCoordSeq));
+                innerRings.emplace_back(GEOSGeom_createLinearRing_r(geosCtx, objGeosCoordSeq));
                 break;
             default:
                 break;
@@ -118,16 +112,26 @@ std::map<std::string, GEOSGeometry*> CensusGeometryIngest::readFile(const std::s
         case SHPT_POINTZ:
         case SHPT_POINTM:
             {
-                auto* coordSeq = GEOSGeom_getCoordSeq(outerRing);
+                auto* coordSeq = GEOSGeom_getCoordSeq_r(geosCtx, outerRing);
                 double x, y;
-                GEOSCoordSeq_getXY(coordSeq, 0, &x, &y);
-                geom = GEOSGeom_createPointFromXY(x, y);
+                GEOSCoordSeq_getXY_r(geosCtx, coordSeq, 0, &x, &y);
+                geom = GEOSGeom_createPointFromXY_r(geosCtx, x, y);
             }
             break;
         case SHPT_POLYGON:
         case SHPT_POLYGONZ:
         case SHPT_POLYGONM:
-            geom = GEOSGeom_createPolygon(outerRing, innerRings.data(), innerRings.size());
+            {
+                geom = GEOSGeom_createPolygon_r(geosCtx, outerRing, innerRings.data(), innerRings.size());
+                auto v = GEOSisValid_r(geosCtx, geom);
+                if (v != 1)
+                {
+                    auto vr = GEOSisValidReason_r(geosCtx, geom);
+                    auto t = GEOSGeomType_r(geosCtx, geom);
+                    SHPDestroyObject(obj);
+                    continue;
+                }
+            }
             break;
         default:
             break;
@@ -168,7 +172,7 @@ std::vector<std::vector<float>> CensusNHAPSIngest::readFile(const std::string& f
 #endif
     FILE* f = fopen(file.c_str(), mode);
 
-    char readBuffer[65536];
+    char readBuffer[16384];
     rapidjson::FileReadStream is(f, readBuffer, sizeof(readBuffer));
     rapidjson::Document doc;
     doc.ParseStream(is);
@@ -184,7 +188,7 @@ std::vector<std::vector<float>> CensusNHAPSIngest::readFile(const std::string& f
         }
         std::vector<float> groupedTimeProps;
         groupedTimeProps.reserve(NHAPS_GROUPING.size());
-        for (const auto indices : NHAPS_GROUPING)
+        for (const auto& indices : NHAPS_GROUPING)
         {
             float groupSum = 0;
             for (const auto index : indices)
@@ -203,39 +207,6 @@ std::vector<std::vector<float>> CensusNHAPSIngest::readFile(const std::string& f
 std::vector<std::vector<float>> CensusIngest::makeNHAPSProportions()
 {
     CensusNHAPSIngest nhapsIngest;
-    const auto nhapsProps = nhapsIngest.readFile(std::string(UGR_DATA_DIR) + "nhaps.json");
+    auto nhapsProps = nhapsIngest.readFile(UGR_DATA_DIR "/nhaps.json");
     return nhapsProps;
-}
-
-
-template <typename Scalar>
-std::map<GEOSGeometry*, Scalar> CensusIngest::makePopulationDensityMap()
-{
-    CensusGeometryIngest geomIngest;
-    const auto geoms = geomIngest.readFile(std::string(UGR_DATA_DIR) + "england_wa_2011_clipped.shp");
-
-    const auto projObjs = ugr::util::makeProjObject("EPSG:27700", "EPSG:4326");
-    PJ* reproj = std::get<0>(projObjs);
-    PJ_CONTEXT* projCtx = std::get<1>(projObjs);
-
-    std::for_each(geoms.begin(), geoms.end(), [reproj](std::pair<const std::string, GEOSGeometry*> p)
-    {
-        auto* rg = ugr::util::reprojectPolygon(reproj, p.second);
-        p.second = rg;
-    });
-
-    proj_context_destroy(projCtx);
-
-    CensusDensityIngest densityIngest;
-    const auto densityMap = densityIngest.readFile(std::string(UGR_DATA_DIR) + "density.csv");
-
-    std::map<GEOSGeometry*, Scalar> mergedMap;
-    for (const std::pair<std::string, GEOSGeometry*> p : geoms)
-    {
-        if (densityMap.find(p.first) != densityMap.end())
-        {
-            mergedMap.emplace(p.second, static_cast<Scalar>(densityMap.at(p.first)));
-        }
-    }
-    return mergedMap;
 }
