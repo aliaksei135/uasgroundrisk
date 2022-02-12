@@ -5,7 +5,7 @@
 #include "../src/utils/GeometryProjectionUtils.h"
 #include <vector>
 
-class DataIngestTests : public ::testing::Test
+class DataIngestTests : public testing::Test
 {
 public:
     void SetUp() override
@@ -19,9 +19,9 @@ public:
 TEST_F(DataIngestTests, GeometryIngestTest)
 {
     CensusGeometryIngest geomIngest(geosCtx);
-    const auto geoms = geomIngest.readFile(UGR_DATA_DIR "england_wa_2011_clipped.shp");
+    const auto geoms = geomIngest.readFile(UGR_DATA_DIR "Wards_(December_2011)_Boundaries_EW_BGC.shp");
 
-    ASSERT_EQ(geoms.size(), 7424);
+    ASSERT_EQ(geoms.size(), 8348);
 }
 
 TEST_F(DataIngestTests, DensityIngestTest)
@@ -46,5 +46,5 @@ TEST_F(DataIngestTests, MergedIngestTest)
     CensusIngest censusIngest(geosCtx);
     const auto out = censusIngest.makePopulationDensityMap<double>();
 
-    ASSERT_EQ(out.size(), 7407);
+    ASSERT_EQ(out.size(), 8331);
 }
