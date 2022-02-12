@@ -19,22 +19,9 @@ public:
 TEST_F(DataIngestTests, GeometryIngestTest)
 {
     CensusGeometryIngest geomIngest(geosCtx);
-    // Get the GEOS geoms, these are in EPSG:27700 so need reprojecting
-    auto geoms = geomIngest.readFile(UGR_DATA_DIR "england_wa_2011_clipped.shp");
+    const auto geoms = geomIngest.readFile(UGR_DATA_DIR "england_wa_2011_clipped.shp");
 
-    const auto projObjs = ugr::util::makeProjObject("EPSG:27700", "EPSG:3395");
-    PJ* reproj = std::get<0>(projObjs);
-    PJ_CONTEXT* projCtx = std::get<1>(projObjs);
-
-    std::for_each(geoms.begin(), geoms.end(), [reproj](std::pair<const std::string, GEOSGeometry*> p)
-    {
-        auto* rg = ugr::util::reprojectPolygon(reproj, p.second);
-        p.second = rg;
-    });
-
-    proj_context_destroy(projCtx);
-
-    ASSERT_EQ(geoms.size(), 7707);
+    ASSERT_EQ(geoms.size(), 7424);
 }
 
 TEST_F(DataIngestTests, DensityIngestTest)
@@ -59,5 +46,5 @@ TEST_F(DataIngestTests, MergedIngestTest)
     CensusIngest censusIngest(geosCtx);
     const auto out = censusIngest.makePopulationDensityMap<double>();
 
-    ASSERT_EQ(out.size(), 7689);
+    ASSERT_EQ(out.size(), 7407);
 }
