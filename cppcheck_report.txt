@@ -16,12 +16,36 @@ src/utils/GeometryProjectionUtils.h:301:0: information: Skipping configuration '
 src/map_gen/GeospatialGridMap.cpp:22:0: information: Skipping configuration 'PROJ_DATA_PATH' since the value of 'PROJ_DATA_PATH' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly. [ConfigurationNotChecked]
     projDataPaths[0] = PROJ_DATA_PATH;
 ^
-src/utils/GeometryOperations.h:227:3: error: Unmatched '}'. Configuration: ''. [syntaxError]
-  }
-  ^
-src/utils/GeometryOperations.h:227:3: error: Unmatched '}'. Configuration: '_WIN32'. [syntaxError]
-  }
-  ^
+src/map_gen/census/Ingest.h:107:37: performance:inconclusive: Technically the member function 'CensusIngest::makeNHAPSProportions' can be static (but you may consider moving to unnamed namespace). [functionStatic]
+    std::vector<std::vector<float>> makeNHAPSProportions();
+                                    ^
+src/map_gen/census/Ingest.cpp:207:47: note: Technically the member function 'CensusIngest::makeNHAPSProportions' can be static (but you may consider moving to unnamed namespace).
+std::vector<std::vector<float>> CensusIngest::makeNHAPSProportions()
+                                              ^
+src/map_gen/census/Ingest.h:107:37: note: Technically the member function 'CensusIngest::makeNHAPSProportions' can be static (but you may consider moving to unnamed namespace).
+    std::vector<std::vector<float>> makeNHAPSProportions();
+                                    ^
+src/map_gen/census/Ingest.h:23:5: style: Class 'DataIngester < std :: string , GEOSGeometry * >' has a constructor with 1 argument that is not explicit. [noExplicitConstructor]
+    DataIngester(GEOSContextHandle_t& geosCtx): geosCtx(geosCtx)
+    ^
+src/map_gen/census/Ingest.h:23:5: style: Class 'DataIngester < std :: string , GEOSGeom_t * >' has a constructor with 1 argument that is not explicit. [noExplicitConstructor]
+    DataIngester(GEOSContextHandle_t& geosCtx): geosCtx(geosCtx)
+    ^
+src/map_gen/census/Ingest.h:23:5: style: Class 'DataIngester < std :: string , double >' has a constructor with 1 argument that is not explicit. [noExplicitConstructor]
+    DataIngester(GEOSContextHandle_t& geosCtx): geosCtx(geosCtx)
+    ^
+src/map_gen/census/Ingest.cpp:196:26: style: Consider using std::accumulate algorithm instead of a raw loop. [useStlAlgorithm]
+                groupSum += timeProps[index];
+                         ^
+src/utils/GeometryOperations.h:30:28: style: Variable 'mx' is assigned a value that is never used. [unreadVariable]
+                const T mx = std::max(x1, x2);
+                           ^
+src/utils/GeometryOperations.h:75:28: style: Variable 'my' is assigned a value that is never used. [unreadVariable]
+                const T my = std::max(y1, y2);
+                           ^
+src/utils/GeometryOperations.h:299:23: style: Variable 'i' is assigned a value that is never used. [unreadVariable]
+                int i = 7;
+                      ^
 src/map_gen/osm/OSMOverpassQuery.cpp:110:21: style: Consider using std::accumulate algorithm instead of a raw loop. [useStlAlgorithm]
         queryString += "node[" + tag.to_string() + "];";
                     ^
@@ -34,15 +58,18 @@ src/map_gen/osm/OSMOverpassQuery.cpp:118:21: style: Consider using std::accumula
 src/utils/DataFitting.h:117:8: performance:inconclusive: Technically the member function 'ugr::internal::Gaussian2DFunctor::inputs' can be static (but you may consider moving to unnamed namespace). [functionStatic]
    int inputs() const { return 7; }
        ^
+src/utils/DataFitting.h:104:68: style: Parameter 'fvec' can be declared with const [constParameter]
+   int operator()(const Gaussian2DParamVector& x, Eigen::VectorXd& fvec) const
+                                                                   ^
+src/risk_analysis/RiskMap.cpp:140:22: style: Variable 'len1d' is assigned a value that is never used. [unreadVariable]
+    const auto len1d = size.x() * size.y();
+                     ^
 test/DataFittingTests.cpp:12:29: warning: Found suspicious operator ',' [constStatement]
  param << 1, 20, 20, 4, 4, 0, 0;
                             ^
 test/DataFittingTests.cpp:51:29: warning: Found suspicious operator ',' [constStatement]
  param << 1, 20, 20, 4, 4, 0, 0;
                             ^
-src/utils/DataFitting.h:104:68: style: Parameter 'fvec' can be declared with const [constParameter]
-   int operator()(const Gaussian2DParamVector& x, Eigen::VectorXd& fvec) const
-                                                                   ^
 test/GridMapOSMConstructionTests.cpp:88:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
  auto size = gridMap.getSize();
            ^
@@ -64,7 +91,7 @@ test/RiskMapTests.cpp:23:40: warning: Found suspicious operator ',' [constStatem
 test/RiskMapTests.cpp:24:41: warning: Found suspicious operator ',' [constStatement]
         aircraft.state.velocity << 20, 0, 0;
                                         ^
-test/GridMapOSMConstructionTests.cpp:34:0: style: The function 'SetUp' is never used. [unusedFunction]
+test/DataIngestTests.cpp:11:0: style: The function 'SetUp' is never used. [unusedFunction]
 
 ^
 nofile:0:0: information: Cppcheck cannot find all the include files (use --check-config for details) [missingInclude]
