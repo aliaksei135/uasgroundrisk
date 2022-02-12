@@ -29,7 +29,8 @@ namespace ugr
                     }
                     currIndex = this->start;
 
-                    if (start[0] > gridmapSize[0] || start[1] > gridmapSize[1])
+                    // if (start[0] > gridmapSize[0] || start[1] > gridmapSize[1])
+                    if ((start >= gridmapSize).any())
                     {
                         _isPastEnd = true;
                     }
