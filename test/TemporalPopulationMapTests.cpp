@@ -23,7 +23,7 @@ protected:
     int resolution = 20;
 };
 
-TEST_F(TemporalPopulationMapTests, EmptyMapTest)
+TEST_F(TemporalPopulationMapTests, GenerateMapTest)
 {
     TemporalPopulationMap popMap(bounds, resolution);
     popMap.setHourOfDay(12);
@@ -45,7 +45,7 @@ TEST_F(TemporalPopulationMapTests, EmptyMapTest)
         }
     }
 
-    ASSERT_EQ(popMap.getLayers().size(), 22);
+    ASSERT_EQ(popMap.getLayers().size(), 23);
 
     auto size = popMap.getSize();
     ASSERT_EQ(size.y(), 601);
