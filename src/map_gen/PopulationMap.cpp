@@ -14,18 +14,18 @@ using namespace ugr::util;
 
 ugr::mapping::PopulationMap::PopulationMap(const std::array<float, 4> bounds,
                                            const int resolution)
-	: OSMMap(bounds, resolution)
+    : OSMMap(bounds, resolution)
 {
 }
 
 void ugr::mapping::PopulationMap::addOSMLayer(const std::string& layerName, const std::vector<osm::OSMTag>& tags,
                                               float defaultValue)
 {
-	for (const auto& tag : tags)
-	{
-		densityTagMap.emplace(tag, defaultValue);
-	}
-	OSMMap::addOSMLayer(layerName, tags, defaultValue);
+    for (const auto& tag : tags)
+    {
+        densityTagMap.emplace(tag, defaultValue);
+    }
+    OSMMap::addOSMLayer(layerName, tags, defaultValue);
 }
 
 void ugr::mapping::PopulationMap::eval()
