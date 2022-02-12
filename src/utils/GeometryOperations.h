@@ -11,6 +11,117 @@ namespace ugr
 {
     namespace util
     {
+        namespace detail
+        {
+            template <typename T = int_fast16_t>
+            static std::vector<gridmap::Index, Eigen::aligned_allocator<gridmap::Index>> _bresenham2D_high(
+                gridmap::Index i1, gridmap::Index i2)
+            {
+                std::vector<gridmap::Index, Eigen::aligned_allocator<gridmap::Index>> out;
+
+                const T x1 = i1[0];
+                const T x2 = i2[0];
+                const T y1 = i1[1];
+                const T y2 = i2[1];
+
+                T dx = x2 - x1;
+                T dy = y2 - y1;
+
+                const T mx = std::max(x1, x2);
+                const int_fast8_t xi = dx < 0 ? -1 : 1;
+                if (dx < 0)
+                {
+                    dx = -dx;
+                }
+
+                T d = 2 * dx - dy;
+                T x = x1;
+                T y = y1;
+                out.reserve(dy + 1); // Over allocate
+                const int_fast8_t sy = y1 < y2 ? 1 : -1;
+
+                for (int i = 0; i < dy; ++i)
+                {
+                    out.emplace_back(x, y);
+                    y += sy;
+                    if (d > 0)
+                    {
+                        x += xi;
+                        d += 2 * (dx - dy);
+                    }
+                    else
+                    {
+                        d += 2 * dx;
+                    }
+                }
+                out.emplace_back(i2);
+                return out;
+            }
+
+            template <typename T = int_fast16_t>
+            static std::vector<gridmap::Index, Eigen::aligned_allocator<gridmap::Index>> _bresenham2D_low(
+                gridmap::Index i1, gridmap::Index i2)
+            {
+                std::vector<gridmap::Index, Eigen::aligned_allocator<gridmap::Index>> out;
+
+                const T x1 = i1[0];
+                const T x2 = i2[0];
+                const T y1 = i1[1];
+                const T y2 = i2[1];
+
+                T dx = x2 - x1;
+                T dy = y2 - y1;
+
+                const T my = std::max(y1, y2);
+                const int_fast8_t yi = dy < 0 ? -1 : 1;
+                if (dy < 0)
+                {
+                    dy = -dy;
+                }
+
+                T d = 2 * dy - dx;
+                T x = x1;
+                T y = y1;
+                out.reserve(dx + 1); // Over allocate
+                const int_fast8_t sx = x1 < x2 ? 1 : -1;
+
+                for (int i = 0; i < dx; ++i)
+                {
+                    out.emplace_back(x, y);
+                    x += sx;
+                    if (d > 0)
+                    {
+                        y += yi;
+                        d += 2 * (dy - dx);
+                    }
+                    else
+                    {
+                        d += 2 * dy;
+                    }
+                }
+                out.emplace_back(i2);
+                return out;
+            }
+        }
+
+        template <typename T = int_fast16_t>
+        static std::vector<gridmap::Index, Eigen::aligned_allocator<gridmap::Index>> bresenham2D(
+            gridmap::Index i1, gridmap::Index i2)
+        {
+            T dx = abs(i2[0] - i1[0]);
+            T dy = abs(i2[1] - i1[1]);
+
+            if (dy < dx)
+            {
+                if (i1[0] > i2[0])
+                    return detail::_bresenham2D_low<T>(i2, i1);
+                return detail::_bresenham2D_low<T>(i1, i2);
+            }
+            if (i1[1] > i2[1])
+                return detail::_bresenham2D_high<T>(i2, i1);
+            return detail::_bresenham2D_high<T>(i1, i2);
+        }
+
         template <typename T>
         static std::array<T, 4> getPolygonBounds(const gridmap::Polygon& polygon)
         {
@@ -221,121 +332,6 @@ namespace ugr
             }
         }
     }
-					cross++;
-			}
-			return cross % 2;
-		}
-
-		namespace detail
-		{
-			template <typename T = int_fast16_t>
-			static std::vector<gridmap::Index, Eigen::aligned_allocator<gridmap::Index>> _bresenham2D_high(
-				gridmap::Index i1, gridmap::Index i2)
-			{
-				std::vector<gridmap::Index, Eigen::aligned_allocator<gridmap::Index>> out;
-
-				const T x1 = i1[0];
-				const T x2 = i2[0];
-				const T y1 = i1[1];
-				const T y2 = i2[1];
-
-				T dx = x2 - x1;
-				T dy = y2 - y1;
-
-				const T mx = std::max(x1, x2);
-				const int_fast8_t xi = dx < 0 ? -1 : 1;
-				if (dx < 0)
-				{
-					dx = -dx;
-				}
-
-				T d = 2 * dx - dy;
-				T x = x1;
-				T y = y1;
-				out.reserve(dy + 1); // Over allocate
-				const int_fast8_t sy = y1 < y2 ? 1 : -1;
-
-				for (int i = 0; i < dy; ++i)
-				{
-					out.emplace_back(x, y);
-					y += sy;
-					if (d > 0)
-					{
-						x += xi;
-						d += 2 * (dx - dy);
-					}
-					else
-					{
-						d += 2 * dx;
-					}
-				}
-				out.emplace_back(i2);
-				return out;
-			}
-
-			template <typename T = int_fast16_t>
-			static std::vector<gridmap::Index, Eigen::aligned_allocator<gridmap::Index>> _bresenham2D_low(
-				gridmap::Index i1, gridmap::Index i2)
-			{
-				std::vector<gridmap::Index, Eigen::aligned_allocator<gridmap::Index>> out;
-
-				const T x1 = i1[0];
-				const T x2 = i2[0];
-				const T y1 = i1[1];
-				const T y2 = i2[1];
-
-				T dx = x2 - x1;
-				T dy = y2 - y1;
-
-				const T my = std::max(y1, y2);
-				const int_fast8_t yi = dy < 0 ? -1 : 1;
-				if (dy < 0)
-				{
-					dy = -dy;
-				}
-
-				T d = 2 * dy - dx;
-				T x = x1;
-				T y = y1;
-				out.reserve(dx + 1); // Over allocate
-				const int_fast8_t sx = x1 < x2 ? 1 : -1;
-
-				for (int i = 0; i < dx; ++i)
-				{
-					out.emplace_back(x, y);
-					x += sx;
-					if (d > 0)
-					{
-						y += yi;
-						d += 2 * (dy - dx);
-					}
-					else
-					{
-						d += 2 * dy;
-					}
-				}
-				out.emplace_back(i2);
-				return out;
-			}
-		}
-
-		template <typename T = int_fast16_t>
-		static std::vector<gridmap::Index, Eigen::aligned_allocator<gridmap::Index>> bresenham2D(
-			gridmap::Index i1, gridmap::Index i2)
-		{
-			T dx = abs(i2[0] - i1[0]);
-			T dy = abs(i2[1] - i1[1]);
-
-			if (dy < dx)
-			{
-				if (i1[0] > i2[0])
-					return detail::_bresenham2D_low<T>(i2, i1);
-				return detail::_bresenham2D_low<T>(i1, i2);
-			}
-			if (i1[1] > i2[1])
-				return detail::_bresenham2D_high<T>(i2, i1);
-			return detail::_bresenham2D_high<T>(i1, i2);
-		}
-	}
 }
+
 #endif // GEOMETRYOPERATIONS_H
