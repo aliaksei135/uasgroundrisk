@@ -73,7 +73,7 @@ public:
     std::map<GEOSGeometry*, Scalar> makePopulationDensityMap()
     {
         CensusGeometryIngest geomIngest(geosCtx);
-        auto geoms = geomIngest.readFile(UGR_DATA_DIR "/england_wa_2011_clipped.shp");
+        auto geoms = geomIngest.readFile(UGR_DATA_DIR "/Wards_(December_2011)_Boundaries_EW_BGC.shp");
 
         const auto projObjs = ugr::util::makeProjObject("EPSG:27700", "EPSG:4326");
         PJ* reproj = std::get<0>(projObjs);

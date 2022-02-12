@@ -20,12 +20,12 @@ const std::vector<std::vector<int>> CensusNHAPSIngest::NHAPS_GROUPING = {
 
 const std::vector<std::vector<ugr::mapping::osm::OSMTag>> CensusNHAPSIngest::NHAPS_OSM_MAPPING = {
     {{"landuse", "residential"}},
-    {{"landuse", "industrial"}, {"landuse", "commercial"},{"building", "office"}},
+    {{"landuse", "industrial"}, {"landuse", "commercial"}, {"building", "office"}},
     {
         {"building", "school"}, {"building", "college"}, {"building", "university"}, {"building", "public"},
         {"building", "government"}, {"building", "civic"}, {"building", "hospital"}, {"landuse", "education"},
         {"amenity", "courthouse"}, {"amenity", "townhall"}, {"amenity", "police"}, {"amenity", "fire_station"},
-        {"amenity", "clinic"}, {"amenity", "courthouse"}, {"building", "transportation"},{"landuse", "religious"}
+        {"amenity", "clinic"}, {"amenity", "courthouse"}, {"building", "transportation"}, {"landuse", "religious"}
     },
     {{"landuse", "retail"}, {"building", "supermarket"}, {"building", "retail"}}
 };
@@ -136,7 +136,7 @@ std::map<std::string, GEOSGeometry*> CensusGeometryIngest::readFile(const std::s
         default:
             break;
         }
-        auto* code = DBFReadStringAttribute(dbfHandle, i, 3);
+        auto* code = DBFReadStringAttribute(dbfHandle, i, 0);
         outMap.emplace(code, geom);
 
         SHPDestroyObject(obj); //dealloc
@@ -147,8 +147,8 @@ std::map<std::string, GEOSGeometry*> CensusGeometryIngest::readFile(const std::s
 std::map<std::string, double> CensusDensityIngest::readFile(const std::string& file)
 {
     std::map<std::string, double> outMap;
-    typedef ::io::CSVReader<4, ::io::trim_chars<' ', '\t'>, ::io::no_quote_escape<','>, ::io::ignore_overflow,
-                            ::io::no_comment> CsvParser;
+    using CsvParser = io::CSVReader<4, io::trim_chars<' ', '\t'>, io::no_quote_escape<','>, io::ignore_overflow,
+                                    io::no_comment>;
 
     CsvParser reader(file);
     reader.read_header(io::ignore_extra_column, "code", "population", "area", "density");
