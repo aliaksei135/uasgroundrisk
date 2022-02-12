@@ -56,17 +56,17 @@ void ugr::mapping::osm::OSMTagGeometryHandler::area(const osmium::Area& area) no
             std::vector<std::vector<GEOSGeometry*>> innerRingGeomsVec;
             std::vector<GEOSGeometry*> orGeoms;
 
-            for (const auto& or : area.outer_rings())
+            for (const auto& outerRing : area.outer_rings())
             {
                 std::vector<GEOSGeometry*> innerRingGeoms;
-                for (const auto& ir : area.inner_rings(or))
+                for (const auto& innerRing : area.inner_rings(outerRing))
                 {
-                    const auto nIrCoord = ir.size();
+                    const auto nIrCoord = innerRing.size();
                     auto* innerCS = GEOSCoordSeq_create_r(geosCtx, nIrCoord, 2);
 
                     for (int i = 0; i < nIrCoord; ++i)
                     {
-                        const auto n = ir[i];
+                        const auto n = innerRing[i];
 
                         // Nodes are usually invalid because ways have not had node locations mapped
                         // to them
@@ -83,11 +83,11 @@ void ugr::mapping::osm::OSMTagGeometryHandler::area(const osmium::Area& area) no
                     innerRingGeoms.emplace_back(irGeom);
                 }
 
-                const auto nOrCoord = or.size();
+                const auto nOrCoord = outerRing.size();
                 auto* outerCS = GEOSCoordSeq_create_r(geosCtx, nOrCoord, 2);
                 for (int i = 0; i < nOrCoord; ++i)
                 {
-                    const auto n = or[i];
+                    const auto n = outerRing[i];
                     // Nodes are usually invalid because ways have not had node locations mapped
                     // to them
                     if (!n.location().valid())

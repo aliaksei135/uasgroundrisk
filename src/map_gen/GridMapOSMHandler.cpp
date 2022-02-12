@@ -146,15 +146,15 @@ void GridMapOSMHandler::area(const osmium::Area& area) const noexcept
             {
                 fallbackDensity = densityIter->second;
             }
-
-            for (const auto& or : area.outer_rings())
+            
+            for (const auto& outerRing : area.outer_rings())
             {
                 std::vector<GeoPolygon> inners;
-                for (const auto& ir : area.inner_rings(or))
+                for (const auto& innerRing : area.inner_rings(outerRing))
                 {
                     GeoPolygon poly;
                     // Add to a polygon
-                    for (const auto& n : ir)
+                    for (const auto& n : innerRing)
                     {
                         // Nodes are usually invalid because ways have not had node locations mapped
                         // to them
@@ -173,7 +173,7 @@ void GridMapOSMHandler::area(const osmium::Area& area) const noexcept
 
                 GeoPolygon orPoly;
                 // Add to a polygon
-                for (const auto& n : or)
+                for (const auto& n : outerRing)
                 {
                     // Nodes are usually invalid because ways have not had node locations mapped
                     // to them
