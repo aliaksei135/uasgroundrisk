@@ -130,11 +130,12 @@ if(NOT ENV{UGR_DATA_DIR})
 else()
 	set(UGR_DATA_DIR ENV{UGR_DATA_DIR} CACHE PATH "uasgroundrisk static data directory")
 endif()
+message("Data Dir:" ${UGR_DATA_DIR})
 
 add_custom_target(ugr_bundled_data
 	${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/extern/data ${UGR_DATA_DIR})
 add_dependencies(${PROJECT_NAME} ugr_bundled_data)
-target_compile_definitions(${PROJECT_NAME} PRIVATE UGR_DATA_DIR="${UGR_DATA_DIR}")
+target_compile_definitions(${PROJECT_NAME} PUBLIC UGR_DATA_DIR="${UGR_DATA_DIR}")
 
 ##############################################################
 # Dependencies
