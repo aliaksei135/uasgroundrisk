@@ -179,7 +179,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC GEOS::geos_c)
 find_package(shapelib CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC shapelib::shp)
 
-find_package(boost CONFIG COMPONENTS variant REQUIRED)
+#find_package(boost CONFIG REQUIRED)
+find_package(Boost CONFIG REQUIRED)
 #target_link_libraries(${PROJECT_NAME} PUBLIC boost::)
 
 find_package(fast-cpp-csv-parser CONFIG REQUIRED)
