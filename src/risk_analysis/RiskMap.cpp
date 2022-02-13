@@ -309,7 +309,6 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
         impactVelocity /= nSamples;
         // Get prob of building collision for this descent type
         const double buildingCollisionProb = buildingCollisionCount / nSamples;
-        std::cout << descentModel->getName() << " building collision prob: " << buildingCollisionProb << "\n";
 
         descentDistrParams.emplace_back(distParams);
         impactAngles.emplace_back(impactAngle);
