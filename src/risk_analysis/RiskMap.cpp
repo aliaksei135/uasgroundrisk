@@ -136,9 +136,6 @@ void ugr::risk::RiskMap::generateFatalityMap()
 {
     const auto uasMass = aircraftModel.mass;
 
-    const Size size = getSize();
-    const auto len1d = size.x() * size.y();
-
     const Matrix shelterFactorMap = get("Shelter Factor");
 
     for (int i = 0; i < aircraftModel.descents.size(); ++i)
@@ -149,14 +146,14 @@ void ugr::risk::RiskMap::generateFatalityMap()
         // const Matrix& impactAngles = get(descentName + " Impact Angle");
 
         Matrix fatalityRisk(sizeX, sizeY);
-        if (strikeRiskMap.isApproxToConstant(0))
+        if (strikeRiskMap.sum() < 1e-25)
         {
             fatalityRisk.setZero();
         }
         else
         {
-            fatalityRisk = strikeRiskMap * fatalityProbability(
-                1e6, 34, vel2ke(impactVelocities, uasMass), shelterFactorMap);
+            fatalityRisk = strikeRiskMap.cwiseProduct(fatalityProbability(
+                1e6, 100, vel2ke(impactVelocities, uasMass), shelterFactorMap));
         }
 
 #pragma omp critical
@@ -337,14 +334,15 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
         // Work these out first to avoid aliasing Eigen expressions
         const auto pdfQuot = impactPDFGrid.sum();
         impactPDFGrid /= pdfQuot;
+        impactPDFGrid.colwise().reverseInPlace();
         impactPDFs.emplace_back(impactPDFGrid);
     }
 }
 
 double ugr::risk::RiskMap::lethalArea(const double impactAngle, const double uasWidth)
 {
-    constexpr auto personRadius = 1;
-    constexpr auto personHeight = 1;
+    constexpr auto personRadius = 1.5;
+    constexpr auto personHeight = 2;
     const auto uasRadius = uasWidth / 2;
     return 2 * personHeight * (personRadius + uasRadius) /
         tan(impactAngle) +
@@ -367,8 +365,8 @@ double ugr::risk::RiskMap::fatalityProbability(const double alpha, const double 
 
 ugr::gridmap::Matrix ugr::risk::RiskMap::lethalArea(const ugr::gridmap::Matrix& impactAngle, const double uasWidth)
 {
-    constexpr auto personRadius = 1;
-    constexpr auto personHeight = 1.8;
+    constexpr auto personRadius = 1.5;
+    constexpr auto personHeight = 2;
     const auto uasRadius = uasWidth / 2;
     return (2 * personHeight * (personRadius + uasRadius) /
         tan(impactAngle.array()) +
