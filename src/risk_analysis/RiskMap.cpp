@@ -148,8 +148,16 @@ void ugr::risk::RiskMap::generateFatalityMap()
         const Matrix& impactVelocities = get(descentName + " Impact Velocity");
         // const Matrix& impactAngles = get(descentName + " Impact Angle");
 
-        const Matrix fatalityRisk = strikeRiskMap * fatalityProbability(
-            1e6, 34, vel2ke(impactVelocities, uasMass), shelterFactorMap);
+        Matrix fatalityRisk(sizeX, sizeY);
+        if (strikeRiskMap.isApproxToConstant(0))
+        {
+            fatalityRisk.setZero();
+        }
+        else
+        {
+            fatalityRisk = strikeRiskMap * fatalityProbability(
+                1e6, 34, vel2ke(impactVelocities, uasMass), shelterFactorMap);
+        }
 
 #pragma omp critical
         get(descentName + " Fatality Risk") = fatalityRisk;
