@@ -60,7 +60,7 @@ endmacro()
 
 ugr_add_test(QueryTests OSMQueryTests.cpp)
 ugr_add_test(ResponseTests OSMResponseTests.cpp)
-ugr_add_test(MappingTests MappingTests.cpp)
+#ugr_add_test(MappingTests MappingTests.cpp)
 ugr_add_test(ProjectionTests ProjectionTests.cpp)
 ugr_add_test(PopulationMapTests PopulationMapTests.cpp)
 ugr_add_test(TemporalPopulationMapTests TemporalPopulationMapTests.cpp)
