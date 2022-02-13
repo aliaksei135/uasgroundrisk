@@ -2,6 +2,7 @@
 #define TESTPLOTTINGUTILS_H
 #include <Eigen/Dense>
 #include <cmath>
+#include "uasgroundrisk/gridmap/TypeDefs.h"
 #ifdef UGR_PLOT_TESTS
 #include <matplot/matplot.h>
 using namespace matplot;
@@ -18,14 +19,14 @@ static std::vector<std::vector<Scalar>> fromEigenMatrix(const Matrix& M)
     return m;
 }
 
-template <typename Scalar>
-static void outputMat(const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& m, const std::string& titleStr)
+static void outputMat(const ugr::gridmap::Matrix& m,
+                      const std::string& titleStr)
 {
 #ifdef UGR_PLOT_TESTS
     const auto min = m.minCoeff();
     const auto max = m.maxCoeff();
 
-    const auto& vec = fromEigenMatrix<Scalar>(m);
+    const auto& vec = fromEigenMatrix<ugr::gridmap::GridMapDataType>(m);
 
     auto fig = figure(true);
     auto cax = fig->current_axes();
