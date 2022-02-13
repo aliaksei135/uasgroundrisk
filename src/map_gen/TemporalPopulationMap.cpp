@@ -72,6 +72,7 @@ void ugr::mapping::TemporalPopulationMap::setHourOfDay(const short hourOfDay)
         throw std::out_of_range("Hour of Day must be 0<=h<=23");
     }
     this->hourOfDay = hourOfDay;
+    isEvaluated = false;
 
     densityTagMap.clear();
     activeGeomDensityMap.clear();
@@ -149,11 +150,6 @@ void ugr::mapping::TemporalPopulationMap::intersectResidentialGeometries()
 
     for (const auto geom : boundedGeometries)
     {
-        auto ni = GEOSGetNumGeometries_r(geosCtx, geom);
-        if (ni > 1)
-        {
-            int t = 8;
-        }
         const auto* prepGeom = GEOSPrepare_r(geosCtx, geom);
         for (const auto& resGeom : residentialGeoms)
         {
@@ -210,6 +206,7 @@ void ugr::mapping::TemporalPopulationMap::fillGridMapPoly(const std::string& lay
 
 void ugr::mapping::TemporalPopulationMap::eval()
 {
+    if(isEvaluated) return;
     for (auto& pair : tagGeomMap)
     {
         GridMapDataType fallbackDensity = -1;
@@ -269,4 +266,5 @@ void ugr::mapping::TemporalPopulationMap::eval()
         get("Population Density") =
             get("Population Density").cwiseMax(get(layerName));
     }
+    isEvaluated = true;
 }

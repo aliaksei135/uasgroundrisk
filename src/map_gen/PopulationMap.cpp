@@ -48,10 +48,5 @@ void ugr::mapping::PopulationMap::eval()
 		get(densitySumLayerName) =
 			get(densitySumLayerName).cwiseMax(get(layerName));
 	}
-
-	// The building heights must go at the end of this function otherwise they get copied to other layers!
-	// OSMMap::addOSMLayer("Building Height", {osm::OSMTag("building")});
-	// GridMapOSMBuildingsHandler buildingHeighthandler(this);
-	isEvaluated = false;
-	// OSMMap::eval(buildingHeighthandler);
+	isEvaluated = true;
 }
