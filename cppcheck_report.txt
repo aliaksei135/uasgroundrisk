@@ -73,7 +73,7 @@ test/DataFittingTests.cpp:51:29: warning: Found suspicious operator ',' [constSt
 test/GridMapOSMConstructionTests.cpp:88:12: style: Variable 'size' is assigned a value that is never used. [unreadVariable]
  auto size = gridMap.getSize();
            ^
-test/TestPlottingUtils.h:30:14: style: Variable 'img' is assigned a value that is never used. [unreadVariable]
+test/TestPlottingUtils.h:32:14: style: Variable 'img' is assigned a value that is never used. [unreadVariable]
     auto img = image(cax, vec);
              ^
 test/OSMResponseTests.cpp:140:5: style: Consider using std::any_of algorithm instead of a raw loop. [useStlAlgorithm]
