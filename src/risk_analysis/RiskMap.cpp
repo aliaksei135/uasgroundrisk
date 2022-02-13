@@ -130,6 +130,12 @@ void ugr::risk::RiskMap::generateStrikeMap()
             addPointStrikeMap({x, y});
         }
     }
+    add("Strike Risk", 0);
+    for (int i = 0; i < aircraftModel.descents.size(); ++i)
+    {
+        const auto descentName = aircraftModel.descents[i]->getName();
+        get("Strike Risk") += get(descentName + " Strike Risk");
+    }
 }
 
 void ugr::risk::RiskMap::generateFatalityMap()
@@ -158,6 +164,13 @@ void ugr::risk::RiskMap::generateFatalityMap()
 
 #pragma omp critical
         get(descentName + " Fatality Risk") = fatalityRisk;
+    }
+
+    add("Fatality Risk", 0);
+    for (int i = 0; i < aircraftModel.descents.size(); ++i)
+    {
+        const auto descentName = aircraftModel.descents[i]->getName();
+        get("Fatality Risk") += get(descentName + " Fatality Risk");
     }
 }
 
@@ -205,7 +218,8 @@ void ugr::risk::RiskMap::addPointStrikeMap(const ugr::gridmap::Index& index)
 }
 
 void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
-                                            std::vector<ugr::gridmap::Matrix, aligned_allocator<ugr::gridmap::Matrix>>&
+                                            std::vector<
+                                                ugr::gridmap::Matrix, aligned_allocator<ugr::gridmap::Matrix>>&
                                             impactPDFs,
                                             std::vector<GridMapDataType>& impactAngles,
                                             std::vector<GridMapDataType>& impactVelocities,
@@ -219,13 +233,15 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
 
     // Create samples of state distributions
     const auto& altitude = aircraftModel.state.getAltitude();
-    const auto& lateralVel = sqrt(pow(aircraftModel.state.velocity(0), 2) + pow(aircraftModel.state.velocity(1), 2));
+    const auto& lateralVel =
+        sqrt(pow(aircraftModel.state.velocity(0), 2) + pow(aircraftModel.state.velocity(1), 2));
     const auto& verticalVel = aircraftModel.state.velocity(2);
     auto altDist = std::normal_distribution<double>(altitude, 5);
     auto lateralVelDist = std::normal_distribution<double>(lateralVel, 1.5);
     auto verticalVelDist = std::normal_distribution<double>(verticalVel, 0.5);
     auto headingUniformDist = std::uniform_real_distribution<double>(DEG2RAD(0),DEG2RAD(360));
-    auto headingNormalDist = std::normal_distribution<double>(DEG2RAD(aircraftModel.state.getHeading()), DEG2RAD(5));
+    auto headingNormalDist = std::normal_distribution<
+        double>(DEG2RAD(aircraftModel.state.getHeading()), DEG2RAD(5));
 
 
     // Generate random variable samples for LoC states
