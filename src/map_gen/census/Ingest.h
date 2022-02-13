@@ -97,7 +97,8 @@ public:
         {
             if (densityMap.find(p.first) != densityMap.end())
             {
-                mergedMap.emplace(p.second, static_cast<Scalar>(densityMap.at(p.first)));
+                if (p.second != nullptr)
+                    mergedMap.emplace(p.second, static_cast<Scalar>(densityMap.at(p.first)));
             }
         }
 
