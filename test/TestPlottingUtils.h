@@ -2,9 +2,10 @@
 #define TESTPLOTTINGUTILS_H
 #include <Eigen/Dense>
 #include <cmath>
+#ifdef UGR_PLOT_TESTS
 #include <matplot/matplot.h>
-
 using namespace matplot;
+#endif
 
 template <typename Scalar, typename Matrix>
 static std::vector<std::vector<Scalar>> fromEigenMatrix(const Matrix& M)
@@ -20,6 +21,7 @@ static std::vector<std::vector<Scalar>> fromEigenMatrix(const Matrix& M)
 template <typename Scalar>
 static void outputMat(const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& m, const std::string& titleStr)
 {
+#ifdef UGR_PLOT_TESTS
     const auto min = m.minCoeff();
     const auto max = m.maxCoeff();
 
@@ -39,6 +41,7 @@ static void outputMat(const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic
     }
 
     // save(fig, "fig/" + titleStr + ".eps");
+#endif
 }
 
 #endif // TESTPLOTTINGUTILS_H

@@ -39,12 +39,13 @@ macro(ugr_add_test TESTNAME)
     add_executable(${TESTNAME} ${ARGN})
     # link the Google test infrastructure, mocking library, and a default main fuction to
     # the test executable.  Remove g_test_main if writing your own main function.
-    target_link_libraries(${TESTNAME} PUBLIC gmock_main gtest_main gtest gmock Matplot++::matplot ${PROJECT_NAME})
+    target_link_libraries(${TESTNAME} PUBLIC gmock_main gtest_main gtest gmock ${PROJECT_NAME})
     target_include_directories(${TESTNAME} PRIVATE osmium)
     target_include_directories(${TESTNAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
     target_include_directories(${TESTNAME} PRIVATE ${CIMG_INCLUDE_DIR})
-    if(NOT $ENV{CI})
+    if(NOT DEFINED ENV{CI})
         target_compile_definitions(${TESTNAME} PRIVATE UGR_PLOT_TESTS)
+        target_link_libraries(${TESTNAME} PUBLIC Matplot++::matplot)
     endif()
     # gtest_discover_tests replaces gtest_add_tests,
     # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more options to pass to it
