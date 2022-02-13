@@ -10,7 +10,7 @@ namespace ugr
 {
 	namespace gridmap
 	{
-		using namespace Eigen;
+		// using namespace Eigen;
 
 		/**
 		 * @brief A container for multiple labelled matrices of the same size
@@ -113,7 +113,7 @@ namespace ugr
 			GridMapDataType at(const std::string& layerName, const Index& idx) const;
 			GridMapDataType& at(const std::string& layerName, const Index& idx);
 
-			Vector2i getSize() const;
+			Size getSize() const;
 
 
 			/**

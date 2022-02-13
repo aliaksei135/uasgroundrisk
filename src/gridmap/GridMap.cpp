@@ -3,7 +3,7 @@
 using namespace ugr::gridmap;
 
 
-Vector2i GridMap::getSize() const
+Size GridMap::getSize() const
 {
     return {sizeX, sizeY};
 }
@@ -52,22 +52,22 @@ void GridMap::add(const std::string& layerName, const double constValue)
     }
 }
 
-::Matrix GridMap::get(const std::string& layerName) const
+Matrix GridMap::get(const std::string& layerName) const
 {
     return layers.at(layerName);
 }
 
-::Matrix& GridMap::get(const std::string& layerName)
+Matrix& GridMap::get(const std::string& layerName)
 {
     return layers.at(layerName);
 }
 
-const ::Matrix& GridMap::operator[](const std::string& layerName) const
+const Matrix& GridMap::operator[](const std::string& layerName) const
 {
     return layers.at(layerName);
 }
 
-::Matrix& GridMap::operator[](const std::string& layerName)
+Matrix& GridMap::operator[](const std::string& layerName)
 {
     return layers.at(layerName);
 }
