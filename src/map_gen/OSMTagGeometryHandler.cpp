@@ -121,7 +121,14 @@ void ugr::mapping::osm::OSMTagGeometryHandler::area(const osmium::Area& area) no
             }
             else
             {
-                finalGeom = polys[0];
+                if (polys.size() > 0)
+                {
+                    finalGeom = polys[0];
+                }
+                else
+                {
+                    break;
+                }
             }
             tagGeometryMap[fullTag].emplace_back(finalGeom);
         }
