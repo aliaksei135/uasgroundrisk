@@ -24,11 +24,11 @@ using namespace ugr::gridmap;
 
 ugr::risk::RiskMap::RiskMap(
     mapping::PopulationMap& populationMap,
-    AircraftModel& aircraftModel,
-    ObstacleMap& obstacleMap,
+    const AircraftModel& aircraftModel,
+    const ObstacleMap& obstacleMap,
     const WeatherMap& weather)
     : GeospatialGridMap(populationMap.getBounds(),
-                        static_cast<int>(populationMap.getResolution())), aircraftModel(std::move(aircraftModel)),
+                        static_cast<int>(populationMap.getResolution())), aircraftModel(aircraftModel),
       weather(weather),
       generator(std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()))
 {

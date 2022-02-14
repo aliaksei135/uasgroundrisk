@@ -34,7 +34,7 @@ namespace ugr
              * @param weather the weather map
              */
             RiskMap(mapping::PopulationMap& populationMap,
-                    AircraftModel& aircraftModel, ObstacleMap& obstacleMap,
+                    const AircraftModel& aircraftModel, const ObstacleMap& obstacleMap,
                     const WeatherMap& weather);
 
             RiskMap(const RiskMap& other) = delete;
@@ -70,9 +70,9 @@ namespace ugr
             }
 
         protected:
-            AircraftModel aircraftModel;
+            const AircraftModel& aircraftModel;
 
-            WeatherMap weather;
+            const WeatherMap& weather;
             int nSamples = 50; //CLT says 30-50 samples is good enough
             std::default_random_engine generator;
             Eigen::Vector<GridMapDataType, Dynamic> evalXs, evalYs;
