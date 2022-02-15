@@ -121,7 +121,7 @@ void ugr::risk::RiskMap::initLayer(const std::string& layerName)
 void ugr::risk::RiskMap::generateStrikeMap()
 {
     // Iterate through all cells in the grid map
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for collapse(2) schedule(dynamic)
     for (int x = 0; x < sizeX; ++x)
     {
         for (int y = 0; y < sizeY; ++y)
