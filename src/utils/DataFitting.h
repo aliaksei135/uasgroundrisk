@@ -25,6 +25,58 @@ namespace ugr
 		typedef std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d>>
 		Point2DVector;
 
+		template <typename Type, int Dimensions>
+		struct GaussianParams
+		{
+			Eigen::Matrix<Type, Dimensions, 1> means;
+			Eigen::Matrix<Type, Dimensions, Dimensions> cov;
+
+			GaussianParams(const Eigen::Matrix<Type, Dimensions, 1>& means,
+				const Eigen::Matrix<Type, Dimensions, Dimensions>& cov)
+				: means(means),
+				  cov(cov)
+			{
+			}
+		};
+
+		template <typename MeansDerived, typename CovDerived, typename SamplesDerived>
+		static Eigen::Vector<typename SamplesDerived::Scalar, Eigen::Dynamic> gaussianND(
+			const Eigen::MatrixBase<MeansDerived>& means,
+			const Eigen::MatrixBase<CovDerived>& cov,
+			const Eigen::MatrixBase<SamplesDerived>& pos)
+		{
+			typedef typename SamplesDerived::Scalar Type;
+			const auto NDimensions = means.rows();
+
+			//TODO vectorise this, using something like colwise()?
+			Eigen::Vector<Type, Eigen::Dynamic> out;
+			out.resize(pos.cols());
+			for (int i = 0; i < pos.cols(); ++i)
+			{
+				out(i) = (Eigen::exp(
+						(-0.5 * (pos.col(i) - means).transpose() * cov.inverse() * (pos.col(i) - means)).array()).
+					matrix() /
+					(sqrt(pow(2 * M_PI, NDimensions) * cov.determinant())))(0);
+			}
+			return out;
+		}
+
+		template <typename Type, int Dimensions>
+		static GaussianParams<Type, Dimensions> fitGaussianParams(
+			const Eigen::Matrix<Type, Dimensions, Eigen::Dynamic>& pos)
+		{
+			// Set centre coord estimates from means of components
+			Eigen::Vector<Type, Dimensions> means = pos.rowwise().mean();
+
+			Eigen::Vector<Type, pos.cols()>::Ones();
+			Eigen::Matrix<Type, Dimensions, Dimensions> cov = (1 / pos.cols() - 1) * (pos - (means * Eigen::Vector<
+				Type, pos.cols()>::Ones().transpose())) * (pos - (means * Eigen::Vector<Type, pos.cols()>::Ones().
+				transpose())).transpose();
+
+			return {means, cov};
+		}
+
+
 		/**
 		 * Evaluate a 2D rotated Gaussian distribution
 		 *
