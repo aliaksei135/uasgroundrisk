@@ -19,7 +19,7 @@ protected:
         aircraft.state.position << 0, 0, 120;
         aircraft.state.velocity << 20, 0, 0;
 
-        aircraft.mass = 50;
+        aircraft.mass = 30;
         aircraft.length = 5;
         aircraft.width = 5;
 
@@ -28,9 +28,13 @@ protected:
     }
 
     std::array<float, 4> bounds{
-        50.9065510f, -1.4500237f, 50.9517765f,
-        -1.3419628f
+    50.9065510f, -1.4500237f, 50.9517765f,
+    -1.3419628f
     };
+    // std::array<float, 4> bounds{
+        // 50.689f, -1.5f, 51.0f,
+        // -0.88f
+    // };
     int resolution = 60;
     AircraftModel aircraft;
 };
