@@ -114,11 +114,6 @@ ImpactDataStruct BallisticDescentModel::impact(const double altitude, const doub
     const auto impactDistance = x1 + x2 + x3;
     const auto impactAngle = atan2(vTy, vTx) * (180 / M_PI);
     const auto impactVelocity = sqrt(pow(vTx, 2) + pow(vTy, 2));
-    if (isnan(impactDistance))
-    {
-        int sd = 9;
-        int dd = sd / 4;
-    }
 
     return {impactDistance, impactVelocity, impactAngle, impactTime};
 }
