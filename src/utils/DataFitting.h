@@ -54,11 +54,11 @@ namespace ugr
             for (int i = 0; i < pos.cols(); ++i)
             {
                 out(i) = (Eigen::exp(
-                        (-0.5 * (pos.col(i) - means).transpose() * cov.inverse() * (pos.col(i) - means)).array()).
-                    matrix() /
-                    (sqrt(pow(2 * M_PI, NDimensions) * cov.determinant())))(0);
+                (-0.5 * (pos.col(i) - means).transpose() * cov.inverse() * (pos.col(i) - means)).array()).
+                matrix() /
+                (sqrt(pow(2 * M_PI, NDimensions) * cov.determinant())))(0);
             }
-            return out;
+            return std::move(out);
         }
 
         template <typename Type, int Dimensions, int Samples = Eigen::Dynamic>

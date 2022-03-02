@@ -73,7 +73,9 @@ namespace ugr
             const AircraftModel& aircraftModel;
 
             const WeatherMap& weather;
-            int nSamples = 50; //CLT says 30-50 samples is good enough
+            static constexpr int nSamples = 50; //CLT says 30-50 samples is good enough
+            Eigen::Matrix<int, 2, Eigen::Dynamic> evalMat;
+            Eigen::Matrix<GridMapDataType, 2, nSamples> impactSampleMat;
             std::default_random_engine generator;
             Eigen::Vector<GridMapDataType, Dynamic> evalXs, evalYs;
             bool anyHeading = false;

@@ -22,6 +22,7 @@
 
 using namespace ugr::gridmap;
 
+
 ugr::risk::RiskMap::RiskMap(
     mapping::PopulationMap& populationMap,
     const AircraftModel& aircraftModel,
@@ -49,6 +50,7 @@ ugr::risk::RiskMap::RiskMap(
     // Generate eval grid once instead of on every iteration
     evalXs.resize(this->sizeX * this->sizeY);
     evalYs.resize(this->sizeX * this->sizeY);
+    evalMat.resize(2, this->sizeX * this->sizeY);
     int i = 0;
     for (int x = 0; x < sizeX; ++x)
     {
@@ -57,10 +59,14 @@ ugr::risk::RiskMap::RiskMap(
             // Invert x in line with the axes convention chosen here
             evalXs[i] = sizeX - x;
             evalYs[i] = y;
+
+            evalMat(0, i) = sizeX - x;
+            evalMat(1, i) = y;
             ++i;
         }
     }
 }
+
 
 GridMap& ugr::risk::RiskMap::generateMap(
     const std::vector<RiskType>& risksToGenerate)
@@ -84,11 +90,13 @@ GridMap& ugr::risk::RiskMap::generateMap(
     return *this;
 }
 
+
 void ugr::risk::RiskMap::eval()
 {
     generateStrikeMap();
     generateFatalityMap();
 }
+
 
 void ugr::risk::RiskMap::initRiskMapLayers()
 {
@@ -118,10 +126,11 @@ void ugr::risk::RiskMap::initLayer(const std::string& layerName)
     get(layerName).setZero();
 }
 
+
 void ugr::risk::RiskMap::generateStrikeMap()
 {
     // Iterate through all cells in the grid map
-#pragma omp parallel for collapse(2) schedule(dynamic)
+    // #pragma omp parallel for collapse(2) schedule(dynamic)
     for (int x = 0; x < sizeX; ++x)
     {
         for (int y = 0; y < sizeY; ++y)
@@ -137,6 +146,7 @@ void ugr::risk::RiskMap::generateStrikeMap()
         get("Strike Risk") += get(descentName + " Strike Risk");
     }
 }
+
 
 void ugr::risk::RiskMap::generateFatalityMap()
 {
@@ -173,6 +183,7 @@ void ugr::risk::RiskMap::generateFatalityMap()
         get("Fatality Risk") += get(descentName + " Fatality Risk");
     }
 }
+
 
 void ugr::risk::RiskMap::addPointStrikeMap(const ugr::gridmap::Index& index)
 {
@@ -216,6 +227,7 @@ void ugr::risk::RiskMap::addPointStrikeMap(const ugr::gridmap::Index& index)
         }
     }
 }
+
 
 void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
                                             std::vector<
@@ -272,13 +284,15 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
     // Convert Index into vector for easy arithmetic later
     const Vector2d indexVec{index[0], index[1]};
 
-    std::vector<util::Gaussian2DParamVector> descentDistrParams;
+    // std::vector<util::Gaussian2DParamVector> descentDistrParams;
+    // std::vector<util::GaussianParams<GridMapDataType, 2>> distParams;
 
     for (const auto& descentModel : aircraftModel.descents)
     {
         const auto& samples = descentModel->impact(altVect, lateralVelVect, verticalVelVect);
 
-        util::Point2DVector impactPositions(nSamples);
+        // util::Point2DVector impactPositions(nSamples);
+
         double impactAngle = 0, impactVelocity = 0;
         int buildingCollisionCount = 0;
 
@@ -294,12 +308,16 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
             // Therefore a zero rotation should correspond to motion in the x axis only, hence the y=0 here
             const Vector2d dist1D(sample.impactDistance, 0);
 
-            impactPositions[i] =
-                ((headingVect[i] * dist1D + (sample.impactTime * windVect[i])) / xyRes) + indexVec;
+            // impactPositions[i] =
+                // ((headingVect[i] * dist1D + (sample.impactTime * windVect[i])) / xyRes) + indexVec;
+
+            impactSampleMat.col(i) = (
+                ((headingVect[i] * dist1D + (sample.impactTime * windVect[i])) / xyRes) + indexVec).cast<
+                GridMapDataType>();
 
             const auto groundTrackIndices = ugr::util::bresenham2D(index, {
-                                                                       std::ceil(impactPositions[i][0]),
-                                                                       std::ceil(impactPositions[i][1])
+                                                                       std::ceil(impactSampleMat.col(i)(0)),
+                                                                       std::ceil(impactSampleMat.col(i)(1))
                                                                    });
             for (const auto& trackIndex : groundTrackIndices)
             {
@@ -325,35 +343,48 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
         }
 
         // Fit a distribution to the propagated samples for this descent type
-        auto distParams = util::Gaussian2DFit(impactPositions);
-        impactAngle /= nSamples;
-        impactVelocity /= nSamples;
-        // Get prob of building collision for this descent type
-        const double buildingCollisionProb = buildingCollisionCount / nSamples;
+        // auto distParams = util::Gaussian2DFit(impactPositions);
 
-        descentDistrParams.emplace_back(distParams);
-        impactAngles.emplace_back(impactAngle);
-        impactVelocities.emplace_back(impactVelocity);
-        buildingImpactProbs.emplace_back(buildingCollisionProb);
-    }
+        const auto distParams = util::fitGaussianParams<float, 2, nSamples>(
+            impactSampleMat);
 
-    for (auto& distParams : descentDistrParams)
-    {
-        // Set amplitudes to 1 to avoid zero division errors when normalising to PDF later
-        distParams[0] = 1;
+        // Matrix impactPDFGrid = util::gaussian2D(evalXs, evalYs, distParams).reshaped<RowMajor>(sizeX, sizeY);
 
         // Fit 2D gaussian kernels to the descent model samples instead of propagating the samples all the way to strike risk.
         // This should account for a more accurate probabilistic picture of the risk.
-        Matrix impactPDFGrid = util::gaussian2D(evalXs, evalYs, distParams).reshaped<RowMajor>(sizeX, sizeY);
+        Matrix impactPDFGrid = util::gaussianND(distParams.means, distParams.cov,
+                                                evalMat.cast<GridMapDataType>()).reshaped<RowMajor>(sizeX, sizeY);
 
         // Turn fitted impact risk gaussians into PDFs that we can use.
         // Work these out first to avoid aliasing Eigen expressions
-        const auto pdfQuot = impactPDFGrid.sum();
-        impactPDFGrid /= pdfQuot;
+        impactPDFGrid /= impactPDFGrid.sum();
         impactPDFGrid.colwise().reverseInPlace();
         impactPDFs.emplace_back(impactPDFGrid);
+
+        // descentDistrParams.emplace_back(distParams);
+        impactAngles.emplace_back(impactAngle / nSamples);
+        impactVelocities.emplace_back(impactVelocity / nSamples);
+        buildingImpactProbs.emplace_back(buildingCollisionCount / nSamples);
     }
+
+    // for (auto& distParams : descentDistrParams)
+    // {
+    //     // Set amplitudes to 1 to avoid zero division errors when normalising to PDF later
+    //     distParams[0] = 1;
+    //
+    //     // Fit 2D gaussian kernels to the descent model samples instead of propagating the samples all the way to strike risk.
+    //     // This should account for a more accurate probabilistic picture of the risk.
+    //     Matrix impactPDFGrid = util::gaussian2D(evalXs, evalYs, distParams).reshaped<RowMajor>(sizeX, sizeY);
+    //
+    //     // Turn fitted impact risk gaussians into PDFs that we can use.
+    //     // Work these out first to avoid aliasing Eigen expressions
+    //     const auto pdfQuot = impactPDFGrid.sum();
+    //     impactPDFGrid /= pdfQuot;
+    //     impactPDFGrid.colwise().reverseInPlace();
+    //     impactPDFs.emplace_back(impactPDFGrid);
+    // }
 }
+
 
 double ugr::risk::RiskMap::lethalArea(const double impactAngle, const double uasWidth)
 {
@@ -365,10 +396,12 @@ double ugr::risk::RiskMap::lethalArea(const double impactAngle, const double uas
         M_PI * pow(uasRadius + personRadius, 2);
 }
 
+
 double ugr::risk::RiskMap::vel2ke(const double velocity, const double mass)
 {
     return 0.5 * mass * pow(velocity, 2);
 }
+
 
 double ugr::risk::RiskMap::fatalityProbability(const double alpha, const double beta,
                                                const double impactEnergy,
@@ -379,7 +412,9 @@ double ugr::risk::RiskMap::fatalityProbability(const double alpha, const double 
         pow(beta / impactEnergy, 1 / (4 * shelterFactor));
 }
 
-ugr::gridmap::Matrix ugr::risk::RiskMap::lethalArea(const ugr::gridmap::Matrix& impactAngle, const double uasWidth)
+
+ugr::gridmap::Matrix ugr::risk::RiskMap::lethalArea(const ugr::gridmap::Matrix& impactAngle,
+                                                    const double uasWidth)
 {
     constexpr auto personRadius = 1.5;
     constexpr auto personHeight = 2;
@@ -389,10 +424,12 @@ ugr::gridmap::Matrix ugr::risk::RiskMap::lethalArea(const ugr::gridmap::Matrix& 
         M_PI * pow(uasRadius + personRadius, 2)).matrix();
 }
 
+
 ugr::gridmap::Matrix ugr::risk::RiskMap::vel2ke(const ugr::gridmap::Matrix& velocity, const double mass)
 {
     return (0.5 * mass * pow(velocity.array(), 2)).matrix();
 }
+
 
 ugr::gridmap::Matrix ugr::risk::RiskMap::fatalityProbability(const double alpha, const double beta,
                                                              const ugr::gridmap::Matrix& impactEnergy,
