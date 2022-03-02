@@ -130,7 +130,7 @@ void ugr::risk::RiskMap::initLayer(const std::string& layerName)
 void ugr::risk::RiskMap::generateStrikeMap()
 {
     // Iterate through all cells in the grid map
-    // #pragma omp parallel for collapse(2) schedule(dynamic)
+    #pragma omp parallel for collapse(2) schedule(dynamic)
     for (int x = 0; x < sizeX; ++x)
     {
         for (int y = 0; y < sizeY; ++y)
@@ -311,7 +311,7 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
             // impactPositions[i] =
                 // ((headingVect[i] * dist1D + (sample.impactTime * windVect[i])) / xyRes) + indexVec;
 
-            impactSampleMat.col(i) = (
+            impactSampleMat.col(i).noalias() = (
                 ((headingVect[i] * dist1D + (sample.impactTime * windVect[i])) / xyRes) + indexVec).cast<
                 GridMapDataType>();
 

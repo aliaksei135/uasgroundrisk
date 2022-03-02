@@ -16,6 +16,7 @@
 #include "uasgroundrisk/risk_analysis/weather/WeatherMap.h"
 #include "uasgroundrisk/gridmap/GridMap.h"
 
+#define EIGEN_DONT_PARALLELIZE
 
 namespace ugr
 {
@@ -26,6 +27,8 @@ namespace ugr
         class RiskMap final : public mapping::GeospatialGridMap
         {
         public:
+            EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+
             /**
              * Construct a static Risk map of a single AircraftModel
              * @param populationMap a GridMap of population density. Usually from
