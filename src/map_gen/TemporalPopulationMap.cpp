@@ -156,11 +156,7 @@ void ugr::mapping::TemporalPopulationMap::intersectResidentialGeometries()
             if (GEOSPreparedIntersects_r(geosCtx, prepGeom, resGeom))
             {
                 auto* intersectGeom = GEOSIntersection_r(geosCtx, geom, resGeom);
-                auto n = GEOSGetNumGeometries_r(geosCtx, intersectGeom);
-                if (n > 1)
-                {
-                    int y = 8;
-                }
+                if (intersectGeom == nullptr) continue;
                 auto geomDensity = popDensityGeomMap.at(geom);
                 intersectedPopDensityGeomMap.emplace(intersectGeom, geomDensity);
                 intersectedBoundedGeometries.emplace_back(intersectGeom);
@@ -206,7 +202,7 @@ void ugr::mapping::TemporalPopulationMap::fillGridMapPoly(const std::string& lay
 
 void ugr::mapping::TemporalPopulationMap::eval()
 {
-    if(isEvaluated) return;
+    if (isEvaluated) return;
     for (auto& pair : tagGeomMap)
     {
         GridMapDataType fallbackDensity = -1;

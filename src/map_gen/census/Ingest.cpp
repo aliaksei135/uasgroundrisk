@@ -137,7 +137,8 @@ std::map<std::string, GEOSGeometry*> CensusGeometryIngest::readFile(const std::s
             break;
         }
         auto* code = DBFReadStringAttribute(dbfHandle, i, 0);
-        outMap.emplace(code, geom);
+        if(geom != nullptr)
+            outMap.emplace(code, geom);
 
         SHPDestroyObject(obj); //dealloc
     }

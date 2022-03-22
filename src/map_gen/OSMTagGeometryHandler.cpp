@@ -41,7 +41,8 @@ void ugr::mapping::osm::OSMTagGeometryHandler::way(const osmium::Way& way) noexc
             auto* outerRing = GEOSGeom_createLinearRing_r(geosCtx, geosCoordSeq);
             auto* geosPoly = GEOSGeom_createPolygon_r(geosCtx, outerRing, nullptr, 0);
 
-            tagGeometryMap[fullTag].emplace_back(geosPoly);
+            if (geosPoly != nullptr)
+                tagGeometryMap[fullTag].emplace_back(geosPoly);
         }
     }
 }
@@ -130,7 +131,8 @@ void ugr::mapping::osm::OSMTagGeometryHandler::area(const osmium::Area& area) no
                     break;
                 }
             }
-            tagGeometryMap[fullTag].emplace_back(finalGeom);
+            if (finalGeom != nullptr)
+                tagGeometryMap[fullTag].emplace_back(finalGeom);
         }
     }
 }
