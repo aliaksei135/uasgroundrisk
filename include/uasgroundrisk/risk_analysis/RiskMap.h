@@ -36,7 +36,7 @@ namespace ugr
              * @param aircraftModel the aircraft model to use
              * @param weather the weather map
              */
-            RiskMap(mapping::PopulationMap* populationMap,
+            RiskMap(mapping::PopulationMap& populationMap,
                     const AircraftModel& aircraftModel, ObstacleMap& obstacleMap,
                     const WeatherMap& weather);
 

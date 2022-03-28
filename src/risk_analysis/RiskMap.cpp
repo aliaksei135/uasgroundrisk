@@ -24,17 +24,17 @@ using namespace ugr::gridmap;
 
 
 ugr::risk::RiskMap::RiskMap(
-    mapping::PopulationMap* populationMap,
+    mapping::PopulationMap& populationMap,
     const AircraftModel& aircraftModel,
     ObstacleMap& obstacleMap,
     const WeatherMap& weather)
-    : GeospatialGridMap(populationMap->getBounds(),
-                        static_cast<int>(populationMap->getResolution())), aircraftModel(aircraftModel),
+    : GeospatialGridMap(populationMap.getBounds(),
+                        static_cast<int>(populationMap.getResolution())), aircraftModel(aircraftModel),
       weather(weather),
       generator(std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()))
 {
     // Evaluate population density map
-    populationMap->eval();
+    populationMap.eval();
     // Evaluate obstacles
     obstacleMap.addBuildingHeights();
     obstacleMap.eval();
@@ -42,7 +42,7 @@ ugr::risk::RiskMap::RiskMap(
     initLayer("Population Density");
     initLayer("Building Height");
     // Get population map and convert from people/km^2 to people/m^2
-    get("Population Density") = populationMap->get("Population Density") * 1e-6;
+    get("Population Density") = populationMap.get("Population Density") * 1e-6;
     get("Building Height") = obstacleMap.get("Building Height");
 
     // Create objects required for sample distribution generation

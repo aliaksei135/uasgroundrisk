@@ -52,7 +52,7 @@ TEST_F(RiskMapTests, EmptyMapLayerConstructionTest)
     // obstacleMap.addBuildingHeights();
     obstacleMap.eval();
 
-    const RiskMap riskMap(&population, aircraft, obstacleMap, weather);
+    const RiskMap riskMap(population, aircraft, obstacleMap, weather);
 
     auto layers = riskMap.getLayers();
     // Check all the layers are there
@@ -89,7 +89,7 @@ TEST_F(RiskMapTests, ZeroStrikeRiskMapTest)
     obstacleMap.addBuildingHeights();
     obstacleMap.eval();
 
-    RiskMap riskMap(&population, aircraft, obstacleMap, weather);
+    RiskMap riskMap(population, aircraft, obstacleMap, weather);
     auto strikeMap = riskMap.generateMap({RiskType::STRIKE});
 
     ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
@@ -129,7 +129,7 @@ TEST_F(RiskMapTests, ZeroFatalityRiskMapTest)
     obstacleMap.addBuildingHeights();
     obstacleMap.eval();
 
-    RiskMap riskMap(&population, aircraft, obstacleMap, weather);
+    RiskMap riskMap(population, aircraft, obstacleMap, weather);
     auto fatalityMap = riskMap.generateMap({RiskType::FATALITY});
 
     ugr::gridmap::Matrix& glideRisk = fatalityMap.get("Glide Fatality Risk");
@@ -174,7 +174,7 @@ TEST_F(RiskMapTests, SchoolsStrikeRiskMapTest)
     obstacleMap.addBuildingHeights();
     obstacleMap.eval();
 
-    RiskMap riskMap(&population, aircraft, obstacleMap, weather);
+    RiskMap riskMap(population, aircraft, obstacleMap, weather);
     auto strikeMap = riskMap.generateMap({RiskType::STRIKE});
 
     ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
@@ -221,7 +221,7 @@ TEST_F(RiskMapTests, ResidentialStrikeRiskMapTest)
     obstacleMap.addBuildingHeights();
     obstacleMap.eval();
 
-    RiskMap riskMap(&population, aircraft, obstacleMap, weather);
+    RiskMap riskMap(population, aircraft, obstacleMap, weather);
     auto strikeMap = riskMap.generateMap({RiskType::STRIKE});
 
     ugr::gridmap::Matrix& glideRisk = strikeMap.get("Glide Strike Risk");
@@ -261,7 +261,7 @@ TEST_F(RiskMapTests, NilWindPointImpactMapTest)
     obstacleMap.addBuildingHeights();
     obstacleMap.eval();
 
-    RiskMap riskMap(&population, aircraft, obstacleMap, weather);
+    RiskMap riskMap(population, aircraft, obstacleMap, weather);
 
     const auto size = riskMap.getSize();
 
@@ -327,7 +327,7 @@ TEST_F(RiskMapTests, WindPointImpactMapTest)
     obstacleMap.addBuildingHeights();
     obstacleMap.eval();
 
-    RiskMap riskMap(&population, aircraft, obstacleMap, weather);
+    RiskMap riskMap(population, aircraft, obstacleMap, weather);
 
     const auto size = riskMap.getSize();
 

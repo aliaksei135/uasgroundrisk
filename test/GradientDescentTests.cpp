@@ -59,7 +59,7 @@ public:
             obstacleMap.addBuildingHeights();
             obstacleMap.eval();
 
-            ugr::risk::RiskMap riskMap(&population, aircraft, obstacleMap, weather);
+            ugr::risk::RiskMap riskMap(population, aircraft, obstacleMap, weather);
             riskMap.SetAnyHeading(true);
             riskMap.generateMap({ugr::risk::RiskType::FATALITY});
             fatalityMat = riskMap.get("Fatality Risk");
