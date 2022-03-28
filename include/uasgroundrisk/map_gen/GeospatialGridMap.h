@@ -80,9 +80,7 @@ namespace ugr
 			*/
 			Position local2World(const Index& localCoord) const;
 
-			void eval()
-			{
-			};
+			virtual void eval();
 
 		protected:
 			void setBounds(std::array<float, 4> boundsArr, float resolution);

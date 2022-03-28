@@ -17,7 +17,7 @@ namespace ugr
         public:
             OSMMap(const std::array<float, 4>& bounds, float resolution);
 
-            void addOSMLayer(const std::string& layerName,
+            virtual void addOSMLayer(const std::string& layerName,
                              const std::vector<osm::OSMTag>& tags,
                              float defaultValue = 0);
 

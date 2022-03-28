@@ -9,14 +9,14 @@ namespace ugr
         class TemporalPopulationMap : public PopulationMap
         {
         public:
-            TemporalPopulationMap(const std::array<float, 4>& bounds, const int resolution);
+            TemporalPopulationMap(const std::array<float, 4>& bounds, int resolution, short defaultHour = 12);
 
-            ~TemporalPopulationMap();
+            ~TemporalPopulationMap() override;
 
             // Delete this for now, as all OSM tags come from the NHAPS mapping
-            void addOSMLayer(const std::string& layerName,
-                             const std::vector<osm::OSMTag>& tags,
-                             float defaultValue) = delete;
+            // void addOSMLayer(const std::string& layerName,
+            //                  const std::vector<osm::OSMTag>& tags,
+            //                  float defaultValue) override = delete;
 
             void setHourOfDay(const short hourOfDay);
 
@@ -29,10 +29,10 @@ namespace ugr
             void fillGridMapPoly(const std::string& layerName, const GEOSGeometry* geom,
                                  const GridMapDataType& geomDensity);
 
-            void eval();
+            void eval() override;
 
         protected:
-            short hourOfDay = 5;
+            short hourOfDay;
             int totalPopulation;
             GEOSContextHandle_t geosCtx;
 

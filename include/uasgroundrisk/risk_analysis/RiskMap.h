@@ -36,7 +36,7 @@ namespace ugr
              * @param aircraftModel the aircraft model to use
              * @param weather the weather map
              */
-            RiskMap(mapping::PopulationMap& populationMap,
+            RiskMap(mapping::PopulationMap* populationMap,
                     const AircraftModel& aircraftModel, const ObstacleMap& obstacleMap,
                     const WeatherMap& weather);
 
@@ -44,7 +44,7 @@ namespace ugr
             RiskMap(RiskMap&& other) noexcept = default;
             RiskMap& operator=(const RiskMap& other) = delete;
             RiskMap& operator=(RiskMap&& other) noexcept = default;
-            ~RiskMap() = default;
+            ~RiskMap() override = default;
 
             /**
              * Generate the actual risk map(s). This takes a vector of RiskType enum
@@ -60,7 +60,7 @@ namespace ugr
                                     std::vector<GridMapDataType>& impactVelocities,
                                     std::vector<GridMapDataType>& buildingImpactProbs);
 
-            void eval();
+            void eval() override;
 
             bool IsAnyHeading() const
             {

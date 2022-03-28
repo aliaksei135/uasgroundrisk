@@ -57,7 +57,7 @@ namespace ugr
 				return *this;
 			}
 
-			~GridMap() = default;
+			virtual ~GridMap() = default;
 
 			/**
 			 * @brief Set the geometry of the gridmap

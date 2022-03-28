@@ -91,6 +91,10 @@ Position ugr::mapping::GeospatialGridMap::local2World(const gridmap::Index& loca
     return local2World(localCoord[0], localCoord[1]);
 }
 
+void ugr::mapping::GeospatialGridMap::eval()
+{
+}
+
 void ugr::mapping::GeospatialGridMap::setBounds(
     const std::array<float, 4> boundsArr, const float resolution)
 {

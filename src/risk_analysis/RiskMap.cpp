@@ -24,22 +24,22 @@ using namespace ugr::gridmap;
 
 
 ugr::risk::RiskMap::RiskMap(
-    mapping::PopulationMap& populationMap,
+    mapping::PopulationMap* populationMap,
     const AircraftModel& aircraftModel,
     const ObstacleMap& obstacleMap,
     const WeatherMap& weather)
-    : GeospatialGridMap(populationMap.getBounds(),
-                        static_cast<int>(populationMap.getResolution())), aircraftModel(aircraftModel),
+    : GeospatialGridMap(populationMap->getBounds(),
+                        static_cast<int>(populationMap->getResolution())), aircraftModel(aircraftModel),
       weather(weather),
       generator(std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()))
 {
     // Evaluate population density map
-    populationMap.eval();
+    populationMap->eval();
     // Copy across only the the population density and building height layer
     initLayer("Population Density");
     initLayer("Building Height");
     // Get population map and convert from people/km^2 to people/m^2
-    get("Population Density") = populationMap.get("Population Density") * 1e-6;
+    get("Population Density") = populationMap->get("Population Density") * 1e-6;
     get("Building Height") = obstacleMap.get("Building Height");
 
     // Create objects required for sample distribution generation
@@ -130,7 +130,7 @@ void ugr::risk::RiskMap::initLayer(const std::string& layerName)
 void ugr::risk::RiskMap::generateStrikeMap()
 {
     // Iterate through all cells in the grid map
-    #pragma omp parallel for collapse(2) schedule(dynamic)
+#pragma omp parallel for collapse(2) schedule(dynamic)
     for (int x = 0; x < sizeX; ++x)
     {
         for (int y = 0; y < sizeY; ++y)
@@ -309,7 +309,7 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
             const Vector2d dist1D(sample.impactDistance, 0);
 
             // impactPositions[i] =
-                // ((headingVect[i] * dist1D + (sample.impactTime * windVect[i])) / xyRes) + indexVec;
+            // ((headingVect[i] * dist1D + (sample.impactTime * windVect[i])) / xyRes) + indexVec;
 
             impactSampleMat.col(i).noalias() = (
                 ((headingVect[i] * dist1D + (sample.impactTime * windVect[i])) / xyRes) + indexVec).cast<
