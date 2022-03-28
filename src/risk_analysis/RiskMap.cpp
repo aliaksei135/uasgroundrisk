@@ -26,7 +26,7 @@ using namespace ugr::gridmap;
 ugr::risk::RiskMap::RiskMap(
     mapping::PopulationMap* populationMap,
     const AircraftModel& aircraftModel,
-    const ObstacleMap& obstacleMap,
+    ObstacleMap& obstacleMap,
     const WeatherMap& weather)
     : GeospatialGridMap(populationMap->getBounds(),
                         static_cast<int>(populationMap->getResolution())), aircraftModel(aircraftModel),
@@ -35,6 +35,9 @@ ugr::risk::RiskMap::RiskMap(
 {
     // Evaluate population density map
     populationMap->eval();
+    // Evaluate obstacles
+    obstacleMap.addBuildingHeights();
+    obstacleMap.eval();
     // Copy across only the the population density and building height layer
     initLayer("Population Density");
     initLayer("Building Height");
