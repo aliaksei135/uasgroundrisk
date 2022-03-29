@@ -35,8 +35,11 @@ ugr::risk::RiskMap::RiskMap(
 {
     // Evaluate population density map
     populationMap.eval();
+    // Check if building height layer already exists
+    const auto obstacleLayers = obstacleMap.getLayers();
+    if (std::find(obstacleLayers.begin(), obstacleLayers.end(), "Building Height") == obstacleLayers.end())
+        obstacleMap.addBuildingHeights();
     // Evaluate obstacles
-    obstacleMap.addBuildingHeights();
     obstacleMap.eval();
     // Copy across only the the population density and building height layer
     initLayer("Population Density");
@@ -188,7 +191,7 @@ void ugr::risk::RiskMap::generateFatalityMap()
 }
 
 
-void ugr::risk::RiskMap::addPointStrikeMap(const ugr::gridmap::Index& index)
+void ugr::risk::RiskMap::addPointStrikeMap(const Index& index)
 {
     std::vector<GridMapDataType> impactAngles, impactVelocities, buildingImpactProbs;
     std::vector<Matrix, aligned_allocator<Matrix>> impactPDFs;
@@ -232,9 +235,9 @@ void ugr::risk::RiskMap::addPointStrikeMap(const ugr::gridmap::Index& index)
 }
 
 
-void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
+void ugr::risk::RiskMap::makePointImpactMap(const Index& index,
                                             std::vector<
-                                                ugr::gridmap::Matrix, aligned_allocator<ugr::gridmap::Matrix>>&
+                                                Matrix, aligned_allocator<Matrix>>&
                                             impactPDFs,
                                             std::vector<GridMapDataType>& impactAngles,
                                             std::vector<GridMapDataType>& impactVelocities,
@@ -263,7 +266,7 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
     std::vector<double> altVect(nSamples);
     std::vector<double> lateralVelVect(nSamples);
     std::vector<double> verticalVelVect(nSamples);
-    std::vector<Rotation2Dd, Eigen::aligned_allocator<Rotation2Dd>> headingVect(nSamples);
+    std::vector<Rotation2Dd, aligned_allocator<Rotation2Dd>> headingVect(nSamples);
     for (size_t i = 0; i < nSamples; ++i)
     {
         altVect[i] = altDist(generator);
@@ -318,10 +321,10 @@ void ugr::risk::RiskMap::makePointImpactMap(const ugr::gridmap::Index& index,
                 ((headingVect[i] * dist1D + (sample.impactTime * windVect[i])) / xyRes) + indexVec).cast<
                 GridMapDataType>();
 
-            const auto groundTrackIndices = ugr::util::bresenham2D(index, {
-                                                                       std::ceil(impactSampleMat.col(i)(0)),
-                                                                       std::ceil(impactSampleMat.col(i)(1))
-                                                                   });
+            const auto groundTrackIndices = util::bresenham2D(index, {
+                                                                  std::ceil(impactSampleMat.col(i)(0)),
+                                                                  std::ceil(impactSampleMat.col(i)(1))
+                                                              });
             for (const auto& trackIndex : groundTrackIndices)
             {
                 if (!isInBounds(trackIndex)) continue;
@@ -416,7 +419,7 @@ double ugr::risk::RiskMap::fatalityProbability(const double alpha, const double 
 }
 
 
-ugr::gridmap::Matrix ugr::risk::RiskMap::lethalArea(const ugr::gridmap::Matrix& impactAngle,
+ugr::gridmap::Matrix ugr::risk::RiskMap::lethalArea(const Matrix& impactAngle,
                                                     const double uasWidth)
 {
     constexpr auto personRadius = 1.5;
@@ -428,15 +431,15 @@ ugr::gridmap::Matrix ugr::risk::RiskMap::lethalArea(const ugr::gridmap::Matrix& 
 }
 
 
-ugr::gridmap::Matrix ugr::risk::RiskMap::vel2ke(const ugr::gridmap::Matrix& velocity, const double mass)
+ugr::gridmap::Matrix ugr::risk::RiskMap::vel2ke(const Matrix& velocity, const double mass)
 {
     return (0.5 * mass * pow(velocity.array(), 2)).matrix();
 }
 
 
 ugr::gridmap::Matrix ugr::risk::RiskMap::fatalityProbability(const double alpha, const double beta,
-                                                             const ugr::gridmap::Matrix& impactEnergy,
-                                                             const ugr::gridmap::Matrix& shelterFactor)
+                                                             const Matrix& impactEnergy,
+                                                             const Matrix& shelterFactor)
 {
     return (1 / (sqrt(alpha / beta)) *
         pow(beta / impactEnergy.array(), 1 / (4 * shelterFactor.array()))).matrix();
