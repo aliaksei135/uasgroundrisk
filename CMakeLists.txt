@@ -125,6 +125,16 @@ if (MSVC)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX _USE_MATH_DEFINES)
 endif ()
 
+if(NOT (${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
+	if(MSVC)
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /O2")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /O2")
+	elseif(GCC)
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -fno-math-errno -fno-signaling-nans -fno-trapping-math")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fno-math-errno -fno-signaling-nans -fno-trapping-math")
+	endif()
+endif()
+
 # Data bundling
 if(NOT ENV{UGR_DATA_DIR})
 	set(UGR_DATA_DIR ${PROJECT_BINARY_DIR}/data CACHE PATH "uasgroundrisk static data directory")

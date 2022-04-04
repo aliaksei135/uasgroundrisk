@@ -24,6 +24,7 @@ void ugr::mapping::osm::OSMTagGeometryHandler::way(const osmium::Way& way) noexc
         // PJ_COORD c = proj_trans(reproj, PJ_FWD, proj_coord(n.lat(), n.lon(), 0, 0));
         poly.emplace_back(Position(n.lon(), n.lat()));
     }
+    if (poly.size() < 3) return;
 
     // Iterate through the tags associated with the way.
     // This is usually a single relevant tag that is mapped to a grid map layer,
@@ -33,15 +34,27 @@ void ugr::mapping::osm::OSMTagGeometryHandler::way(const osmium::Way& way) noexc
         OSMTag fullTag(tag.key(), tag.value());
         if (std::find(tags.begin(), tags.end(), fullTag) != tags.end())
         {
-            auto* geosCoordSeq = GEOSCoordSeq_create_r(geosCtx, poly.size(), 2);
+            unsigned nCoord = poly.size();
+            bool closedRing = true;
+            if (poly[0] != poly[poly.size() - 1])
+            {
+                closedRing = false;
+                ++nCoord;
+            }
+            auto* geosCoordSeq = GEOSCoordSeq_create_r(geosCtx, nCoord, 2);
             for (int i = 0; i < poly.size(); ++i)
             {
                 GEOSCoordSeq_setXY_r(geosCtx, geosCoordSeq, i, poly[i].x(), poly[i].y());
             }
+            if (!closedRing)
+            {
+                GEOSCoordSeq_setXY_r(geosCtx, geosCoordSeq, nCoord - 1, poly[0].x(), poly[0].y());
+            }
             auto* outerRing = GEOSGeom_createLinearRing_r(geosCtx, geosCoordSeq);
             auto* geosPoly = GEOSGeom_createPolygon_r(geosCtx, outerRing, nullptr, 0);
 
-            tagGeometryMap[fullTag].emplace_back(geosPoly);
+            if (geosPoly != nullptr)
+                tagGeometryMap[fullTag].emplace_back(GEOSMakeValid_r(geosCtx, geosPoly));
         }
     }
 }
@@ -130,7 +143,8 @@ void ugr::mapping::osm::OSMTagGeometryHandler::area(const osmium::Area& area) no
                     break;
                 }
             }
-            tagGeometryMap[fullTag].emplace_back(finalGeom);
+            if (finalGeom != nullptr)
+                tagGeometryMap[fullTag].emplace_back(finalGeom);
         }
     }
 }

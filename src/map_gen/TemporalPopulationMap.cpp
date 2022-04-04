@@ -5,8 +5,9 @@
 #include "../src/map_gen/census/Ingest.h"
 #include "uasgroundrisk/gridmap/Iterators.h"
 
-ugr::mapping::TemporalPopulationMap::TemporalPopulationMap(const std::array<float, 4>& bounds, const int resolution):
-    PopulationMap(bounds, resolution), geosCtx(initGEOS_r(notice, log_and_exit))
+ugr::mapping::TemporalPopulationMap::TemporalPopulationMap(const std::array<float, 4>& bounds, const int resolution,
+                                                           const short defaultHour):
+    PopulationMap(bounds, resolution), hourOfDay(defaultHour), geosCtx(initGEOS_r(notice, log_and_exit))
 {
     // We try to precompute/fetch as many of the steps and data dependencies that are invariant for the life of the object.
     // In practice, this means that as long as the bounds and resolution stay the same, this data will stay the same.
@@ -57,6 +58,7 @@ ugr::mapping::TemporalPopulationMap::TemporalPopulationMap(const std::array<floa
                                              static_cast<decltype(areas)::value_type>(0));
         tagAreas.emplace(pair.first, areaSum);
     }
+    setHourOfDay(defaultHour);
 }
 
 ugr::mapping::TemporalPopulationMap::~TemporalPopulationMap()
@@ -130,8 +132,14 @@ std::vector<double> ugr::mapping::TemporalPopulationMap::calculateAreas(const st
         for (int i = 0; i < nGeom; ++i)
         {
             auto* g = GEOSGetGeometryN_r(geosCtx, geom, i);
+            if (GEOSGeomTypeId_r(geosCtx, g) != GEOS_POLYGON)
+            {
+                int df = 34;
+                std::cout << GEOSGeomType_r(geosCtx, g);
+            }
 
             auto* reprojGeom = util::reprojectPolygon_r(reproj, g, geosCtx);
+
             // Convert m^2 to km^2
             area += util::getGeometryArea_r<double>(reprojGeom, geosCtx) / 1e6;
         }
@@ -156,11 +164,8 @@ void ugr::mapping::TemporalPopulationMap::intersectResidentialGeometries()
             if (GEOSPreparedIntersects_r(geosCtx, prepGeom, resGeom))
             {
                 auto* intersectGeom = GEOSIntersection_r(geosCtx, geom, resGeom);
-                auto n = GEOSGetNumGeometries_r(geosCtx, intersectGeom);
-                if (n > 1)
-                {
-                    int y = 8;
-                }
+                if (intersectGeom == nullptr || (GEOSGeomTypeId_r(geosCtx, intersectGeom) != GEOS_MULTIPOLYGON &&
+                    GEOSGeomTypeId_r(geosCtx, intersectGeom) != GEOS_POLYGON)) continue;
                 auto geomDensity = popDensityGeomMap.at(geom);
                 intersectedPopDensityGeomMap.emplace(intersectGeom, geomDensity);
                 intersectedBoundedGeometries.emplace_back(intersectGeom);
@@ -206,7 +211,7 @@ void ugr::mapping::TemporalPopulationMap::fillGridMapPoly(const std::string& lay
 
 void ugr::mapping::TemporalPopulationMap::eval()
 {
-    if(isEvaluated) return;
+    if (isEvaluated) return;
     for (auto& pair : tagGeomMap)
     {
         GridMapDataType fallbackDensity = -1;
@@ -216,7 +221,7 @@ void ugr::mapping::TemporalPopulationMap::eval()
         for (auto& geom : pair.second)
         {
             auto geomDensity = fallbackDensity;
-            if (fallbackDensity == -1)
+            if (fallbackDensity < 0)
             {
                 if (activeGeomDensityMap.count(geom) == 1)
                 {

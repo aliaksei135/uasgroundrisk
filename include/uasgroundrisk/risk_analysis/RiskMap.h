@@ -16,6 +16,7 @@
 #include "uasgroundrisk/risk_analysis/weather/WeatherMap.h"
 #include "uasgroundrisk/gridmap/GridMap.h"
 
+#define EIGEN_DONT_PARALLELIZE
 
 namespace ugr
 {
@@ -26,6 +27,8 @@ namespace ugr
         class RiskMap final : public mapping::GeospatialGridMap
         {
         public:
+            EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+
             /**
              * Construct a static Risk map of a single AircraftModel
              * @param populationMap a GridMap of population density. Usually from
@@ -34,14 +37,14 @@ namespace ugr
              * @param weather the weather map
              */
             RiskMap(mapping::PopulationMap& populationMap,
-                    const AircraftModel& aircraftModel, const ObstacleMap& obstacleMap,
+                    const AircraftModel& aircraftModel, ObstacleMap& obstacleMap,
                     const WeatherMap& weather);
 
             RiskMap(const RiskMap& other) = delete;
             RiskMap(RiskMap&& other) noexcept = default;
             RiskMap& operator=(const RiskMap& other) = delete;
             RiskMap& operator=(RiskMap&& other) noexcept = default;
-            ~RiskMap() = default;
+            ~RiskMap() override = default;
 
             /**
              * Generate the actual risk map(s). This takes a vector of RiskType enum
@@ -49,15 +52,15 @@ namespace ugr
              *
              * @return a GridMap with risk layers generated
              */
-            GridMap& generateMap(const std::vector<ugr::risk::RiskType>& risksToGenerate);
+            GridMap& generateMap(const std::vector<RiskType>& risksToGenerate);
 
-            void makePointImpactMap(const gridmap::Index& index,
-                                    std::vector<gridmap::Matrix, aligned_allocator<gridmap::Matrix>>& impactPDFs,
+            void makePointImpactMap(const Index& index,
+                                    std::vector<Matrix, aligned_allocator<Matrix>>& impactPDFs,
                                     std::vector<GridMapDataType>& impactAngles,
                                     std::vector<GridMapDataType>& impactVelocities,
                                     std::vector<GridMapDataType>& buildingImpactProbs);
 
-            void eval();
+            void eval() override;
 
             bool IsAnyHeading() const
             {
@@ -73,7 +76,9 @@ namespace ugr
             const AircraftModel& aircraftModel;
 
             const WeatherMap& weather;
-            int nSamples = 50; //CLT says 30-50 samples is good enough
+            static constexpr int nSamples = 50; //CLT says 30-50 samples is good enough
+            Eigen::Matrix<int, 2, Dynamic> evalMat;
+            Eigen::Matrix<GridMapDataType, 2, nSamples> impactSampleMat;
             std::default_random_engine generator;
             Eigen::Vector<GridMapDataType, Dynamic> evalXs, evalYs;
             bool anyHeading = false;
@@ -82,7 +87,7 @@ namespace ugr
 
             void generateFatalityMap();
 
-            void addPointStrikeMap(const gridmap::Index& index);
+            void addPointStrikeMap(const Index& index);
 
             void initRiskMapLayers();
 
@@ -95,13 +100,13 @@ namespace ugr
             static double fatalityProbability(double alpha, double beta,
                                               double impactEnergy, double shelterFactor);
 
-            static ugr::gridmap::Matrix lethalArea(const ugr::gridmap::Matrix& impactAngle, double uasWidth);
+            static Matrix lethalArea(const Matrix& impactAngle, double uasWidth);
 
-            static ugr::gridmap::Matrix vel2ke(const ugr::gridmap::Matrix& velocity, double mass);
+            static Matrix vel2ke(const Matrix& velocity, double mass);
 
-            static ugr::gridmap::Matrix fatalityProbability(double alpha, double beta,
-                                                            const ugr::gridmap::Matrix& impactEnergy,
-                                                            const ugr::gridmap::Matrix& shelterFactor);
+            static Matrix fatalityProbability(double alpha, double beta,
+                                              const Matrix& impactEnergy,
+                                              const Matrix& shelterFactor);
         };
     } // namespace risk
 } // namespace ugr

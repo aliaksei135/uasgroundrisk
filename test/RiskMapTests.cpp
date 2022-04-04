@@ -195,7 +195,7 @@ TEST_F(RiskMapTests, SchoolsStrikeRiskMapTest)
             file.close();
         }
 
-        outputMat(strikeMap.get(layer), ::testing::UnitTest::GetInstance()->current_test_info()->name() + layer);
+        outputMat(strikeMap.get(layer), testing::UnitTest::GetInstance()->current_test_info()->name() + layer);
     }
 
     // As the population map is zero, this must all be zero as well
@@ -241,7 +241,7 @@ TEST_F(RiskMapTests, ResidentialStrikeRiskMapTest)
             file << strikeMap.get(layer).format(CSVFormat);
             file.close();
         }
-        outputMat(strikeMap.get(layer), ::testing::UnitTest::GetInstance()->current_test_info()->name() + layer);
+        outputMat(strikeMap.get(layer), testing::UnitTest::GetInstance()->current_test_info()->name() + layer);
     }
 
     // As the population map is zero, this must all be zero as well
@@ -311,7 +311,7 @@ TEST_F(RiskMapTests, NilWindPointImpactMapTest)
         file << (glideImpact + ballisticImpact).format(CSVFormat);
         file.close();
     }
-    outputMat(combined, ::testing::UnitTest::GetInstance()->current_test_info()->name());
+    outputMat(combined, testing::UnitTest::GetInstance()->current_test_info()->name());
 }
 
 TEST_F(RiskMapTests, WindPointImpactMapTest)
@@ -377,7 +377,7 @@ TEST_F(RiskMapTests, WindPointImpactMapTest)
         file << (glideImpact + ballisticImpact).format(CSVFormat);
         file.close();
     }
-    outputMat(combined, ::testing::UnitTest::GetInstance()->current_test_info()->name());
+    outputMat(combined, testing::UnitTest::GetInstance()->current_test_info()->name());
 }
 
 

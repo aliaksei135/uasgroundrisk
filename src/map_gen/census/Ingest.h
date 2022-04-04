@@ -95,6 +95,7 @@ public:
         std::map<GEOSGeometry*, Scalar> mergedMap;
         for (const std::pair<std::string, GEOSGeometry*> p : geoms)
         {
+            if(p.second == nullptr) continue;
             if (densityMap.find(p.first) != densityMap.end())
             {
                 if (p.second != nullptr)

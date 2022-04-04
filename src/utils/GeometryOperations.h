@@ -245,8 +245,8 @@ namespace ugr
                 if (isIntersecting)
                 {
                     auto* intersection = GEOSIntersection_r(geosCtx, boundingPoly, inGeom);
-
-                    outMap.emplace(intersection, pair.second);
+                    if (intersection != nullptr)
+                        outMap.emplace(intersection, pair.second);
                 }
                 // This is either intersected in which case a new geometry is produced,
                 // or it out of bounds in which case we don't want it anyway

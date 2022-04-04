@@ -17,11 +17,9 @@ namespace ugr
 
             using OSMMap::addOSMLayer;
 
-            void addOSMHandler(osmium::handler::Handler& handler);
-
             void addBuildingHeights();
 
-            void eval();
+            void eval() override;
 
         protected:
             // std::vector<std::unique_ptr<osmium::handler::Handler>> handlers;

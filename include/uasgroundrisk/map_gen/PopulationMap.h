@@ -27,11 +27,13 @@ namespace ugr
 			 */
 			PopulationMap(std::array<float, 4> bounds, int resolution);
 
+			~PopulationMap() override = default;
+
 			void addOSMLayer(const std::string& layerName,
 			                 const std::vector<osm::OSMTag>& tags,
-			                 float defaultValue);
+			                 float defaultValue) override;
 
-			void eval();
+			void eval() override;
 
 		protected:
 			std::map<GEOSGeometry*, GridMapDataType> popDensityGeomMap;
