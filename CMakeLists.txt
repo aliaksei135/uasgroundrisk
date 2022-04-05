@@ -12,6 +12,7 @@ set(PYTHON_VERSION 3)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 set(${PROJECT_NAME}_EXTERN_DIR ${PROJECT_SOURCE_DIR}/extern)
 Include(FetchContent)
+include(GNUInstallDirs)
 include_guard(GLOBAL)
 
 # Verbose Builds
@@ -29,7 +30,10 @@ if (CCACHE)
 	set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
 endif ()
 
-option(UGR_BUILD_TESTS "Build tests for uasgroundrisk" OFF)
+
+option(BUILD_SHARED_LIBS "Build libraries as shared libraries" ON)
+option(UGR_BUILD_TESTS "Set to ON to build uasgroundrisk tests" OFF)
+option(UGR_BUILD_DOCS "Set to ON to build uasgroundrisk documentation" OFF)
 
 ###########################################################
 # Static code analysis
@@ -81,12 +85,10 @@ set(UGR_SOURCES
 add_subdirectory(src)
 
 if (MSVC)
-	set(${PROJECT_NAME}_BUILD_SHARED OFF)
-else ()
-	set(${PROJECT_NAME}_BUILD_SHARED ON)
+	set(BUILD_SHARED_LIBS OFF)
 endif ()
 
-if (${${PROJECT_NAME}_BUILD_SHARED})
+if (${BUILD_SHARED_LIBS})
 	add_library(${PROJECT_NAME} SHARED ${UGR_SOURCES})
 else ()
 	add_library(${PROJECT_NAME} STATIC ${UGR_SOURCES})
@@ -254,7 +256,7 @@ endif ()
 # Docs
 #############################################################
 
-if (BUILD_DOC)
+if (UGR_BUILD_DOCS)
 	find_package(Doxygen)
 	if (DOXYGEN_FOUND)
 		SET(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in)
@@ -265,10 +267,9 @@ if (BUILD_DOC)
 		add_custom_target(doc ALL
 				COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
 				WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-				COMMENT "Buidling Doxygen documentation"
+				COMMENT "Building Doxygen documentation"
 				VERBATIM)
 	else (DOXYGEN_FOUND)
 		message("No doxygen binary found on the system.")
-		SET(${BUILD_DOC} OFF)
 	endif ()
 endif ()
