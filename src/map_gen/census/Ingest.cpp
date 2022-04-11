@@ -41,10 +41,10 @@ std::map<std::string, GEOSGeometry*> CensusGeometryIngest::readFile(const std::s
 	const auto extIdx = file.find_last_of('.');
 	const auto basePath = file.substr(0, extIdx);
 
-	const std::ifstream f(basePath.c_str());
+	const std::ifstream f(file.c_str());
 	if (!f.good())
 	{
-		throw std::ios_base::failure("Cannot locate census geometry .shp file at: " + basePath);
+		throw std::ios_base::failure("Cannot locate census geometry .shp file at: " + file);
 	}
 
 	// Open vertex (shp), index (shx) and attribute (dbf) files and keep the handles
