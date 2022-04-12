@@ -28,6 +28,8 @@ if (CCACHE)
 	set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
 endif ()
 
+option(UGR_BUILD_TESTS "Build tests for uasgroundrisk" OFF)
+
 ###########################################################
 # Static code analysis
 ###########################################################
@@ -212,17 +214,6 @@ endif()
 
 find_package(Threads REQUIRED)
 
-# GTest should be compiled with same flags as code under test
-# so using conan binaries causes strange errors
-FetchContent_Declare(
-		googletest
-		GIT_REPOSITORY https://github.com/google/googletest.git
-		GIT_TAG release-1.11.0
-)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-
 ##################################
 # Osmium
 # OSM data libraries
@@ -248,24 +239,11 @@ if (BZIP2_FOUND)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE UGR_IO_COMPRESSION_BZ2)
 endif ()
 
-
-FetchContent_Declare(
-		thrust
-		GIT_REPOSITORY https://github.com/NVIDIA/thrust.git
-		GIT_TAG 1.15.0
-)
-FetchContent_MakeAvailable(thrust)
-target_compile_definitions(${PROJECT_NAME} PUBLIC thrust.compiler_interface_cpp11)
-
 ##############################################################
 # Testing
 ##############################################################
 
-if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-	set(${PROJECT_NAME}_BUILD_TESTS ON)
-endif()
-
-if (${PROJECT_NAME}_BUILD_TESTS)
+if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR UGR_BUILD_TESTs) AND BUILD_TESTING)
 	enable_testing()
 	add_subdirectory(test)
 endif ()
