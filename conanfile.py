@@ -26,6 +26,7 @@ class ugrConan(ConanFile):
         self.requires("libcurl/[>7.75.0]")
         self.requires("proj/8.0.1")
         self.requires("cpr/1.6.2")
+        self.requires("zlib/1.2.12")
         self.requires("openblas/0.3.17")
         self.requires("expat/2.4.1")
         self.requires("bzip2/1.0.8")
