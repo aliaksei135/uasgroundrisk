@@ -243,7 +243,7 @@ endif ()
 # Testing
 ##############################################################
 
-if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR UGR_BUILD_TESTs) AND BUILD_TESTING)
+if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR UGR_BUILD_TESTS) AND BUILD_TESTING)
 	enable_testing()
 	add_subdirectory(test)
 endif ()
