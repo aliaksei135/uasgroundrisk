@@ -27,7 +27,7 @@ namespace ugr
         class RiskMap final : public mapping::GeospatialGridMap
         {
         public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
             /**
              * Construct a static Risk map of a single AircraftModel

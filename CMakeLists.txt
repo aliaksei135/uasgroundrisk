@@ -55,6 +55,7 @@ if (ENABLE_CPPCHECK)
 				--suppress=unmatchedSuppression
 				--cppcheck-build-dir=${CMAKE_BINARY_DIR}/cppcheck
 				--enable=all
+				--std=c++17
 				--inconclusive)
 	else ()
 		message(WARNING "cppcheck requested but executable not found")
