@@ -4,8 +4,9 @@ project(uasgroundrisk
 		VERSION 0.1
 		LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(PYTHON_VERSION 3)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
@@ -125,7 +126,10 @@ if (MSVC)
 	# Prevent Windows.h overwriting min and max with macros
 	# Keep Math defines such as M_PI
 	target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX _USE_MATH_DEFINES)
-endif ()
+    target_compile_options(${PROJECT_NAME} PRIVATE /permissive-)
+else()
+    target_compile_options(${PROJECT_NAME} PRIVATE -pedantic-errors)
+endif()
 
 if(NOT (${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
 	if(MSVC)
@@ -219,7 +223,7 @@ find_package(Threads REQUIRED)
 FetchContent_Declare(
 		osmium
 		GIT_REPOSITORY https://github.com/osmcode/libosmium.git
-		GIT_TAG v2.16.0)
+		GIT_TAG v2.18.0)
 FetchContent_GetProperties(osmium)
 if (NOT osmium_POPULATED)
 	FetchContent_Populate(osmium)
@@ -239,8 +243,7 @@ endif ()
 ##############################################################
 # Testing
 ##############################################################
-message(${BUILD_TESTING})
-message(${UGR_BUILD_TESTS})
+
 if(UGR_BUILD_TESTS OR BUILD_TESTING)
 	enable_testing()
 	add_subdirectory(test)
