@@ -167,9 +167,6 @@ conan_cmake_run(CONANFILE conanfile.py
 		BASIC_SETUP
 		BUILD missing)
 
-# Don't build tests for deps
-set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
-
 # Eigen required for lin alg
 find_package(Eigen3 CONFIG REQUIRED)
 set(EIGEN3_FOUND TRUE) # This doesn't get set by the conan generated find macro
@@ -242,8 +239,9 @@ endif ()
 ##############################################################
 # Testing
 ##############################################################
-
-if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR UGR_BUILD_TESTS) AND BUILD_TESTING)
+message(${BUILD_TESTING})
+message(${UGR_BUILD_TESTS})
+if(UGR_BUILD_TESTS OR BUILD_TESTING)
 	enable_testing()
 	add_subdirectory(test)
 endif ()
