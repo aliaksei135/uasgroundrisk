@@ -34,6 +34,7 @@ namespace ugr
 		                                                   const char* destCRS = "EPSG:3395")
 		{
 			PJ_CONTEXT* projCtx = proj_context_create();
+			proj_context_set_enable_network(projCtx, 1);
 			// #ifdef PROJ_DATA_PATH
 			//             const char* projDataPaths[1];
 			//             projDataPaths[0] = PROJ_DATA_PATH;
