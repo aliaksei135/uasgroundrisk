@@ -35,11 +35,17 @@ namespace ugr
 		{
 			PJ_CONTEXT* projCtx = proj_context_create();
 			proj_context_set_enable_network(projCtx, 1);
-			// #ifdef PROJ_DATA_PATH
-			//             const char* projDataPaths[1];
-			//             projDataPaths[0] = PROJ_DATA_PATH;
-			//             proj_context_set_search_paths(projCtx, 1, projDataPaths);
-			// #endif
+			// Check if the env var is set and preferentially use it
+			const auto* envDataDir = std::getenv("PROJ_LIB");
+			if (envDataDir == nullptr)
+			{
+#ifdef PROJ_DATA_PATH
+				const char* projDataPaths[1];
+				projDataPaths[0] = PROJ_DATA_PATH;
+				proj_context_set_search_paths(projCtx, 1, projDataPaths);
+#endif
+			}
+
 			PJ* reproj = proj_create_crs_to_crs(projCtx, sourceCRS, destCRS, nullptr);
 			return {reproj, projCtx};
 		}
