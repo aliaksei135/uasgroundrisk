@@ -11,6 +11,7 @@
 #include <proj.h>
 #include <tuple>
 #include <string>
+#include <cstdlib>
 
 /**
  * None of these are templated to geos::geom::Geometry types as each geometry
@@ -34,7 +35,7 @@ namespace ugr
 		                                                   const char* destCRS = "EPSG:3395")
 		{
 			PJ_CONTEXT* projCtx = proj_context_create();
-			proj_context_set_enable_network(projCtx, 1);
+			// proj_context_set_enable_network(projCtx, 1);
 			// Check if the env var is set and preferentially use it
 			const auto* envDataDir = std::getenv("PROJ_LIB");
 			if (envDataDir == nullptr)
