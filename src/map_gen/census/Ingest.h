@@ -2,6 +2,7 @@
 #define UGR_CENSUS_INGEST_H
 #include <algorithm>
 #include <string>
+#include <cstdlib>
 #include <vector>
 #include <map>
 #include <geos_c.h>
@@ -20,95 +21,108 @@ template <typename Key, typename Value>
 class DataIngester
 {
 public:
-    DataIngester(GEOSContextHandle_t& geosCtx): geosCtx(geosCtx)
-    {
-    };
-    virtual std::map<Key, Value> readFile(const std::string& file) = 0;
+	DataIngester(GEOSContextHandle_t& geosCtx): geosCtx(geosCtx)
+	{
+	};
+	virtual std::map<Key, Value> readFile(const std::string& file) = 0;
 protected:
-    GEOSContextHandle_t& geosCtx;
+	GEOSContextHandle_t& geosCtx;
 };
 
 class CensusGeometryIngest final : public DataIngester<std::string, GEOSGeometry*>
 {
 public:
-    explicit CensusGeometryIngest(GEOSContextHandle_t& geosCtx)
-        : DataIngester<std::string, GEOSGeom_t*>(geosCtx)
-    {
-    }
+	explicit CensusGeometryIngest(GEOSContextHandle_t& geosCtx)
+		: DataIngester<std::string, GEOSGeom_t*>(geosCtx)
+	{
+	}
 
-    std::map<std::string, GEOSGeometry*> readFile(const std::string& file) override;
+	std::map<std::string, GEOSGeometry*> readFile(const std::string& file) override;
 };
 
 class CensusDensityIngest final : public DataIngester<std::string, double>
 {
 public:
-    explicit CensusDensityIngest(GEOSContextHandle_t& geosCtx)
-        : DataIngester<std::string, double>(geosCtx)
-    {
-    }
+	explicit CensusDensityIngest(GEOSContextHandle_t& geosCtx)
+		: DataIngester<std::string, double>(geosCtx)
+	{
+	}
 
-    std::map<std::string, double> readFile(const std::string& file) override;
+	std::map<std::string, double> readFile(const std::string& file) override;
 };
 
 class CensusNHAPSIngest final
 {
 public:
-    static const std::vector<std::vector<int>> NHAPS_GROUPING;
+	static const std::vector<std::vector<int>> NHAPS_GROUPING;
 
-    static const std::vector<std::vector<ugr::mapping::osm::OSMTag>> NHAPS_OSM_MAPPING;
+	static const std::vector<std::vector<ugr::mapping::osm::OSMTag>> NHAPS_OSM_MAPPING;
 
-    std::vector<std::vector<float>> readFile(const std::string& file);
+	std::vector<std::vector<float>> readFile(const std::string& file);
 };
 
 
 class CensusIngest
 {
 public:
-    explicit CensusIngest(GEOSContextHandle_t& geosCtx)
-        : geosCtx(geosCtx)
-    {
-    }
+	explicit CensusIngest(GEOSContextHandle_t& geosCtx)
+		: geosCtx(geosCtx)
+	{
+	}
 
-    template <typename Scalar>
-    std::map<GEOSGeometry*, Scalar> makePopulationDensityMap()
-    {
-        CensusGeometryIngest geomIngest(geosCtx);
-        auto geoms = geomIngest.readFile(UGR_DATA_DIR "/Wards_(December_2011)_Boundaries_EW_BGC.shp");
+	template <typename Scalar>
+	std::map<GEOSGeometry*, Scalar> makePopulationDensityMap()
+	{
+		CensusGeometryIngest geomIngest(geosCtx);
 
-        const auto projObjs = ugr::util::makeProjObject("EPSG:27700", "EPSG:4326");
-        PJ* reproj = std::get<0>(projObjs);
-        PJ_CONTEXT* projCtx = std::get<1>(projObjs);
+		// Check if the env var is set and preferentially use it
+		const auto* envDataDir = std::getenv("UGR_DATA_DIR");
+		std::string dataDir;
+		if (envDataDir == nullptr)
+		{
+			dataDir = UGR_DATA_DIR;
+		}
+		else
+		{
+			dataDir = std::string(envDataDir);
+		}
 
-        std::for_each(geoms.begin(), geoms.end(), [reproj, this](std::pair<const std::string, GEOSGeometry*>& p)
-        {
-            auto* rg = ugr::util::reprojectPolygon_r(reproj, p.second, geosCtx);
-            auto* irg = ugr::util::swapCoordOrder_r(rg, geosCtx);
-            GEOSGeom_destroy_r(geosCtx, rg);
-            p.second = irg;
-        });
+		auto geoms = geomIngest.readFile(dataDir + "/Wards_(December_2011)_Boundaries_EW_BGC.shp");
 
-        proj_context_destroy(projCtx);
+		const auto projObjs = ugr::util::makeProjObject("EPSG:27700", "EPSG:4326");
+		PJ* reproj = std::get<0>(projObjs);
+		PJ_CONTEXT* projCtx = std::get<1>(projObjs);
 
-        CensusDensityIngest densityIngest(geosCtx);
-        const auto densityMap = densityIngest.readFile(UGR_DATA_DIR "/density.csv");
+		std::for_each(geoms.begin(), geoms.end(), [reproj, this](std::pair<const std::string, GEOSGeometry*>& p)
+		{
+			auto* rg = ugr::util::reprojectPolygon_r(reproj, p.second, geosCtx);
+			auto* irg = ugr::util::swapCoordOrder_r(rg, geosCtx);
+			GEOSGeom_destroy_r(geosCtx, rg);
+			p.second = irg;
+		});
 
-        std::map<GEOSGeometry*, Scalar> mergedMap;
-        for (const std::pair<std::string, GEOSGeometry*> p : geoms)
-        {
-            if(p.second == nullptr) continue;
-            if (densityMap.find(p.first) != densityMap.end())
-            {
-                if (p.second != nullptr)
-                    mergedMap.emplace(p.second, static_cast<Scalar>(densityMap.at(p.first)));
-            }
-        }
+		proj_context_destroy(projCtx);
 
-        return mergedMap;
-    }
+		CensusDensityIngest densityIngest(geosCtx);
+		const auto densityMap = densityIngest.readFile(dataDir + "/density.csv");
 
-    std::vector<std::vector<float>> makeNHAPSProportions();
+		std::map<GEOSGeometry*, Scalar> mergedMap;
+		for (const std::pair<std::string, GEOSGeometry*> p : geoms)
+		{
+			if (p.second == nullptr) continue;
+			if (densityMap.find(p.first) != densityMap.end())
+			{
+				if (p.second != nullptr)
+					mergedMap.emplace(p.second, static_cast<Scalar>(densityMap.at(p.first)));
+			}
+		}
+
+		return mergedMap;
+	}
+
+	std::vector<std::vector<float>> makeNHAPSProportions();
 protected:
-    GEOSContextHandle_t& geosCtx;
+	GEOSContextHandle_t& geosCtx;
 };
 
 #endif // UGR_CENSUS_INGEST_H
