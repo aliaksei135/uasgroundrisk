@@ -253,6 +253,16 @@ if(UGR_BUILD_TESTS OR BUILD_TESTING)
 endif ()
 
 #############################################################
+# Install
+#############################################################
+include(GNUInstallDirs)
+install(TARGETS ${PROJECT_NAME}
+		RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+
+
+#############################################################
 # Docs
 #############################################################
 
