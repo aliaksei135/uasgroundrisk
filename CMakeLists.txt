@@ -88,11 +88,8 @@ if (MSVC)
 	set(BUILD_SHARED_LIBS OFF)
 endif ()
 
-if (${BUILD_SHARED_LIBS})
-	add_library(${PROJECT_NAME} SHARED ${UGR_SOURCES})
-else ()
-	add_library(${PROJECT_NAME} STATIC ${UGR_SOURCES})
-endif ()
+add_library(${PROJECT_NAME} ${UGR_SOURCES})
+
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 add_library(${PROJECT_NAME}::ugr ALIAS ${PROJECT_NAME})
 
