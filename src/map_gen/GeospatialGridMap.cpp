@@ -15,7 +15,6 @@ ugr::mapping::GeospatialGridMap::GeospatialGridMap(
     const std::array<float, 4> bounds, const float resolution, const char* worldSrs,
     const char* projectionSrs) : bounds(bounds), xyRes(resolution)
 {
-    setBounds(bounds, resolution);
     projCtx = proj_context_create();
 #ifdef PROJ_DATA_PATH
     const char* projDataPaths[1];
@@ -23,6 +22,7 @@ ugr::mapping::GeospatialGridMap::GeospatialGridMap(
     proj_context_set_search_paths(projCtx, 1, projDataPaths);
 #endif
     reproj = proj_create_crs_to_crs(projCtx, worldSrs, projectionSrs, nullptr);
+    setBounds(bounds, resolution);
 }
 
 ugr::mapping::GeospatialGridMap::~GeospatialGridMap()
@@ -99,10 +99,10 @@ void ugr::mapping::GeospatialGridMap::setBounds(
     const std::array<float, 4> boundsArr, const float resolution)
 {
     // This reprojects EPSG:4326 to EPSG:3395 by default
-    const auto swProjPoint = util::reprojectCoordinate(boundsArr[0], boundsArr[1]);
+    const auto swProjPoint = util::reprojectCoordinate_r(reproj, boundsArr[0], boundsArr[1]);
     this->projectionOrigin = {swProjPoint.enu.e, swProjPoint.enu.n, 0};
     //TODO: Should an altitude be set in the projection origin?
-    const auto neProjPoint = util::reprojectCoordinate(boundsArr[2], boundsArr[3]);
+    const auto neProjPoint = util::reprojectCoordinate_r(reproj, boundsArr[2], boundsArr[3]);
     const auto dx = std::abs(swProjPoint.enu.e - neProjPoint.enu.e);
     const auto dy = std::abs(swProjPoint.enu.n - neProjPoint.enu.n);
     const int xLength = static_cast<int>(dx / static_cast<float>(resolution));

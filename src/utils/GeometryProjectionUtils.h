@@ -316,6 +316,20 @@ namespace ugr
 			proj_context_destroy(projCtx);
 			return out;
 		}
+
+                /**
+		 * A reentrant version of above
+                 */
+                static PJ_COORD reprojectCoordinate_r(PJ* reproj,
+                                                    const double coordX, const double coordY,
+                                                    const double coordZ = 0, const double coordT = 0,
+                                                    const char* sourceCRS = "EPSG:4326",
+                                                    const char* destCRS = "EPSG:3395")
+                {
+                  const PJ_COORD out =
+                      proj_trans(reproj, PJ_FWD, proj_coord(coordX, coordY, coordZ, coordT));
+                  return out;
+                }
 	} // namespace util
 } // namespace ugr
 
