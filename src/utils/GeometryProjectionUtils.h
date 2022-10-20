@@ -12,14 +12,15 @@
 #include <tuple>
 #include <string>
 #include <cstdlib>
+#include <iostream>
 
-/**
- * None of these are templated to geos::geom::Geometry types as each geometry
- * type has a different composition and needs special handling to reconstruct to
- * the same type. The most basic shared concept is a CoordinateSequence and all
- * the other geometry type handlers call this is different combinations and
- * reconstruct the results.
- */
+ /**
+  * None of these are templated to geos::geom::Geometry types as each geometry
+  * type has a different composition and needs special handling to reconstruct to
+  * the same type. The most basic shared concept is a CoordinateSequence and all
+  * the other geometry type handlers call this is different combinations and
+  * reconstruct the results.
+  */
 
 namespace ugr
 {
@@ -32,23 +33,23 @@ namespace ugr
 		 * \return a tuple of {projection object, context} pointers
 		 */
 		static std::tuple<PJ*, PJ_CONTEXT*> makeProjObject(const char* sourceCRS = "EPSG:4326",
-		                                                   const char* destCRS = "EPSG:3395")
+			const char* destCRS = "EPSG:3395")
 		{
 			PJ_CONTEXT* projCtx = proj_context_create();
-			// proj_context_set_enable_network(projCtx, 1);
-			// Check if the env var is set and preferentially use it
+			std::cout << "uasgroundrisk: Creating PROJ obj...\n";
 			const auto* envDataDir = std::getenv("PROJ_LIB");
 			if (envDataDir == nullptr)
 			{
+				std::cout << "uasgroundrisk: PROJ_LIB not set. Falling back";
 #ifdef PROJ_DATA_PATH
 				const char* projDataPaths[1];
 				projDataPaths[0] = PROJ_DATA_PATH;
+				std::cout << "uasgroundrisk: Using Internally set PROJ data dir: " << projDataPaths[0] << "\n";
 				proj_context_set_search_paths(projCtx, 1, projDataPaths);
 #endif
 			}
-
 			PJ* reproj = proj_create_crs_to_crs(projCtx, sourceCRS, destCRS, nullptr);
-			return {reproj, projCtx};
+			return { reproj, projCtx };
 		}
 
 		static GEOSCoordSequence* swapCoordOrder(const GEOSCoordSequence* inCS)
@@ -141,7 +142,7 @@ namespace ugr
 		 * @return the reprojected coordinate sequence
 		 */
 		static GEOSCoordSequence* reprojectCoordinates(PJ* reprojector,
-		                                               const GEOSCoordSequence* in)
+			const GEOSCoordSequence* in)
 		{
 			unsigned int nCoords, nDims;
 			GEOSCoordSeq_getSize(in, &nCoords);
@@ -183,8 +184,8 @@ namespace ugr
 		 * \brief A reentrant version of above
 		 */
 		static GEOSCoordSequence* reprojectCoordinates_r(PJ* reprojector,
-		                                                 const GEOSCoordSequence* in,
-		                                                 const GEOSContextHandle_t& geosCtx)
+			const GEOSCoordSequence* in,
+			const GEOSContextHandle_t& geosCtx)
 		{
 			unsigned int nCoords, nDims;
 			GEOSCoordSeq_getSize_r(geosCtx, in, &nCoords);
@@ -258,14 +259,14 @@ namespace ugr
 		 * \brief A reentrant version of above
 		 */
 		static GEOSGeometry* reprojectPolygon_r(PJ* reprojector, const GEOSGeometry* in,
-		                                        const GEOSContextHandle_t& geosCtx)
+			const GEOSContextHandle_t& geosCtx)
 		{
 			// Reproject outer ring/shell
 			const GEOSGeometry* exteriorRing = GEOSGetExteriorRing_r(geosCtx, in);
 			const auto n = GEOSGetNumCoordinates_r(geosCtx, exteriorRing);
 			const auto reprojShellCoords = reprojectCoordinates_r(reprojector,
-			                                                      GEOSGeom_getCoordSeq_r(geosCtx, exteriorRing),
-			                                                      geosCtx);
+				GEOSGeom_getCoordSeq_r(geosCtx, exteriorRing),
+				geosCtx);
 			auto* shell = GEOSGeom_createLinearRing_r(geosCtx, reprojShellCoords);
 
 			// Reproject each of the inner rings
@@ -299,16 +300,23 @@ namespace ugr
 		 * @return the reprojected coordinate
 		 */
 		static PJ_COORD reprojectCoordinate(const double coordX, const double coordY,
-		                                    const double coordZ = 0, const double coordT = 0,
-		                                    const char* sourceCRS = "EPSG:4326",
-		                                    const char* destCRS = "EPSG:3395")
+			const double coordZ = 0, const double coordT = 0,
+			const char* sourceCRS = "EPSG:4326",
+			const char* destCRS = "EPSG:3395")
 		{
-			auto* projCtx = proj_context_create();
+			PJ_CONTEXT* projCtx = proj_context_create();
+			std::cout << "uasgroundrisk: Creating PROJ obj...\n";
+			const auto* envDataDir = std::getenv("PROJ_LIB");
+			if (envDataDir == nullptr)
+			{
+				std::cout << "uasgroundrisk: PROJ_LIB not set. Falling back";
 #ifdef PROJ_DATA_PATH
-			const char* projDataPaths[1];
-			projDataPaths[0] = PROJ_DATA_PATH;
-			proj_context_set_search_paths(projCtx, 1, projDataPaths);
+				const char* projDataPaths[1];
+				projDataPaths[0] = PROJ_DATA_PATH;
+				std::cout << "uasgroundrisk: Using Internally set PROJ data dir: " << projDataPaths[0] << "\n";
+				proj_context_set_search_paths(projCtx, 1, projDataPaths);
 #endif
+			}
 			auto* reproj = proj_create_crs_to_crs(projCtx, sourceCRS, destCRS, nullptr);
 			const PJ_COORD out =
 				proj_trans(reproj, PJ_FWD, proj_coord(coordX, coordY, coordZ, coordT));
@@ -317,19 +325,19 @@ namespace ugr
 			return out;
 		}
 
-                /**
+		/**
 		 * A reentrant version of above
-                 */
-                static PJ_COORD reprojectCoordinate_r(PJ* reproj,
-                                                    const double coordX, const double coordY,
-                                                    const double coordZ = 0, const double coordT = 0,
-                                                    const char* sourceCRS = "EPSG:4326",
-                                                    const char* destCRS = "EPSG:3395")
-                {
-                  const PJ_COORD out =
-                      proj_trans(reproj, PJ_FWD, proj_coord(coordX, coordY, coordZ, coordT));
-                  return out;
-                }
+				 */
+		static PJ_COORD reprojectCoordinate_r(PJ* reproj,
+			const double coordX, const double coordY,
+			const double coordZ = 0, const double coordT = 0,
+			const char* sourceCRS = "EPSG:4326",
+			const char* destCRS = "EPSG:3395")
+		{
+			const PJ_COORD out =
+				proj_trans(reproj, PJ_FWD, proj_coord(coordX, coordY, coordZ, coordT));
+			return out;
+		}
 	} // namespace util
 } // namespace ugr
 
