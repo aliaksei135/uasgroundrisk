@@ -12,9 +12,10 @@
 #include "../utils/GeometryProjectionUtils.h"
 #include <osmium/osm/way.hpp>
 #include <utility>
+#include "spdlog/spdlog.h"
 
 #include <geos_c.h>
-#include <iostream>
+
 
 #include "osmium/osm/area.hpp"
 #include "osmium/osm/relation.hpp"
@@ -29,6 +30,7 @@ GridMapOSMHandler::GridMapOSMHandler(
     : gridMap(gridMap), tagLayerMap(std::move(tagLayerMap)),
       densityTagMap(std::move(densityTagMap)), gridCRS(std::move(gridCRS))
 {
+    spdlog::info("Constructing gridmap OSM handler");
     std::tie(reproj, projCtx) = util::makeProjObject();
 
     std::map<GEOSGeometry*, float> reprojectedPopulationGeomMap;

@@ -1,4 +1,5 @@
 #include "uasgroundrisk/gridmap/GridMap.h"
+#include "spdlog/spdlog.h"
 
 using namespace ugr::gridmap;
 
@@ -10,6 +11,7 @@ Size GridMap::getSize() const
 
 void GridMap::setGeometry(const int sizeX, const int sizeY)
 {
+    spdlog::info("Setting Gridmap geometry");
     this->sizeX = sizeX;
     this->sizeY = sizeY;
     geometrySet = true;

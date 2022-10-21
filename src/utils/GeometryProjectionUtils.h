@@ -12,7 +12,7 @@
 #include <tuple>
 #include <string>
 #include <cstdlib>
-#include <iostream>
+#include "spdlog/spdlog.h"
 
  /**
   * None of these are templated to geos::geom::Geometry types as each geometry
@@ -36,15 +36,15 @@ namespace ugr
 			const char* destCRS = "EPSG:3395")
 		{
 			PJ_CONTEXT* projCtx = proj_context_create();
-			std::cout << "uasgroundrisk: Creating PROJ obj...\n";
+			spdlog::info("uasgroundrisk: Creating PROJ obj...");
 			const auto* envDataDir = std::getenv("PROJ_LIB");
 			if (envDataDir == nullptr)
 			{
-				std::cout << "uasgroundrisk: PROJ_LIB not set. Falling back";
+				spdlog::info("uasgroundrisk: PROJ_LIB not set. Falling back");
 #ifdef PROJ_DATA_PATH
 				const char* projDataPaths[1];
 				projDataPaths[0] = PROJ_DATA_PATH;
-				std::cout << "uasgroundrisk: Using Internally set PROJ data dir: " << projDataPaths[0] << "\n";
+				spdlog::info("uasgroundrisk: Using Internally set PROJ data dir: {0}", projDataPaths[0]);
 				proj_context_set_search_paths(projCtx, 1, projDataPaths);
 #endif
 			}
@@ -304,20 +304,9 @@ namespace ugr
 			const char* sourceCRS = "EPSG:4326",
 			const char* destCRS = "EPSG:3395")
 		{
-			PJ_CONTEXT* projCtx = proj_context_create();
-			std::cout << "uasgroundrisk: Creating PROJ obj...\n";
-			const auto* envDataDir = std::getenv("PROJ_LIB");
-			if (envDataDir == nullptr)
-			{
-				std::cout << "uasgroundrisk: PROJ_LIB not set. Falling back";
-#ifdef PROJ_DATA_PATH
-				const char* projDataPaths[1];
-				projDataPaths[0] = PROJ_DATA_PATH;
-				std::cout << "uasgroundrisk: Using Internally set PROJ data dir: " << projDataPaths[0] << "\n";
-				proj_context_set_search_paths(projCtx, 1, projDataPaths);
-#endif
-			}
-			auto* reproj = proj_create_crs_to_crs(projCtx, sourceCRS, destCRS, nullptr);
+			auto projObjs = makeProjObject(sourceCRS, destCRS);
+			auto* reproj = std::get<0>(projObjs);
+			auto* projCtx = std::get<1>(projObjs);
 			const PJ_COORD out =
 				proj_trans(reproj, PJ_FWD, proj_coord(coordX, coordY, coordZ, coordT));
 			proj_destroy(reproj);

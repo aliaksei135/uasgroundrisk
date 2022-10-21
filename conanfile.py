@@ -30,6 +30,7 @@ class ugrConan(ConanFile):
         self.requires("bzip2/1.0.8")
         self.requires("fast-cpp-csv-parser/cci.20200830")
         self.requires("rapidjson/cci.20211112")
+        self.requires("spdlog/[>=1.10.0]")
 
     
     def imports(self):

@@ -208,6 +208,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC fast-cpp-csv-parser::fast-cpp-csv-p
 find_package(RapidJSON CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC RapidJSON::RapidJSON)
 
+find_package(spdlog CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog)
+
 find_package(OpenMP REQUIRED)
 target_link_directories(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
 if(OPENMP_FOUND)

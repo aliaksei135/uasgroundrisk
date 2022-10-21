@@ -7,6 +7,8 @@
 #include "uasgroundrisk/map_gen/GeospatialGridMap.h"
 
 #include "../utils/GeometryProjectionUtils.h"
+#include <tuple>
+#include <spdlog/spdlog.h>
 
 using namespace ugr::gridmap;
 
@@ -15,28 +17,14 @@ ugr::mapping::GeospatialGridMap::GeospatialGridMap(
     const std::array<float, 4> bounds, const float resolution, const char* worldSrs,
     const char* projectionSrs) : bounds(bounds), xyRes(resolution)
 {
-    projCtx = proj_context_create();
-#ifdef PROJ_DATA_PATH
-    const char* projDataPaths[1];
-    projDataPaths[0] = PROJ_DATA_PATH;
-    proj_context_set_search_paths(projCtx, 1, projDataPaths);
-#endif
-    reproj = proj_create_crs_to_crs(projCtx, worldSrs, projectionSrs, nullptr);
+    spdlog::info("Constructing Geospatial gridmap");
+    std::tie(reproj, projCtx) = util::makeProjObject(worldSrs, projectionSrs);
     setBounds(bounds, resolution);
 }
 
 ugr::mapping::GeospatialGridMap::~GeospatialGridMap()
 {
-    // if (reproj != nullptr)
-    // {
-    // 	proj_destroy(reproj);
-    // 	reproj = nullptr;
-    // }
-    // if (projCtx != nullptr)
-    // {
-    // 	proj_context_destroy(projCtx);
-    // 	projCtx = nullptr;
-    // }
+    spdlog::info("Destructing Geospatial gridmap");
     proj_cleanup();
 }
 
@@ -98,6 +86,7 @@ void ugr::mapping::GeospatialGridMap::eval()
 void ugr::mapping::GeospatialGridMap::setBounds(
     const std::array<float, 4> boundsArr, const float resolution)
 {
+    spdlog::info("Setting Geospatial gridmap bounds");
     // This reprojects EPSG:4326 to EPSG:3395 by default
     const auto swProjPoint = util::reprojectCoordinate_r(reproj, boundsArr[0], boundsArr[1]);
     this->projectionOrigin = {swProjPoint.enu.e, swProjPoint.enu.n, 0};
