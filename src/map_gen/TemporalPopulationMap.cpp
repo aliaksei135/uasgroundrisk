@@ -198,6 +198,7 @@ void ugr::mapping::TemporalPopulationMap::fillGridMapPoly(const std::string& lay
 	const GridMapDataType& geomDensity)
 {
 	const auto poly = util::asGeoPolygon_r(geom, geosCtx);
+	if (poly.size() < 3) return;
 	for (PolygonIterator iter(*this, poly); !iter.isPastEnd();
 		++iter)
 	{
@@ -239,6 +240,7 @@ void ugr::mapping::TemporalPopulationMap::eval()
 							break;
 						}
 					}
+					if (geom == nullptr || !GEOSisValid_r(geosCtx, geom)) continue;
 				}
 			}
 			// const auto t = GEOSGeomTypeId_r(geosCtx, geom);
@@ -248,7 +250,7 @@ void ugr::mapping::TemporalPopulationMap::eval()
 			for (int i = 0; i < nGeom; ++i)
 			{
 				const auto* g = GEOSGetGeometryN_r(geosCtx, geom, i);
-				if (GEOSisValid_r(geosCtx, g)) {
+				if (g != nullptr && GEOSisValid_r(geosCtx, g)) {
 					fillGridMapPoly(layerName, g, geomDensity);
 				}
 				// }
