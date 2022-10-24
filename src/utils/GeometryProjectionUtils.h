@@ -235,6 +235,7 @@ namespace ugr
 			// Reproject outer ring/shell
 
 			const GEOSGeometry* exteriorRing = GEOSGetExteriorRing(in);
+			if (exteriorRing == nullptr) return nullptr;
 			const auto reprojShellCoords = reprojectCoordinates(reprojector, GEOSGeom_getCoordSeq(exteriorRing));
 			auto* shell = GEOSGeom_createLinearRing(reprojShellCoords);
 
@@ -263,6 +264,7 @@ namespace ugr
 		{
 			// Reproject outer ring/shell
 			const GEOSGeometry* exteriorRing = GEOSGetExteriorRing_r(geosCtx, in);
+			if (exteriorRing == nullptr) return nullptr;
 			const auto n = GEOSGetNumCoordinates_r(geosCtx, exteriorRing);
 			const auto reprojShellCoords = reprojectCoordinates_r(reprojector,
 				GEOSGeom_getCoordSeq_r(geosCtx, exteriorRing),
