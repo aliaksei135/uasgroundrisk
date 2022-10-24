@@ -273,3 +273,4 @@ void ugr::mapping::TemporalPopulationMap::eval()
 		}
 		isEvaluated = true;
 	}
+}
