@@ -248,25 +248,26 @@ void ugr::mapping::TemporalPopulationMap::eval()
 			for (int i = 0; i < nGeom; ++i)
 			{
 				const auto* g = GEOSGetGeometryN_r(geosCtx, geom, i);
-				fillGridMapPoly(layerName, g, geomDensity);
+				if (GEOSisValid_r(geosCtx, g)) {
+					fillGridMapPoly(layerName, g, geomDensity);
+				}
+				// }
+				// else
+				// {
+				//     fillGridMapPoly(layerName, geom, geomDensity);
+				// }
 			}
-			// }
-			// else
-			// {
-			//     fillGridMapPoly(layerName, geom, geomDensity);
-			// }
 		}
-	}
 
-	//Combine layers to pop density;
-	add("Population Density", 0);
-	for (const auto& layerName : getLayers())
-	{
-		// GridMap coordinate frame convention has the y axis increasing to the
-		// left, which flips everything around the x (vertical) axis. Here we flip
-		// it back.
-		get("Population Density") =
-			get("Population Density").cwiseMax(get(layerName));
+		//Combine layers to pop density;
+		add("Population Density", 0);
+		for (const auto& layerName : getLayers())
+		{
+			// GridMap coordinate frame convention has the y axis increasing to the
+			// left, which flips everything around the x (vertical) axis. Here we flip
+			// it back.
+			get("Population Density") =
+				get("Population Density").cwiseMax(get(layerName));
+		}
+		isEvaluated = true;
 	}
-	isEvaluated = true;
-}
