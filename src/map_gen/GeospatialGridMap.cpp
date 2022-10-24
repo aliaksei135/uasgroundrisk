@@ -25,7 +25,7 @@ ugr::mapping::GeospatialGridMap::GeospatialGridMap(
 ugr::mapping::GeospatialGridMap::~GeospatialGridMap()
 {
     spdlog::info("Destructing Geospatial gridmap");
-    proj_cleanup();
+    //proj_cleanup();
 }
 
 GridMapDataType ugr::mapping::GeospatialGridMap::atPosition(const std::string& layerName, const double lon,
