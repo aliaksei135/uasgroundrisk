@@ -19,6 +19,8 @@
 #include "uasgroundrisk/risk_analysis/aircraft/AircraftModel.h"
 #include "uasgroundrisk/risk_analysis/obstacles/ObstacleMap.h"
 
+#include <spdlog/spdlog.h>
+
 
 using namespace ugr::gridmap;
 
@@ -33,6 +35,8 @@ ugr::risk::RiskMap::RiskMap(
       weather(weather),
       generator(std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()))
 {
+    spdlog::info("Constructing Riskmap");
+
     // Evaluate population density map
     populationMap.eval();
     // Check if building height layer already exists
@@ -99,6 +103,7 @@ GridMap& ugr::risk::RiskMap::generateMap(
 
 void ugr::risk::RiskMap::eval()
 {
+    spdlog::info("Evaluating Riskmap");
     generateStrikeMap();
     generateFatalityMap();
 }

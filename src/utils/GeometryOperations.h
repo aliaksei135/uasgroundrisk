@@ -315,7 +315,8 @@ namespace ugr
 		{
 			for (GEOSGeometry* geom : container)
 			{
-				GEOSGeom_destroy(geom);
+				if (geom != nullptr)
+					GEOSGeom_destroy(geom);
 			}
 		}
 

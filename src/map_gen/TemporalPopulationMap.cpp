@@ -63,8 +63,12 @@ ugr::mapping::TemporalPopulationMap::TemporalPopulationMap(const std::array<floa
 
 ugr::mapping::TemporalPopulationMap::~TemporalPopulationMap()
 {
+	spdlog::info("Destructing Temporal Population gridmap");
+	spdlog::info("Destroying existing GEOS geometries");
 	util::destroyGEOSGeoms(boundedGeometries);
-	finishGEOS_r(geosCtx);
+	spdlog::info("Destroying GEOS context");
+	if (geosCtx != nullptr)
+		finishGEOS_r(geosCtx);
 }
 
 void ugr::mapping::TemporalPopulationMap::setHourOfDay(const short hourOfDay)
