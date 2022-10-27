@@ -25,7 +25,7 @@ class ugrConan(ConanFile):
         self.requires("shapelib/[>=1.5.0]")
         self.requires("proj/[>=8.2.1]")
         self.requires("libcurl/[>=7.83.1]")
-        self.requires("zlib/[>=1.2.13]")
+        self.requires("zlib/1.2.13")
         self.requires("cpr/[>=1.6.2]")
         self.requires("expat/2.4.1")
         self.requires("bzip2/1.0.8")
