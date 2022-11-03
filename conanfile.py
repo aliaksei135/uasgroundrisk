@@ -13,8 +13,6 @@ class ugrConan(ConanFile):
 
     exports_sources = "CMakeLists.txt", "src/*"
     
-    def build_requirements(self):
-        self.build_requires("doxygen/[>=1.9.1]")
     
     def requirements(self):
         self.requires("eigen/[>3.3.9]")
