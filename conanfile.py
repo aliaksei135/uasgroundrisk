@@ -42,9 +42,7 @@ class ugrConan(ConanFile):
         cmake_layout(self)
 
 
-    def generate(self):
-        self.deps_cpp_info["doxygen"].set_property("skip_deps_file", True)
-        
+    def generate(self):        
         tc = CMakeToolchain(self)
         tc.variables["BUILD_DOC"] = "ON"
         tc.variables["CMAKE_FIND_PACKAGE_PREFER_CONFIG"] = "ON"
