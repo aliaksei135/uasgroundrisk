@@ -268,7 +268,7 @@ TEST_F(RiskMapTests, NilWindPointImpactMapTest)
     std::vector<GridMapDataType> impactAngles, impactVelocities, buildingImpactProbs;
     std::vector<ugr::gridmap::Matrix, aligned_allocator<ugr::gridmap::Matrix>> impactPDFs;
     ugr::gridmap::Index idx{20, 20};
-    riskMap.makePointImpactMap(idx, impactPDFs, impactAngles, impactVelocities, buildingImpactProbs);
+    riskMap.makePointImpactMap(idx, impactPDFs, impactAngles, impactVelocities);
 
 
     // These are added in known order, so we can skip a step checking which model is which
@@ -334,7 +334,7 @@ TEST_F(RiskMapTests, WindPointImpactMapTest)
     std::vector<GridMapDataType> impactAngles, impactVelocities, buildingImpactProbs;
     std::vector<ugr::gridmap::Matrix, aligned_allocator<ugr::gridmap::Matrix>> impactPDFs;
     ugr::gridmap::Index idx{20, 20};
-    riskMap.makePointImpactMap(idx, impactPDFs, impactAngles, impactVelocities, buildingImpactProbs);
+    riskMap.makePointImpactMap(idx, impactPDFs, impactAngles, impactVelocities);
 
     // These are added in known order, so we can skip a step checking which model is which
     const auto& glideImpact = impactPDFs[0];

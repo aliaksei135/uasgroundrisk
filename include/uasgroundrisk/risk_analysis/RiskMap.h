@@ -54,11 +54,11 @@ namespace ugr
              */
             GridMap& generateMap(const std::vector<RiskType>& risksToGenerate);
 
-            void makePointImpactMap(const Index& index,
-                                    std::vector<Matrix, aligned_allocator<Matrix>>& impactPDFs,
-                                    std::vector<GridMapDataType>& impactAngles,
-                                    std::vector<GridMapDataType>& impactVelocities,
-                                    std::vector<GridMapDataType>& buildingImpactProbs);
+            void makePointImpactMap(
+                const Index &index,
+                std::vector<Matrix, aligned_allocator<Matrix>> &impactPDFs,
+                std::vector<GridMapDataType> &impactAngles,
+                std::vector<GridMapDataType> &impactVelocities);
 
             void eval() override;
 
