@@ -124,7 +124,7 @@ void ugr::risk::RiskMap::initLayer(const std::string &layerName) {
 
 void ugr::risk::RiskMap::generateStrikeMap() {
   // Iterate through all cells in the grid map
-//#pragma omp parallel for collapse(2) schedule(dynamic)
+#pragma omp parallel for collapse(2) schedule(dynamic)
   for (int x = 0; x < sizeX; ++x) {
     for (int y = 0; y < sizeY; ++y) {
       // TODO: package this as a CUDA function
@@ -157,7 +157,7 @@ void ugr::risk::RiskMap::generateFatalityMap() {
           1e6, 100, vel2ke(impactVelocities, uasMass), shelterFactorMap));
     }
 
-//#pragma omp critical
+#pragma omp critical
     get(descentName + " Fatality Risk") = fatalityRisk;
   }
 
@@ -193,7 +193,7 @@ void ugr::risk::RiskMap::addPointStrikeMap(const Index &index) {
     const auto descentName = aircraftModel.descents[i]->getName();
 
     // Synchronise writing to the common gridmap
-//#pragma omp critical
+#pragma omp critical
     {
       // As we are only generating the strike risk from a single point,
       // this is summed across the entire strike risk map for that point
