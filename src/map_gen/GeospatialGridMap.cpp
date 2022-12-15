@@ -60,7 +60,7 @@ ugr::gridmap::Index ugr::mapping::GeospatialGridMap::world2Local(const double lo
 {
 	const auto reprojCoord = proj_trans(reproj, PJ_FWD, { lat, lon });
 	return {
-		((reprojCoord.enu.n - projectionOrigin[1]) / xyRes), (reprojCoord.enu.e - projectionOrigin[0]) / xyRes
+		(reprojCoord.enu.e - projectionOrigin[0]) / xyRes, (reprojCoord.enu.n - projectionOrigin[1]) / xyRes
 	};
 }
 
@@ -98,5 +98,5 @@ void ugr::mapping::GeospatialGridMap::setBounds(
 
 	// x,y are swapped here to match the expected orientation of the matrix if plotted.
 	// Eigen uses row,column indexing, which would map to lat, lon not the other way around
-	setGeometry(yLength, xLength);
+	setGeometry(xLength, yLength);
 }
