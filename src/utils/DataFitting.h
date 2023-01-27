@@ -18,6 +18,8 @@
 #include <numeric>
 #include <cfenv>
 
+#define SQRT2PI 2.50662827463
+
 namespace ugr
 {
 	namespace util
@@ -52,13 +54,22 @@ namespace ugr
 			//TODO vectorise this, using something like colwise()?
 			Eigen::Vector<Type, Eigen::Dynamic> out;
 			out.resize(pos.cols());
-			const double sqrt2pi = std::sqrt(2 * M_PI);
-			const double norm = std::pow(sqrt2pi, -NDimensions) * std::pow(std::abs(cov.determinant()), -0.5);
+
+			const double norm = std::pow(SQRT2PI, -NDimensions) * std::pow(std::abs(cov.determinant()), -0.5);
 
 			for (int i = 0; i < pos.cols(); ++i)
 			{
 				const double quadform = (pos.col(i) - means).transpose() * cov.inverse() * (pos.col(i) - means);
-				out(i) = norm * std::exp(-0.5 * quadform);
+				const double halfNegQuadform = -0.5 * quadform;
+				// exp(-103) is already ~1e-45. Smaller than this cannot be represented as a float
+				if (halfNegQuadform < -102)
+				{
+					out(i) = 0;
+				}
+				else
+				{
+					out(i) = norm * std::exp(halfNegQuadform);
+				}
 			}
 			return std::move(out);
 		}
