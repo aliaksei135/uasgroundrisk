@@ -119,7 +119,7 @@ void ugr::risk::RiskMap::initRiskMapLayers()
 
 	// Setting shelter factor to 0 results in infinite fatality risk, so we set a
 	// small value instead
-	add("Shelter Factor", 0.2);
+	add("Shelter Factor", 0.3);
 }
 
 void ugr::risk::RiskMap::initLayer(const std::string& layerName)
@@ -163,15 +163,8 @@ void ugr::risk::RiskMap::generateFatalityMap()
 
 
 		Matrix fatalityRisk(sizeX, sizeY);
-		if (strikeRiskMap.sum() < 1e-25)
-		{
-			fatalityRisk.setZero();
-		}
-		else
-		{
-			fatalityRisk = strikeRiskMap.cwiseProduct(fatalityProbability(
-				1e6, 100, vel2ke(impactVelocities, uasMass), shelterFactorMap));
-		}
+		fatalityRisk = strikeRiskMap.cwiseProduct(fatalityProbability(
+			1e6, 100, vel2ke(impactVelocities, uasMass), shelterFactorMap));
 
 #pragma omp critical
 		get(descentName + " Fatality Risk") = fatalityRisk;
@@ -396,10 +389,8 @@ double ugr::risk::RiskMap::fatalityProbability(const double alpha,
 	const double impactEnergy,
 	const double shelterFactor)
 {
-	if (impactEnergy < 1e-15)
-		return 0;
-	return 1 / (sqrt(alpha / beta)) *
-		pow(beta / impactEnergy, 1 / (4 * shelterFactor));
+	return 1
+		/ (1 + ((std::sqrt(alpha / beta)) * std::pow((beta) / (impactEnergy), 1 / (4 * shelterFactor))));
 }
 
 ugr::gridmap::Matrix ugr::risk::RiskMap::lethalArea(const Matrix& impactAngle,
@@ -425,7 +416,7 @@ ugr::risk::RiskMap::fatalityProbability(const double alpha, const double beta,
 	const Matrix& impactEnergy,
 	const Matrix& shelterFactor)
 {
-	return (1 / (sqrt(alpha / beta)) *
-		pow(beta / impactEnergy.array(), 1 / (4 * shelterFactor.array())))
-		.matrix();
+	return (1
+		/ (1 + ((std::sqrt(alpha / beta))
+			* Eigen::pow((beta) / (impactEnergy.array()), 1 / (4 * shelterFactor.array()))))).matrix();
 }
