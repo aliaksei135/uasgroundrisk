@@ -16,26 +16,37 @@ class TemporalRiskMapTests : public testing::Test
  protected:
 	void SetUp() override
 	{
+//		aircraft.state.position << 0, 0, 120;
+//		aircraft.state.velocity << 20, 0, 0;
+//
+//		aircraft.mass = 30;
+//		aircraft.length = 5;
+//		aircraft.width = 5;
+//
+//		aircraft.addDescentModel<GlideDescentModel>(21, 15);
+//		aircraft.addDescentModel<BallisticDescentModel>(25 * 0.3, 0.8);
+
 		aircraft.state.position << 0, 0, 120;
-		aircraft.state.velocity << 20, 0, 0;
+		aircraft.state.velocity << 25, 0, 0;
 
-		aircraft.mass = 30;
-		aircraft.length = 5;
-		aircraft.width = 5;
+		aircraft.mass = 35;
+		aircraft.length = 4;
+		aircraft.width = 3.5;
+		aircraft.failureProb  = 8e-3;
 
-		aircraft.addDescentModel<GlideDescentModel>(21, 15);
-		aircraft.addDescentModel<BallisticDescentModel>(25 * 0.3, 0.8);
+		aircraft.addDescentModel<GlideDescentModel>(25, 10);
+		aircraft.addDescentModel<BallisticDescentModel>(0.7, 0.65);
 	}
 
-	std::array<float, 4> bounds{
-		50.703057f, -1.973112f, 50.820251f,
-		-1.767941f
-	};
-	// std::array<float, 4> bounds{
-	// 50.689f, -1.5f, 51.0f,
-	// -0.88f
-	// };
-	int resolution = 100;
+//	std::array<float, 4> bounds{
+//		50.703057f, -1.973112f, 50.820251f,
+//		-1.767941f
+//	};
+	 std::array<float, 4> bounds{
+		52.01199f, -0.71306f, 52.13621f,
+		-0.5221f
+	 };
+	int resolution = 50;
 	AircraftModel aircraft;
 };
 
@@ -50,7 +61,7 @@ TEST_F(TemporalRiskMapTests, SchoolsStrikeRiskMapTest)
 	// ASSERT_NE(population.get("Population Density").maxCoeff(), 0);
 
 	WeatherMap weather(bounds, resolution);
-	weather.addConstantWind(5, 90);
+	weather.addConstantWind(2, 60);
 	weather.eval();
 
 	ObstacleMap obstacleMap(bounds, resolution);

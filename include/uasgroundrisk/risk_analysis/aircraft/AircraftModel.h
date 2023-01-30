@@ -15,8 +15,8 @@ namespace ugr
 		public:
 			AircraftModel() = default;
 
-			AircraftModel(const double mass, const double width, const double length): mass(mass), width(width),
-				length(length)
+			AircraftModel(const double mass, const double width, const double length, const double failureProb): mass(mass), width(width),
+				length(length), failureProb(failureProb)
 			{
 			}
 
@@ -33,6 +33,7 @@ namespace ugr
 			double width;
 			double length;
 			std::vector<std::shared_ptr<DescentModel>> descents;
+			double failureProb;
 		};
 	}
 }

@@ -200,7 +200,7 @@ void ugr::risk::RiskMap::addPointStrikeMap(const Index& index)
 		const Matrix strikeRisk =
 			(impactPDFs[i].cwiseProduct(populationDensityMap) * letArea) /
 				pixelArea;
-		const auto strikeRiskSum = strikeRisk.sum();
+		const auto strikeRiskSum = static_cast<GridMapDataType>(aircraftModel.failureProb) * strikeRisk.sum();
 		const auto descentName = aircraftModel.descents[i]->getName();
 
 		// Synchronise writing to the common gridmap

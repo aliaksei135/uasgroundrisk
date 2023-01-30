@@ -26,6 +26,7 @@ protected:
         aircraft.mass = 50;
         aircraft.length = 5;
         aircraft.width = 5;
+		aircraft.failureProb = 8e-3;
 
         aircraft.addDescentModel<GlideDescentModel>(21, 15);
         aircraft.addDescentModel<BallisticDescentModel>(25 * 0.3, 0.8);
