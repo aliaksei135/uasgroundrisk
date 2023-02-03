@@ -10,7 +10,7 @@ class DataIngestTests : public testing::Test
 public:
     void SetUp() override
     {
-        geosCtx = GEOS_init_r();
+        geosCtx = initGEOS_r(notice, log_and_exit);
     }
 
     GEOSContextHandle_t geosCtx;
