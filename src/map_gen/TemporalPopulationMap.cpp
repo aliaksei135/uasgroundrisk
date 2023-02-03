@@ -7,7 +7,7 @@
 
 ugr::mapping::TemporalPopulationMap::TemporalPopulationMap(const std::array<float, 4>& bounds, const int resolution,
 	const short defaultHour) :
-	PopulationMap(bounds, resolution), hourOfDay(defaultHour), geosCtx(initGEOS_r(notice, log_and_exit))
+	PopulationMap(bounds, resolution), hourOfDay(defaultHour), geosCtx(GEOS_init_r())
 {
 	// We try to precompute/fetch as many of the steps and data dependencies that are invariant for the life of the object.
 	// In practice, this means that as long as the bounds and resolution stay the same, this data will stay the same.
@@ -68,7 +68,7 @@ ugr::mapping::TemporalPopulationMap::~TemporalPopulationMap()
 	util::destroyGEOSGeoms(boundedGeometries);
 	spdlog::info("Destroying GEOS context");
 	if (geosCtx != nullptr)
-		finishGEOS_r(geosCtx);
+		GEOS_finish_r(geosCtx);
 }
 
 void ugr::mapping::TemporalPopulationMap::setHourOfDay(const short hourOfDay)
