@@ -233,8 +233,8 @@ void ugr::risk::RiskMap::makePointImpactMap(
 	const auto& lateralVel = sqrt(pow(aircraftModel.state.velocity(0), 2) +
 		pow(aircraftModel.state.velocity(1), 2));
 	const auto& verticalVel = aircraftModel.state.velocity(2);
-	auto altDist = std::normal_distribution<double>(altitude, 5);
-	auto lateralVelDist = std::normal_distribution<double>(lateralVel, 1.5);
+	auto altDist = std::normal_distribution<double>(altitude, 2);
+	auto lateralVelDist = std::normal_distribution<double>(lateralVel, 0.5);
 	auto verticalVelDist = std::normal_distribution<double>(verticalVel, 0.5);
 	auto headingUniformDist =
 		std::uniform_real_distribution<double>(DEG2RAD(0), DEG2RAD(360));
@@ -249,7 +249,7 @@ void ugr::risk::RiskMap::makePointImpactMap(
 		nSamples);
 	for (size_t i = 0; i < nSamples; ++i)
 	{
-		altVect[i] = altDist(generator);
+		altVect[i] = std::abs(altDist(generator));
 		lateralVelVect[i] = lateralVelDist(generator);
 		verticalVelVect[i] = verticalVelDist(generator);
 		windVect[i] = { windXVelDist(generator), windYVelDist(generator) };

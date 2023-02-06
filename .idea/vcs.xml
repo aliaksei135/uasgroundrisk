@@ -2,52 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-visual-studio-2019/_deps/googletest-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-visual-studio-2019/_deps/grid_map-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-visual-studio-2019/_deps/matplotlib_cpp-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-visual-studio-2019/_deps/osmium-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-visual-studio-2019/_deps/osmium-src/test/data-tests/osm-testdata" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-vs2019/_deps/googletest-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-vs2019/_deps/grid_map-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-vs2019/_deps/matplotlib_cpp-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-vs2019/_deps/osmium-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-vs2019/_deps/osmium-src/test/data-tests/osm-testdata" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-wsl/_deps/googletest-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-wsl/_deps/grid_map-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-wsl/_deps/matplotlib_cpp-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-wsl/_deps/osmium-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug-wsl/_deps/osmium-src/test/data-tests/osm-testdata" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-visual-studio-2019/_deps/googletest-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-visual-studio-2019/_deps/grid_map-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-visual-studio-2019/_deps/matplotlib_cpp-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-visual-studio-2019/_deps/osmium-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-visual-studio-2019/_deps/osmium-src/test/data-tests/osm-testdata" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-vs2019/_deps/googletest-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-vs2019/_deps/grid_map-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-vs2019/_deps/matplotlib_cpp-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-vs2019/_deps/osmium-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-vs2019/_deps/osmium-src/test/data-tests/osm-testdata" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-wsl/_deps/cpr-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-wsl/_deps/grid_map-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-wsl/_deps/matplotlib_cpp-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-wsl/_deps/osmium-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-wsl/_deps/osmium-src/test/data-tests/osm-testdata" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-wsl/_deps/proj-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release-wsl/_deps/zlib-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/WSL-GCC-Debug/_deps/googletest-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/WSL-GCC-Debug/_deps/grid_map-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/WSL-GCC-Debug/_deps/matplotlib_cpp-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/WSL-GCC-Debug/_deps/osmium-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/WSL-GCC-Debug/_deps/osmium-src/test/data-tests/osm-testdata" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Debug/_deps/googletest-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Debug/_deps/grid_map-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Debug/_deps/matplotlib_cpp-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Debug/_deps/osmium-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Debug/_deps/osmium-src/test/data-tests/osm-testdata" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Release/_deps/googletest-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Release/_deps/grid_map-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Release/_deps/matplotlib_cpp-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Release/_deps/osmium-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Release/_deps/osmium-src/test/data-tests/osm-testdata" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/extern/pybind11" vcs="Git" />
   </component>
 </project>
