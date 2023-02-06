@@ -5,11 +5,10 @@
  */
 
 #include <gtest/gtest.h>
-
+#include <cmath>
 #include "uasgroundrisk/risk_analysis/aircraft/AircraftDescentModel.h"
 
 using namespace ugr::risk;
-
 
 TEST(AircraftModelTests, GlideImpactSingleTest)
 {
@@ -69,6 +68,21 @@ TEST(AircraftModelTests, BallisticImpactMultipleTest)
 		EXPECT_NEAR(resVect[i].impactVelocity, expVelocities[i], 0.1);
 		EXPECT_NEAR(resVect[i].impactTime, expTimes[i], 0.1);
 		EXPECT_NEAR(resVect[i].impactAngle, expAngles[i], 0.1);
+	}
+}
+
+TEST(AircraftModelTests, BallisticImpactLowTest)
+{
+	const BallisticDescentModel bm(30, 5, 5, 0.6 * 0.6, 1.1);
+	const auto resVect = bm.DescentModel::impact({ 1, 2, 5, 10 }, { 5, 10, 15, 20 },
+		{ 0.5, 0.5, 0.5, 0.5 });
+
+	for (const auto impact : resVect)
+	{
+		ASSERT_FALSE(std::isnan(impact.impactAngle));
+		ASSERT_FALSE(std::isnan(impact.impactDistance));
+		ASSERT_FALSE(std::isnan(impact.impactTime));
+		ASSERT_FALSE(std::isnan(impact.impactVelocity));
 	}
 }
 
