@@ -190,12 +190,18 @@ target_link_libraries(${PROJECT_NAME} PUBLIC cpr::cpr)
 find_package(proj CONFIG REQUIRED)
 # Get Data dir in conan package
 string(TOUPPER ${CMAKE_BUILD_TYPE} ${PROJECT_NAME}_UPPER_BUILD_TYPE)
-set(PROJ_DATA ${PROJ_proj_RES_DIRS_${${PROJECT_NAME}_UPPER_BUILD_TYPE}})
-add_custom_target(UGR_proj_data
-        ${CMAKE_COMMAND} -E copy_directory ${PROJ_DATA} ${PROJECT_BINARY_DIR}/bin)
-add_dependencies(${PROJECT_NAME} UGR_proj_data)
-# Set this to a compile def that is used when PROJ contexts are created
-target_compile_definitions(${PROJECT_NAME} PUBLIC PROJ_DATA_PATH="${PROJ_DATA}")
+set(PROJ_DATA ${PROJ_RES_DIRS_${${PROJECT_NAME}_UPPER_BUILD_TYPE}})
+# check if PROJ_DATA is empty
+if(NOT DEFINED PROJ_DATA OR PROJ_DATA STREQUAL "")
+    message(WARNING "Could not find PROJ data dir for build type ${CMAKE_BUILD_TYPE} using PROJ_RES_DIRS_${${PROJECT_NAME}_UPPER_BUILD_TYPE} target variable")
+else()
+    message(STATUS "Found PROJ data dir: ${PROJ_DATA}")
+    add_custom_target(UGR_proj_data
+            ${CMAKE_COMMAND} -E copy_directory ${PROJ_DATA} ${PROJECT_BINARY_DIR}/bin)
+    add_dependencies(${PROJECT_NAME} UGR_proj_data)
+    # Set this to a compile def that is used when PROJ contexts are created
+    target_compile_definitions(${PROJECT_NAME} PUBLIC PROJ_DATA_PATH="${PROJ_DATA}")
+endif()
 target_link_libraries(${PROJECT_NAME} PUBLIC PROJ::PROJ)
 
 find_package(geos CONFIG REQUIRED)
