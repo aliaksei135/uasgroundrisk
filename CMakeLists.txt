@@ -208,7 +208,8 @@ conan_cmake_install(PATH_OR_REFERENCE ${CMAKE_CURRENT_LIST_DIR}/conanfile.py
 
 # Eigen required for lin alg
 find_package(Eigen3 CONFIG REQUIRED)
-set(EIGEN3_FOUND TRUE) # This doesn't get set by the conan generated find macro
+target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen3)
+#set(EIGEN3_FOUND TRUE) # This doesn't get set by the conan generated find macro
 
 # OpenSSL for cpr https requests
 find_package(OpenSSL CONFIG REQUIRED)
