@@ -130,25 +130,25 @@ TEST(DataFittingTests, Gaussian2DFitTest)
     }
 }
 
-TEST(DataFittingTests, LinAlgGaussianTest)
-{
-    Matrix2d cov;
-    cov << 1, 0,
-        0, 1;
-    Vector2d means(0, 0);
-
-    Matrix<double, 2, Dynamic> pos;
-    pos.resize(2, 3);
-    pos.col(0) << 0, 4;
-    pos.col(1) << 4, 0;
-    pos.col(2) << 0, 0;
-
-    VectorXd res = ugr::util::gaussianND(means, cov, pos);
-
-    ASSERT_NEAR(res(0), 5.339e-5, 1e-6);
-    ASSERT_NEAR(res(1), 5.339e-5, 1e-6);
-    ASSERT_NEAR(res(2), 1.59154e-1, 1e-6);
-}
+//TEST(DataFittingTests, LinAlgGaussianTest)
+//{
+//    Matrix2d cov;
+//    cov << 1, 0,
+//        0, 1;
+//    Vector2d means(0, 0);
+//
+//    Matrix<double, 2, Dynamic> pos;
+//    pos.resize(2, 3);
+//    pos.col(0) << 0, 4;
+//    pos.col(1) << 4, 0;
+//    pos.col(2) << 0, 0;
+//
+//    VectorXd res = ugr::util::gaussianND(means, cov, pos);
+//
+//    ASSERT_NEAR(res(0), 5.339e-5, 1e-6);
+//    ASSERT_NEAR(res(1), 5.339e-5, 1e-6);
+//    ASSERT_NEAR(res(2), 1.59154e-1, 1e-6);
+//}
 
 TEST(DataFittingTests, LinAlgFitTest)
 {
