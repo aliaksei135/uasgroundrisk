@@ -182,8 +182,10 @@ void ugr::risk::RiskMap::addPointStrikeMap(const Index& index)
 {
 	std::vector<GridMapDataType> impactAngles, impactVelocities;
 	std::vector<Matrix, aligned_allocator<Matrix>> impactPDFs;
+	const auto& altitude = aircraftModel.state.getAltitude();
+	const int& heading = anyHeading ? -1 : static_cast<int>(aircraftModel.state.getHeading());
 
-	makePointImpactMap(index, impactPDFs, impactAngles, impactVelocities);
+	makePointImpactMap(index, altitude, heading, impactPDFs, impactAngles, impactVelocities);
 
 	/* We have now evaluated the impact PDF of the aircraft*/
 	/* Now we move onto the strike risk analysis */
@@ -218,6 +220,8 @@ void ugr::risk::RiskMap::addPointStrikeMap(const Index& index)
 
 void ugr::risk::RiskMap::makePointImpactMap(
 	const Index& index,
+	const double altitude,
+	const int heading,
 	std::vector<Matrix, aligned_allocator<Matrix>>& impactPDFs,
 	std::vector<GridMapDataType>& impactAngles,
 	std::vector<GridMapDataType>& impactVelocities)
@@ -229,41 +233,49 @@ void ugr::risk::RiskMap::makePointImpactMap(
 	std::vector<Vector2d, aligned_allocator<Vector2d>> windVect(nSamples);
 
 	// Create samples of state distributions
-	const auto& altitude = aircraftModel.state.getAltitude();
 	const auto& lateralVel = sqrt(pow(aircraftModel.state.velocity(0), 2) +
 		pow(aircraftModel.state.velocity(1), 2));
 	const auto& verticalVel = aircraftModel.state.velocity(2);
 	auto altDist = std::normal_distribution<double>(altitude, 2);
 	auto lateralVelDist = std::normal_distribution<double>(lateralVel, 0.5);
 	auto verticalVelDist = std::normal_distribution<double>(verticalVel, 0.5);
-	auto headingUniformDist =
-		std::uniform_real_distribution<double>(DEG2RAD(0), DEG2RAD(360));
-	auto headingNormalDist = std::normal_distribution<double>(
-		DEG2RAD(aircraftModel.state.getHeading()), DEG2RAD(5));
 
 	// Generate random variable samples for LoC states
 	std::vector<double> altVect(nSamples);
 	std::vector<double> lateralVelVect(nSamples);
 	std::vector<double> verticalVelVect(nSamples);
-	std::vector<Rotation2Dd, aligned_allocator<Rotation2Dd>> headingVect(
-		nSamples);
-	for (size_t i = 0; i < nSamples; ++i)
+	std::vector<Rotation2Dd, aligned_allocator<Rotation2Dd>> headingVect(nSamples);
+	if (heading < 0)
 	{
-		altVect[i] = std::abs(altDist(generator));
-		lateralVelVect[i] = lateralVelDist(generator);
-		verticalVelVect[i] = verticalVelDist(generator);
-		windVect[i] = { windXVelDist(generator), windYVelDist(generator) };
-		if (anyHeading)
+		// Use uniformly distributed headings
+		auto headingUniformDist =
+			std::uniform_real_distribution<double>(DEG2RAD(0), DEG2RAD(360));
+		for (size_t i = 0; i < nSamples; ++i)
 		{
-			headingVect[i] =
-				Rotation2Dd(util::bearing2Angle(headingUniformDist(generator)));
-		}
-		else
-		{
-			headingVect[i] =
-				Rotation2Dd(util::bearing2Angle(headingNormalDist(generator)));
+			altVect[i] = std::abs(altDist(generator));
+			lateralVelVect[i] = lateralVelDist(generator);
+			verticalVelVect[i] = verticalVelDist(generator);
+			windVect[i] = { windXVelDist(generator), windYVelDist(generator) };
+			headingVect[i] = Rotation2Dd(util::bearing2Angle(headingUniformDist(generator)));
+
 		}
 	}
+	else
+	{
+		// Use actual heading with normal distribution
+		auto headingNormalDist = std::normal_distribution<double>(
+			DEG2RAD(heading % 360), DEG2RAD(5));
+		for (size_t i = 0; i < nSamples; ++i)
+		{
+			altVect[i] = std::abs(altDist(generator));
+			lateralVelVect[i] = lateralVelDist(generator);
+			verticalVelVect[i] = verticalVelDist(generator);
+			windVect[i] = { windXVelDist(generator), windYVelDist(generator) };
+			headingVect[i] = Rotation2Dd(util::bearing2Angle(headingNormalDist(generator)));
+		}
+	}
+
+
 
 	// // Create common heading rotation
 	// const Rotation2Dd headingRotation(

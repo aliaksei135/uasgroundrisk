@@ -24,7 +24,7 @@ namespace ugr
 	{
 		using namespace gridmap;
 
-		class RiskMap final : public mapping::GeospatialGridMap
+		class RiskMap : public mapping::GeospatialGridMap
 		{
 		 public:
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -54,12 +54,6 @@ namespace ugr
 			 */
 			GridMap& generateMap(const std::vector<RiskType>& risksToGenerate);
 
-			void makePointImpactMap(
-				const Index& index,
-				std::vector<Matrix, aligned_allocator<Matrix>>& impactPDFs,
-				std::vector<GridMapDataType>& impactAngles,
-				std::vector<GridMapDataType>& impactVelocities);
-
 			void eval() override;
 
 			bool IsAnyHeading() const
@@ -86,6 +80,14 @@ namespace ugr
 			void generateFatalityMap();
 
 			void addPointStrikeMap(const Index& index);
+
+			void makePointImpactMap(
+				const Index& index,
+				double altitude,
+				int heading,
+				std::vector<Matrix, aligned_allocator<Matrix>>& impactPDFs,
+				std::vector<GridMapDataType>& impactAngles,
+				std::vector<GridMapDataType>& impactVelocities);
 
 			void initRiskMapLayers();
 
