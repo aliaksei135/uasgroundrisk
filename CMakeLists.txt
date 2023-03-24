@@ -177,19 +177,19 @@ endif ()
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 conan_cmake_autodetect(settings)
 
-if(NOT CONAN_CMD)
+if (NOT CONAN_CMD)
     find_program(CONAN_CMD conan)
-    if(NOT CONAN_CMD AND CONAN_REQUIRED)
+    if (NOT CONAN_CMD AND CONAN_REQUIRED)
         message(FATAL_ERROR "Conan executable not found! Please install conan.")
-    endif()
-endif()
+    endif ()
+endif ()
 execute_process(COMMAND ${CONAN_CMD} --version
         RESULT_VARIABLE return_code
         OUTPUT_VARIABLE CONAN_VERSION_OUTPUT
         ERROR_VARIABLE CONAN_VERSION_OUTPUT)
-if(NOT "${return_code}" STREQUAL "0")
+if (NOT "${return_code}" STREQUAL "0")
     message(FATAL_ERROR "Conan --version failed='${return_code}'")
-endif()
+endif ()
 string(REGEX MATCH ".*Conan version ([0-9]+\\.[0-9]+\\.[0-9]+)" FOO "${CONAN_VERSION_OUTPUT}")
 set(CONAN_VERSION ${CMAKE_MATCH_1})
 message(STATUS "Checking conan version...")
@@ -211,9 +211,6 @@ conan_cmake_install(PATH_OR_REFERENCE ${CMAKE_CURRENT_LIST_DIR}/conanfile.py
 find_package(Eigen3 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen3)
 #set(EIGEN3_FOUND TRUE) # This doesn't get set by the conan generated find macro
-
-# OpenSSL for cpr https requests
-find_package(OpenSSL CONFIG REQUIRED)
 
 find_package(cpr CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC cpr::cpr)
