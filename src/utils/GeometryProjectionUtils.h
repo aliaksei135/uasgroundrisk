@@ -14,13 +14,13 @@
 #include <cstdlib>
 #include "spdlog/spdlog.h"
 
- /**
-  * None of these are templated to geos::geom::Geometry types as each geometry
-  * type has a different composition and needs special handling to reconstruct to
-  * the same type. The most basic shared concept is a CoordinateSequence and all
-  * the other geometry type handlers call this is different combinations and
-  * reconstruct the results.
-  */
+/**
+ * None of these are templated to geos::geom::Geometry types as each geometry
+ * type has a different composition and needs special handling to reconstruct to
+ * the same type. The most basic shared concept is a CoordinateSequence and all
+ * the other geometry type handlers call this is different combinations and
+ * reconstruct the results.
+ */
 
 namespace ugr
 {
@@ -40,11 +40,11 @@ namespace ugr
 			const auto* envDataDir = std::getenv("PROJ_LIB");
 			if (envDataDir == nullptr)
 			{
-				spdlog::info("uasgroundrisk: PROJ_LIB not set. Falling back");
+				spdlog::debug("uasgroundrisk: PROJ_LIB not set. Falling back");
 #ifdef PROJ_DATA_PATH
 				const char* projDataPaths[1];
 				projDataPaths[0] = PROJ_DATA_PATH;
-				spdlog::info("uasgroundrisk: Using Internally set PROJ data dir: {0}", projDataPaths[0]);
+				spdlog::debug("uasgroundrisk: Using Internally set PROJ data dir: {0}", projDataPaths[0]);
 				proj_context_set_search_paths(projCtx, 1, projDataPaths);
 #endif
 			}
@@ -133,7 +133,6 @@ namespace ugr
 			}
 			return GEOSGeom_createPolygon_r(geosCtx, invertedErGeom, invertedHoles.data(), nHoles);
 		}
-
 
 		/**
 		 * Reproject a GEOS CoordSequence using a PROJ reprojector.

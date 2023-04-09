@@ -16,14 +16,14 @@ ugr::mapping::GeospatialGridMap::GeospatialGridMap(
 	const std::array<float, 4> bounds, const float resolution, const char* worldSrs,
 	const char* projectionSrs) : bounds(bounds), xyRes(resolution)
 {
-	spdlog::info("Constructing Geospatial gridmap");
+	spdlog::debug("Constructing Geospatial gridmap");
 	std::tie(reproj, projCtx) = util::makeProjObject(worldSrs, projectionSrs);
 	setBounds(bounds, resolution);
 }
 
 ugr::mapping::GeospatialGridMap::~GeospatialGridMap()
 {
-	spdlog::info("Destructing Geospatial gridmap");
+	spdlog::debug("Destructing Geospatial gridmap");
 	//proj_cleanup();
 }
 
@@ -85,7 +85,7 @@ void ugr::mapping::GeospatialGridMap::eval()
 void ugr::mapping::GeospatialGridMap::setBounds(
 	const std::array<float, 4> boundsArr, const float resolution)
 {
-	spdlog::info("Setting Geospatial gridmap bounds");
+	spdlog::debug("Setting Geospatial gridmap bounds");
 	// This reprojects EPSG:4326 to EPSG:3395 by default
 	const auto swProjPoint = util::reprojectCoordinate_r(reproj, boundsArr[0], boundsArr[1]);
 	this->projectionOrigin = { swProjPoint.enu.e, swProjPoint.enu.n, 0 };

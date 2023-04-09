@@ -63,10 +63,10 @@ ugr::mapping::TemporalPopulationMap::TemporalPopulationMap(const std::array<floa
 
 ugr::mapping::TemporalPopulationMap::~TemporalPopulationMap()
 {
-	spdlog::info("Destructing Temporal Population gridmap");
-	spdlog::info("Destroying existing GEOS geometries");
+	spdlog::debug("Destructing Temporal Population gridmap");
+	spdlog::debug("Destroying existing GEOS geometries");
 	util::destroyGEOSGeoms(boundedGeometries);
-	spdlog::info("Destroying GEOS context");
+	spdlog::debug("Destroying GEOS context");
 	if (geosCtx != nullptr)
 		finishGEOS_r(geosCtx);
 }
