@@ -27,7 +27,7 @@ class ugrConan(ConanFile):
         # self.requires("openssl/3.1.0")
         self.requires("cpr/1.10.1")
         self.requires("expat/2.5.0")
-        # self.requires("bzip2/1.0.8")
+        self.requires("bzip2/1.0.8")
         self.requires("fast-cpp-csv-parser/cci.20211104")
         self.requires("rapidjson/cci.20220822")
         self.requires("spdlog/[>=1.10.0]")
