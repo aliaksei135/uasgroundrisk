@@ -20,14 +20,31 @@ ugr::risk::IncrementalRiskMap::IncrementalRiskMap(ugr::mapping::PopulationMap& p
 
 }
 
-double ugr::risk::IncrementalRiskMap::getPointStrikeProbability(const ugr::gridmap::Position3& position,
+double ugr::risk::IncrementalRiskMap::getPositionPointStrikeProbability(const ugr::gridmap::Position3& position,
 	const int heading)
 {
 	const auto& index = world2Local(position.x(), position.y());
+	const auto& altitude = position.z();
+
+	return getIndexPointStrikeProbability(index, altitude, heading);
+}
+
+double ugr::risk::IncrementalRiskMap::getPositionPointFatalityProbability(const ugr::gridmap::Position3& position,
+	const int heading)
+{
+	const auto& index = world2Local(position.x(), position.y());
+	const auto& altitude = position.z();
+
+	return getIndexPointFatalityProbability(index, altitude, heading);
+}
+
+double ugr::risk::IncrementalRiskMap::getIndexPointStrikeProbability(const ugr::gridmap::Index& index,
+	const double altitude,
+	const int heading)
+{
 
 	std::vector<GridMapDataType> impactAngles, impactVelocities;
 	std::vector<Matrix, aligned_allocator<Matrix>> impactPDFs;
-	const auto& altitude = position.z();
 
 	makePointImpactMap(index, altitude, heading, impactPDFs, impactAngles, impactVelocities);
 
@@ -57,16 +74,16 @@ double ugr::risk::IncrementalRiskMap::getPointStrikeProbability(const ugr::gridm
 
 	return allDescentStrikeRiskSum;
 }
-double ugr::risk::IncrementalRiskMap::getPointFatalityProbability(const ugr::gridmap::Position3& position,
+double ugr::risk::IncrementalRiskMap::getIndexPointFatalityProbability(const ugr::gridmap::Index& index,
+	const double altitude,
 	const int heading)
 {
-	const auto& index = world2Local(position.x(), position.y());
 	const auto uasMass = aircraftModel.mass;
 	const Matrix shelterFactorMap = get("Shelter Factor");
 	const auto& shelterFactor = shelterFactorMap(index.x(), index.y());
 
 	// Need to generate the individual descent strike risk maps and impact characteristics
-	getPointStrikeProbability(position, heading);
+	getIndexPointStrikeProbability(index, altitude, heading);
 
 	double fatalityRisk = 0;
 

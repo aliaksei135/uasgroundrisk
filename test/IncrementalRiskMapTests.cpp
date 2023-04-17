@@ -74,8 +74,8 @@ TEST_F(IncrementalRiskMapTests, ZeroIncrementalRiskMapTest)
 
 	IncrementalRiskMap riskMap(population, aircraft, obstacleMap, weather);
 
-	const auto& strikeRisk = riskMap.getPointStrikeProbability(testSchoolPosition, 90);
-	const auto& fatalityRisk = riskMap.getPointFatalityProbability(testSchoolPosition, 90);
+	const auto& strikeRisk = riskMap.getPositionPointStrikeProbability(testSchoolPosition, 90);
+	const auto& fatalityRisk = riskMap.getPositionPointFatalityProbability(testSchoolPosition, 90);
 
 	// As the population map is zero, this must all be zero as well
 	ASSERT_EQ(strikeRisk, 0);
@@ -101,8 +101,8 @@ TEST_F(IncrementalRiskMapTests, SchoolsStrikeIncrementalRiskMapTest)
 	obstacleMap.eval();
 
 	IncrementalRiskMap riskMap(population, aircraft, obstacleMap, weather);
-	const auto& strikeRisk = riskMap.getPointStrikeProbability(testSchoolPosition, 90);
-	const auto& fatalityRisk = riskMap.getPointFatalityProbability(testSchoolPosition, 90);
+	const auto& strikeRisk = riskMap.getPositionPointStrikeProbability(testSchoolPosition, 90);
+	const auto& fatalityRisk = riskMap.getPositionPointFatalityProbability(testSchoolPosition, 90);
 
 	ASSERT_NE(strikeRisk, 0);
 	ASSERT_NE(fatalityRisk, 0);
@@ -127,8 +127,8 @@ TEST_F(IncrementalRiskMapTests, TemporalIncrementalRiskMapTest)
 	obstacleMap.eval();
 
 	IncrementalRiskMap riskMap(population, aircraft, obstacleMap, weather);
-	const auto& strikeRisk = riskMap.getPointStrikeProbability(testSchoolPosition, 90);
-	const auto& fatalityRisk = riskMap.getPointFatalityProbability(testSchoolPosition, 90);
+	const auto& strikeRisk = riskMap.getPositionPointStrikeProbability(testSchoolPosition, 90);
+	const auto& fatalityRisk = riskMap.getPositionPointFatalityProbability(testSchoolPosition, 90);
 
 	ASSERT_NE(strikeRisk, 0);
 	ASSERT_NE(fatalityRisk, 0);

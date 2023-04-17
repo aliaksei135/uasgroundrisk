@@ -49,9 +49,13 @@ namespace ugr
 			IncrementalRiskMap& operator=(IncrementalRiskMap&& other) noexcept = delete;
 			~IncrementalRiskMap() override = default;
 
-			double getPointStrikeProbability(const Position3& position, int heading);
+			double getIndexPointStrikeProbability(const Index& index, double height, int heading);
 
-			double getPointFatalityProbability(const Position3& position, int heading);
+			double getIndexPointFatalityProbability(const Index& index, double height, int heading);
+
+			double getPositionPointStrikeProbability(const Position3& position, int heading);
+
+			double getPositionPointFatalityProbability(const Position3& position, int heading);
 
 		};
 	} // namespace risk
