@@ -37,7 +37,7 @@ namespace ugr
 			 * @param weather the weather map
 			 */
 			RiskMap(mapping::PopulationMap& populationMap,
-				const AircraftModel& aircraftModel, ObstacleMap& obstacleMap,
+				const AircraftModel aircraftModel, ObstacleMap& obstacleMap,
 				WeatherMap& weather);
 
 			RiskMap(const RiskMap& other) = delete;
@@ -67,7 +67,7 @@ namespace ugr
 			}
 
 		 protected:
-			const AircraftModel& aircraftModel;
+			const AircraftModel aircraftModel;
 //			const WeatherMap& weather;
 			static constexpr int nSamples = 50; //CLT says 30-50 samples is good enough
 			std::default_random_engine generator;

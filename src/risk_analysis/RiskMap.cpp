@@ -20,7 +20,7 @@
 using namespace ugr::gridmap;
 
 ugr::risk::RiskMap::RiskMap(mapping::PopulationMap& populationMap,
-	const AircraftModel& aircraftModel,
+	const AircraftModel aircraftModel,
 	ObstacleMap& obstacleMap, WeatherMap& weatherMap)
 	: GeospatialGridMap(populationMap.getBounds(),
 	static_cast<int>(populationMap.getResolution())),
