@@ -35,13 +35,13 @@ namespace ugr
 			 * @param populationMap a GridMap of population density. Usually from
 			 * PopulationMap#eval()
 			 * @param aircraftModel the aircraft model to use
-			 * @param weather the weather map
+			 * @param weather the weather maps
 			 */
 
 
 			IncrementalRiskMap(mapping::PopulationMap& populationMap,
 				const AircraftModel& aircraftModel, ObstacleMap& obstacleMap,
-				const WeatherMap& weather);
+				WeatherMap& weather);
 
 			IncrementalRiskMap(const IncrementalRiskMap& other) = delete;
 			IncrementalRiskMap(IncrementalRiskMap&& other) noexcept = default;

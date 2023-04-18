@@ -15,7 +15,7 @@
 ugr::risk::IncrementalRiskMap::IncrementalRiskMap(ugr::mapping::PopulationMap& populationMap,
 	const ugr::risk::AircraftModel& aircraftModel,
 	ugr::risk::ObstacleMap& obstacleMap,
-	const ugr::risk::WeatherMap& weather) : RiskMap(populationMap, aircraftModel, obstacleMap, weather)
+	ugr::risk::WeatherMap& weather) : RiskMap(populationMap, aircraftModel, obstacleMap, weather)
 {
 
 }

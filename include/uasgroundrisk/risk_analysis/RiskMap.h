@@ -38,7 +38,7 @@ namespace ugr
 			 */
 			RiskMap(mapping::PopulationMap& populationMap,
 				const AircraftModel& aircraftModel, ObstacleMap& obstacleMap,
-				const WeatherMap& weather);
+				WeatherMap& weather);
 
 			RiskMap(const RiskMap& other) = delete;
 			RiskMap(RiskMap&& other) noexcept = default;
@@ -68,7 +68,7 @@ namespace ugr
 
 		 protected:
 			const AircraftModel& aircraftModel;
-			const WeatherMap& weather;
+//			const WeatherMap& weather;
 			static constexpr int nSamples = 50; //CLT says 30-50 samples is good enough
 			std::default_random_engine generator;
 			Eigen::Matrix<int, 2, Dynamic> evalMat;

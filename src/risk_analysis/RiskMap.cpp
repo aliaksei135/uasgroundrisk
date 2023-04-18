@@ -21,10 +21,10 @@ using namespace ugr::gridmap;
 
 ugr::risk::RiskMap::RiskMap(mapping::PopulationMap& populationMap,
 	const AircraftModel& aircraftModel,
-	ObstacleMap& obstacleMap, const WeatherMap& weather)
+	ObstacleMap& obstacleMap, WeatherMap& weatherMap)
 	: GeospatialGridMap(populationMap.getBounds(),
 	static_cast<int>(populationMap.getResolution())),
-	  aircraftModel(aircraftModel), weather(weather),
+	  aircraftModel(aircraftModel),
 	  generator(std::default_random_engine(
 		  std::chrono::system_clock::now().time_since_epoch().count()))
 {
@@ -39,12 +39,17 @@ ugr::risk::RiskMap::RiskMap(mapping::PopulationMap& populationMap,
 		obstacleMap.addBuildingHeights();
 	// Evaluate obstacles
 	obstacleMap.eval();
+	weatherMap.eval();
 	// Copy across only the the population density and building height layer
 	initLayer("Population Density");
 	initLayer("Building Height");
+	initLayer("Wind VelX");
+	initLayer("Wind VelY");
 	// Get population map and convert from people/km^2 to people/m^2
 	get("Population Density") = populationMap.get("Population Density") * 1e-6;
 	get("Building Height") = obstacleMap.get("Building Height");
+	get("Wind VelX") = weatherMap.get("Wind VelX");
+	get("Wind VelY") = weatherMap.get("Wind VelY");
 
 	// Create objects required for sample distribution generation
 	// construct a trivial random generator engine from a time-based seed:
@@ -226,9 +231,9 @@ void ugr::risk::RiskMap::makePointImpactMap(
 	std::vector<GridMapDataType>& impactAngles,
 	std::vector<GridMapDataType>& impactVelocities)
 {
-	const auto& windVelX = weather.at("Wind VelX", index);
-	const auto& windVelY = weather.at("Wind VelY", index);
-	auto windXVelDist = std::normal_distribution<double>(windVelX, 5);
+	const auto& windVelX = at("Wind VelX", index);
+	const auto& windVelY = at("Wind VelY", index);
+	auto windXVelDist = std::normal_distribution<double>(windVelX, 0.5);
 	auto windYVelDist = std::normal_distribution<double>(windVelY, 0.5);
 	std::vector<Vector2d, aligned_allocator<Vector2d>> windVect(nSamples);
 

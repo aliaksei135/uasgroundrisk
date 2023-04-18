@@ -46,7 +46,7 @@ class RiskMapExposed : public RiskMap
 	RiskMapExposed(ugr::mapping::PopulationMap& population,
 		const AircraftModel& aircraft,
 		ObstacleMap& obstacleMap,
-		const WeatherMap& weatherMap)
+		WeatherMap& weatherMap)
 		: RiskMap(population, aircraft, obstacleMap, weatherMap)
 	{
 	}
