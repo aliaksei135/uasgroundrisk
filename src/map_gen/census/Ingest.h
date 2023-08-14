@@ -87,21 +87,21 @@ public:
 			dataDir = std::string(envDataDir);
 		}
 
-		auto geoms = geomIngest.readFile(dataDir + "/Wards_(December_2011)_Boundaries_EW_BGC.shp");
+		auto geoms = geomIngest.readFile(dataDir + "/merged.shp");
 
-		const auto projObjs = ugr::util::makeProjObject("EPSG:27700", "EPSG:4326");
-		PJ* reproj = std::get<0>(projObjs);
-		PJ_CONTEXT* projCtx = std::get<1>(projObjs);
-
-		std::for_each(geoms.begin(), geoms.end(), [reproj, this](std::pair<const std::string, GEOSGeometry*>& p)
-		{
-			auto* rg = ugr::util::reprojectPolygon_r(reproj, p.second, geosCtx);
-			auto* irg = ugr::util::swapCoordOrder_r(rg, geosCtx);
-			GEOSGeom_destroy_r(geosCtx, rg);
-			p.second = irg;
-		});
-
-		proj_context_destroy(projCtx);
+//		const auto projObjs = ugr::util::makeProjObject("EPSG:27700", "EPSG:4326");
+//		PJ* reproj = std::get<0>(projObjs);
+//		PJ_CONTEXT* projCtx = std::get<1>(projObjs);
+//
+//		std::for_each(geoms.begin(), geoms.end(), [reproj, this](std::pair<const std::string, GEOSGeometry*>& p)
+//		{
+//			auto* rg = ugr::util::reprojectPolygon_r(reproj, p.second, geosCtx);
+//			auto* irg = ugr::util::swapCoordOrder_r(rg, geosCtx);
+//			GEOSGeom_destroy_r(geosCtx, rg);
+//			p.second = irg;
+//		});
+//
+//		proj_context_destroy(projCtx);
 
 		CensusDensityIngest densityIngest(geosCtx);
 		const auto densityMap = densityIngest.readFile(dataDir + "/density.csv");

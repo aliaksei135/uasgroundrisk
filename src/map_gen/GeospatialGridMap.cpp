@@ -16,6 +16,8 @@ ugr::mapping::GeospatialGridMap::GeospatialGridMap(
 	const std::array<float, 4> bounds, const float resolution, const char* worldSrs,
 	const char* projectionSrs) : bounds(bounds), xyRes(resolution)
 {
+	assert(bounds[0] < bounds[2]); // South < North
+	assert(bounds[1] < bounds[3]); // West < East
 	spdlog::debug("Constructing Geospatial gridmap");
 	std::tie(reproj, projCtx) = util::makeProjObject(worldSrs, projectionSrs);
 	setBounds(bounds, resolution);
