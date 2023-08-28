@@ -26,6 +26,9 @@ protected:
     std::array<float,4> scotlandBounds{
             55.845248f, -3.303054f, 55.961784f, -3.122128f
     };
+    std::array<float,4> lonCrossBounds{
+            51.105227f, -0.055010f, 51.155028f, 0.035807f
+    };
 
     int resolution = 20;
 };
@@ -80,6 +83,25 @@ TEST_F(TemporalPopulationMapTests, GenerateScotlandMapTest) {
             file << popMap.get(layer).format(CSVFormat);
             file.close();
         }
+    }
+    return;
+}
+
+TEST_F(TemporalPopulationMapTests, LongitudeCrossMapTest) {
+    for (int i = 0; i < 24; i += 2) {
+        TemporalPopulationMap popMap(lonCrossBounds, resolution);
+        popMap.setHourOfDay(i);
+        popMap.eval();
+
+        const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+
+        std::string layer = "Population Density";
+        std::ofstream file("lcross_tpe_t" + std::to_string(i) + "_" + layer + ".csv");
+        if (file.is_open()) {
+            file << popMap.get(layer).format(CSVFormat);
+            file.close();
+        }
+        ASSERT_NE(popMap.get(layer).mean(), 0);
     }
     return;
 }
