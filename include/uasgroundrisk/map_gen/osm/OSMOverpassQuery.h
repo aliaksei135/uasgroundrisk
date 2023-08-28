@@ -43,7 +43,7 @@ namespace ugr
                 std::vector<OSMTag> relationTags;
 
                 short int timeout =
-                    30; // set a timeout in seconds for the query to return a response
+                    90; // set a timeout in seconds for the query to return a response
 
                 OSMOverpassQuery(const Coordinates& southWestCoord,
                                  const Coordinates& northEastCoord)
