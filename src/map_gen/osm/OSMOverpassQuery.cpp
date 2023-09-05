@@ -48,7 +48,7 @@ std::string OSMOverpassQuery::rawResponse(const short int maxRetries) const
                 std::this_thread::sleep_for(std::chrono::milliseconds(retryDelay));
                 retryDelay > 0 ? retryDelay *= 2 : retryDelay = 5000;
                 ++retries;
-                std::cerr << "Failed Response: " << response.error.message << " for query: " << params.str()
+                std::cerr << "Failed Response: " << response.status_code << " " << response.error.message << " for query: " << params.str()
                     << std::endl;
             }
             else
