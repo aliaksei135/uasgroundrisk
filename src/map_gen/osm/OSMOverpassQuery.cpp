@@ -67,11 +67,10 @@ std::string OSMOverpassQuery::rawResponse(const short int maxRetries) const
     return std::move(response_txt);
 }
 
-cpr::Url OSMOverpassQuery::getOverpassEndpoint()
+cpr::Url OSMOverpassQuery::getOverpassEndpoint() const
 {
-    // TODO: Round robin all the overpass instance urls
-    return cpr::Url{"https://overpass.kumi.systems/api/interpreter"};
-    //	return cpr::Url{"https://lz4.overpass-api.de/api/interpreter"};
+    // Get a random Overpass endpoint from OVERPASS_ENDPOINTS
+    return OVERPASS_ENDPOINTS[std::rand() % OVERPASS_ENDPOINTS.size()];
 }
 
 std::string OSMOverpassQuery::buildQueryString(const bool xmlQuery) const

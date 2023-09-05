@@ -118,13 +118,20 @@ namespace ugr
                 ~OSMOverpassQuery() { std::remove(responseFilepath); }
 
             private:
-                const char* responseFilepath = strcat(std::tmpnam(nullptr), ".xml");
+                const char *responseFilepath = strcat(std::tmpnam(nullptr), ".xml");
+
+                const std::vector<std::string> OVERPASS_ENDPOINTS{
+                        "https://overpass.kumi.systems/api/interpreter",
+                        "https://overpass.openstreetmap.ru/api/interpreter",
+                        "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+                        "https://overpass-api.de/api/interpreter"
+                };
 
                 /**
  * Return a cpr::Url containing a valid Overpass instance.
  * @return Overpass instance cpr::Url
  */
-                static cpr::Url getOverpassEndpoint();
+                cpr::Url getOverpassEndpoint() const;
 
                 std::string buildQueryStringQL() const;
                 std::string buildQueryStringXML() const;
