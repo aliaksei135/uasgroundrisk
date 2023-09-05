@@ -70,7 +70,7 @@ namespace ugr
  * Execute a GET request to an Overpass instance
  * @return XML response text
  */
-                std::string rawResponse(short int maxRetries = 3) const;
+                std::string rawResponse(short int maxRetries = 4) const;
 
                 /**
  * Build an Overpass bbox query string from the current object state

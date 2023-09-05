@@ -35,28 +35,15 @@ std::string OSMOverpassQuery::rawResponse(const short int maxRetries) const
     cpr::Body params = cpr::Body{buildQueryString()};
     cpr::Response response = cpr::Post(url, params, cpr::VerifySsl(false));
 
-    if (response.status_code != 200)
-    {
-        // Set an initial retry delay
-        int retryDelay = 0;
-        short int retries = 0;
-        do
-        {
-            if (retries < maxRetries)
-            {
-                response = cpr::Post(getOverpassEndpoint(), params);
-                std::this_thread::sleep_for(std::chrono::milliseconds(retryDelay));
-                retryDelay > 0 ? retryDelay *= 2 : retryDelay = 5000;
-                ++retries;
-                std::cerr << "Failed Response: " << response.status_code << " " << response.error.message << " for query: " << params.str()
-                    << std::endl;
-            }
-            else
-            {
-                throw overpass_network_exception();
-            }
+    if (response.status_code != 200) {
+        if (maxRetries > 0) {
+            std::cout << "Overpass query failed with status code " << response.status_code << ". Retrying..."
+                      << std::endl;
+            return rawResponse(maxRetries - 1);
+        } else {
+            std::cerr << "Overpass query terminally failed with status code " << std::to_string(response.status_code)
+                      << " for query: " << params.str() << std::endl;
         }
-        while (response.status_code != 200);
     }
 
     std::string response_txt = response.text;
