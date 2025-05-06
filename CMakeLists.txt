@@ -176,35 +176,33 @@ find_package(cpr REQUIRED CONFIG)
 target_link_libraries(${PROJECT_NAME} PUBLIC cpr::cpr)
 
 find_package(PROJ REQUIRED CONFIG)
-# Get PROJ data directory
 
-# # Get the path to the PROJ package
-# get_target_property(PROJ_INCLUDE_DIR PROJ::proj INTERFACE_INCLUDE_DIRECTORIES)
-# get_filename_component(PROJ_PACKAGE_ROOT "${PROJ_INCLUDE_DIR}" DIRECTORY) # should be <package-root>/include
-# # Assume data is in <package-root>/share/proj
-# set(PROJ_DATA "${PROJ_PACKAGE_ROOT}/res")
-# message(STATUS "Found PROJ data dir: ${PROJ_DATA_DIR}")
+# Get Data dir in conan package
+string(TOUPPER ${CMAKE_BUILD_TYPE} ${PROJECT_NAME}_UPPER_BUILD_TYPE)
+set(PROJ_DATA "${proj_PACKAGE_FOLDER_${${PROJECT_NAME}_UPPER_BUILD_TYPE}}/res")
 
+# check if PROJ_DATA is empty
+if (NOT DEFINED PROJ_DATA OR PROJ_DATA STREQUAL "")
+    # Hacky way to get the data dir from the conan package
+    message(WARNING "Could not find PROJ data dir for build type ${CMAKE_BUILD_TYPE} using proj_PACKAGE_FOLDER_${${PROJECT_NAME}_UPPER_BUILD_TYPE} config target variable")
+    set(PROJ_DATA "${PROJ_INCLUDE_DIR_${${PROJECT_NAME}_UPPER_BUILD_TYPE}}/../res/")
+else ()
+    message(STATUS "Found PROJ data dir: ${PROJ_DATA}")
+endif ()
 
-# get_target_property(PROJ_LOCATION PROJ::proj LOCATION)
-# get_filename_component(PROJ_DIR ${PROJ_LOCATION} DIRECTORY)
-# get_filename_component(PROJ_DATA "${PROJ_DIR}/../share/proj" ABSOLUTE)
+# Check that proj.db actually exists in PROJ_DATA
+if (NOT EXISTS "${PROJ_DATA}/proj.db")
+    message(FATAL_ERROR "Could not find proj.db in assumed PROJ_DATA dir: ${PROJ_DATA}")
+endif ()
 
-# # Check that proj.db actually exists in PROJ_DATA
-# if (NOT EXISTS "${PROJ_DATA}/proj.db")
-#     message(FATAL_ERROR "Could not find proj.db in PROJ_DATA dir: ${PROJ_DATA}")
-# else()
-#     message(STATUS "Found PROJ data dir: ${PROJ_DATA}")
-# endif()
-
-# add_custom_target(UGR_proj_data
-#     ${CMAKE_COMMAND} -E copy_directory ${PROJ_DATA} ${PROJECT_BINARY_DIR}/bin)
-# add_dependencies(${PROJECT_NAME} UGR_proj_data)
-# # @formatter:off
-# # Set this to a compile def that is used when PROJ contexts are created
-# target_compile_definitions(${PROJECT_NAME} PUBLIC PROJ_DATA_PATH="${PROJ_DATA}")
-# # @formatter:on
-# target_link_libraries(${PROJECT_NAME} PUBLIC PROJ::proj)
+add_custom_target(UGR_proj_data
+    ${CMAKE_COMMAND} -E copy_directory ${PROJ_DATA} ${PROJECT_BINARY_DIR}/bin)
+add_dependencies(${PROJECT_NAME} UGR_proj_data)
+# @formatter:off
+# Set this to a compile def that is used when PROJ contexts are created
+target_compile_definitions(${PROJECT_NAME} PUBLIC PROJ_DATA_PATH="${PROJ_DATA}")
+# @formatter:on
+target_link_libraries(${PROJECT_NAME} PUBLIC PROJ::proj)
 
 find_package(GEOS REQUIRED CONFIG)
 target_link_libraries(${PROJECT_NAME} PUBLIC GEOS::geos_c)
