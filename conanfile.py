@@ -1,5 +1,4 @@
 from conan import ConanFile
-from conan.tools.cmake import CMake, cmake_layout
 
 
 class UasgroundriskConan(ConanFile):
@@ -22,20 +21,3 @@ class UasgroundriskConan(ConanFile):
         self.requires("fast-cpp-csv-parser/cci.20211104")
         self.requires("rapidjson/cci.20220822")
         self.requires("spdlog/[>=1.10.0]")
-
-    # def layout(self):
-    #     cmake_layout(self)
-
-    # def build(self):
-    #     cmake = CMake(self)
-    #     cmake.configure(
-    #         variables={"BUILD_DOC": "ON", "CMAKE_FIND_PACKAGE_PREFER_CONFIG": "ON"}
-    #     )
-    #     cmake.build()
-
-    # def package(self):
-    #     cmake = CMake(self)
-    #     cmake.install()
-
-    # def package_info(self):
-    #     self.cpp_info.libs = ["uasgroundrisk"]
