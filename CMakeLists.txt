@@ -5,7 +5,7 @@ project(uasgroundrisk
     LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CXX_STANDARD_REQUIRED ON)
+set(CXX_STANDARD_REQUIRED OFF)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(PYTHON_VERSION 3)
 
@@ -177,9 +177,18 @@ target_link_libraries(${PROJECT_NAME} PUBLIC cpr::cpr)
 
 find_package(PROJ REQUIRED CONFIG)
 # Get PROJ data directory
-get_target_property(PROJ_LOCATION PROJ::proj LOCATION)
-get_filename_component(PROJ_DIR ${PROJ_LOCATION} DIRECTORY)
-get_filename_component(PROJ_DATA "${PROJ_DIR}/../share/proj" ABSOLUTE)
+
+# # Get the path to the PROJ package
+# get_target_property(PROJ_INCLUDE_DIR PROJ::proj INTERFACE_INCLUDE_DIRECTORIES)
+# get_filename_component(PROJ_PACKAGE_ROOT "${PROJ_INCLUDE_DIR}" DIRECTORY) # should be <package-root>/include
+# # Assume data is in <package-root>/share/proj
+# set(PROJ_DATA "${PROJ_PACKAGE_ROOT}/res")
+# message(STATUS "Found PROJ data dir: ${PROJ_DATA_DIR}")
+
+
+# get_target_property(PROJ_LOCATION PROJ::proj LOCATION)
+# get_filename_component(PROJ_DIR ${PROJ_LOCATION} DIRECTORY)
+# get_filename_component(PROJ_DATA "${PROJ_DIR}/../share/proj" ABSOLUTE)
 
 # # Check that proj.db actually exists in PROJ_DATA
 # if (NOT EXISTS "${PROJ_DATA}/proj.db")
@@ -195,7 +204,7 @@ get_filename_component(PROJ_DATA "${PROJ_DIR}/../share/proj" ABSOLUTE)
 # # Set this to a compile def that is used when PROJ contexts are created
 # target_compile_definitions(${PROJECT_NAME} PUBLIC PROJ_DATA_PATH="${PROJ_DATA}")
 # # @formatter:on
-target_link_libraries(${PROJECT_NAME} PUBLIC PROJ::proj)
+# target_link_libraries(${PROJECT_NAME} PUBLIC PROJ::proj)
 
 find_package(GEOS REQUIRED CONFIG)
 target_link_libraries(${PROJECT_NAME} PUBLIC GEOS::geos_c)
