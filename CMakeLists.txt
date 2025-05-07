@@ -143,10 +143,13 @@ if (NOT (${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
 endif ()
 
 # Data bundling
-if (NOT ENV{UGR_DATA_DIR})
+if (DEFINED ENV{UGR_DATA_DIR})
+    set(UGR_DATA_DIR $ENV{UGR_DATA_DIR} CACHE PATH "uasgroundrisk static data directory")
+elseif (DEFINED UGR_DATA_DIR)
+    # Keep existing CMake variable if already defined
+    set(UGR_DATA_DIR ${UGR_DATA_DIR} CACHE PATH "uasgroundrisk static data directory")
+else()
     set(UGR_DATA_DIR ${PROJECT_BINARY_DIR}/data CACHE PATH "uasgroundrisk static data directory")
-else ()
-    set(UGR_DATA_DIR ENV{UGR_DATA_DIR} CACHE PATH "uasgroundrisk static data directory")
 endif ()
 
 add_custom_target(ugr_bundled_data
