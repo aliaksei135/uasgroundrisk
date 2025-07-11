@@ -142,14 +142,6 @@ If you built the project with `UGR_BUILD_TESTS=ON`, you can run the tests using 
 ctest
 ```
 
-## Usage
-
-(This section can be expanded with examples of how to use the library in other projects. For now, refer to the header files in the `include` directory and the tests in the `test` directory for usage examples.)
-
-## Contributing
-
-(This section can be added later with guidelines for contributing to the project.)
-
 ## License
 
 This project is licensed under the GNU Lesser General Public License v2.1 - see the [LICENSE](LICENSE) file for details.
